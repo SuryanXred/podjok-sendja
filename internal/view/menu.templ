@@ -1,0 +1,122 @@
+package view
+
+import (
+	"fmt"
+	"caffe-podjok-sendja/internal/catalog"
+	"caffe-podjok-sendja/internal/customer"
+	"caffe-podjok-sendja/internal/order"
+)
+
+templ MenuPage(categories []catalog.Category, cart order.Cart, cust *customer.Customer) {
+	@Layout("Menu | Caffe Podjok Sendja", cust, menuContent(categories, cart, cust))
+}
+
+templ menuContent(categories []catalog.Category, cart order.Cart, cust *customer.Customer) {
+	<section class="hero">
+		<div class="hero-grid">
+			<div class="hero-copy">
+				<p class="hero-kicker">Kafe kampus, Universitas Sari Mulia</p>
+				<h1 class="hero-title">Caffe Podjok Sendja</h1>
+				<p class="hero-lede">Kopi, teh, dan makanan ringan untuk jeda di antara kelas.</p>
+
+				if cust != nil && cust.Type == customer.CustomerTypeMahasiswa && !cust.FirstDiscountUsed {
+					<div class="hero-promo-badge">
+						<span class="badge-promo-tag">Diskon 25% Mahasiswa Aktif</span>
+						<span>Potongan harga 25% (maksimal pembelian Rp 30.000) otomatis diterapkan pada pesanan pertama NIM: { cust.NIM }.</span>
+					</div>
+				} else if cust == nil {
+					<div class="hero-promo-banner">
+						<span>Mahasiswa Universitas Sari Mulia?</span>
+						<a href="/daftar" class="promo-banner-link">Daftar Akun Mahasiswa</a>
+						<span>untuk menikmati diskon 25% pada pembelian pertama (maksimal pembelian Rp 30.000).</span>
+					</div>
+				}
+			</div>
+			<div class="hero-media">
+				<div class="hero-photo-frame">
+					<img src="/static/images/site/hero.webp" alt="Suasana Caffe Podjok Sendja" class="hero-photo" width="1280" height="960" loading="eager"/>
+				</div>
+			</div>
+		</div>
+	</section>
+	<div class="menu-sheet">
+		if len(categories) == 0 {
+			<p class="menu-empty">Menu belum tersedia. Silakan kembali lagi nanti.</p>
+		} else {
+			<div class="menu-layout">
+				<nav class="category-nav" aria-label="Kategori menu">
+					for _, category := range categories {
+						<a class="category-link" href={ templ.URL("#" + category.Slug) }>{ category.Name }</a>
+					}
+				</nav>
+				<div class="menu-sections">
+					for index, category := range categories {
+						<section class="menu-section" id={ category.Slug }>
+							<div class="category-header-wrap">
+								<div class="category-title-bar">
+									<h2>
+										<span class="menu-index">{ FormatCategoryIndex(index) }</span>
+										{ category.Name }
+									</h2>
+								</div>
+								if category.ImagePath() != "" {
+									<div class="category-banner-wrap">
+										<img src={ category.ImagePath() } alt={ "Kategori " + category.Name } class="category-banner-img" loading="lazy"/>
+									</div>
+								}
+							</div>
+							<ul class="menu-list">
+								for _, product := range category.Products {
+									<li class="menu-item">
+										<div class="menu-item-media">
+											<img src={ product.ImagePath() } alt={ product.Name } class="product-thumb-img" loading="lazy" width="76" height="76"/>
+										</div>
+										<div class="menu-item-body">
+											<div class="menu-item-head">
+												<span class="menu-name">{ product.Name }</span>
+												if !product.HasVariants() {
+													<div class="menu-action-group">
+														<span class="menu-price">{ FormatRupiah(product.BasePrice) }</span>
+														<form action="/cart/add" method="POST" class="order-form-inline">
+															<input type="hidden" name="product_slug" value={ product.Slug }/>
+															<button type="submit" class="btn-order-add" aria-label={ "Pesan " + product.Name }>+ Pesan</button>
+														</form>
+													</div>
+												}
+											</div>
+											if product.HasVariants() {
+												<div class="menu-variants">
+													for _, variant := range product.Variants {
+														<div class="menu-variant">
+															<span class="variant-label">{ variant.Name }</span>
+															<strong class="variant-price">{ FormatRupiah(product.BasePrice + variant.PriceDelta) }</strong>
+															<form action="/cart/add" method="POST" class="order-form-inline">
+																<input type="hidden" name="product_slug" value={ product.Slug }/>
+																<input type="hidden" name="variant" value={ variant.Name }/>
+																<button type="submit" class="btn-order-add-small" aria-label={ "Pesan " + product.Name + " " + variant.Name }>+ { variant.Name }</button>
+															</form>
+														</div>
+													}
+												</div>
+											}
+										</div>
+									</li>
+								}
+							</ul>
+						</section>
+					}
+				</div>
+			</div>
+		}
+	</div>
+	if cart.TotalQuantity > 0 {
+		<aside class="cart-floating-bar" aria-label="Keranjang pesanan aktif">
+			<div class="cart-floating-info">
+				<span class="cart-floating-count">{ fmt.Sprintf("%d", cart.TotalQuantity) } pesanan</span>
+				<span class="cart-floating-dot">•</span>
+				<span class="cart-floating-total">{ FormatRupiah(cart.Subtotal) }</span>
+			</div>
+			<a href="/keranjang" class="cart-floating-btn">Lihat Keranjang &amp; Pesan</a>
+		</aside>
+	}
+}

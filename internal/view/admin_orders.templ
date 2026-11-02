@@ -1,0 +1,198 @@
+package view
+
+import (
+	"fmt"
+	"caffe-podjok-sendja/internal/order"
+)
+
+templ AdminOrdersPage(metrics order.StoreMetrics, orders []*order.Order, currentFilter order.OrderStatus) {
+	@Layout("Antrean Pesanan Kasir | Caffe Podjok Sendja", nil, adminOrdersContent(metrics, orders, currentFilter))
+}
+
+templ adminOrdersContent(metrics order.StoreMetrics, orders []*order.Order, currentFilter order.OrderStatus) {
+	<section class="hero admin-hero">
+		<div class="hero-brand">
+			<div class="hero-logo-frame">
+				<img src="/static/images/logo.png" alt="Logo Caffe Sari Mulia" class="hero-logo" width="76" height="76"/>
+			</div>
+			<div class="hero-brand-text">
+				<p class="hero-kicker">Panel Operasional Kasir</p>
+				<h1 class="hero-title">Antrean &amp; Pembayaran</h1>
+			</div>
+		</div>
+		<p class="hero-lede">Kelola pesanan masuk, verifikasi bukti pembayaran, dan perbarui status saji secara langsung.</p>
+	</section>
+
+	<div class="metrics-grid" aria-label="Ringkasan operasional hari ini">
+		<div class="metric-card">
+			<span class="metric-label">Total Pesanan</span>
+			<strong class="metric-value">{ fmt.Sprintf("%d", metrics.TotalOrders) }</strong>
+		</div>
+		<div class="metric-card metric-alert">
+			<span class="metric-label">Menunggu Bayar</span>
+			<strong class="metric-value">{ fmt.Sprintf("%d", metrics.PendingPayment) }</strong>
+		</div>
+		<div class="metric-card">
+			<span class="metric-label">Dalam Proses</span>
+			<strong class="metric-value">{ fmt.Sprintf("%d", metrics.InProcess) }</strong>
+		</div>
+		<div class="metric-card metric-ready">
+			<span class="metric-label">Siap Diambil</span>
+			<strong class="metric-value">{ fmt.Sprintf("%d", metrics.ReadyForPickup) }</strong>
+		</div>
+		<div class="metric-card metric-sales">
+			<span class="metric-label">Omzet Terverifikasi</span>
+			<strong class="metric-value">{ FormatRupiah(metrics.ConfirmedSales) }</strong>
+		</div>
+	</div>
+
+	<div class="menu-sheet admin-sheet">
+		<div class="admin-sheet-header">
+			<div class="admin-header-title">
+				<h2 class="admin-section-title">Daftar Pesanan</h2>
+				<span class="admin-count-pill">{ fmt.Sprintf("%d pesanan", len(orders)) }</span>
+			</div>
+			<nav class="admin-filter-nav" aria-label="Filter status pesanan">
+				<a href="/admin/pesanan" class={ "filter-chip", templ.KV("is-active", currentFilter == "") }>Semua</a>
+				<a href="/admin/pesanan?status=pending_payment" class={ "filter-chip", templ.KV("is-active", currentFilter == order.OrderStatusPendingPayment) }>Menunggu Bayar</a>
+				<a href="/admin/pesanan?status=paid" class={ "filter-chip", templ.KV("is-active", currentFilter == order.OrderStatusPaid) }>Sudah Dibayar</a>
+				<a href="/admin/pesanan?status=preparing" class={ "filter-chip", templ.KV("is-active", currentFilter == order.OrderStatusPreparing) }>Disiapkan</a>
+				<a href="/admin/pesanan?status=ready" class={ "filter-chip", templ.KV("is-active", currentFilter == order.OrderStatusReady) }>Siap Diambil</a>
+				<a href="/admin/pesanan?status=completed" class={ "filter-chip", templ.KV("is-active", currentFilter == order.OrderStatusCompleted) }>Selesai</a>
+				<a href="/admin/pesanan?status=cancelled" class={ "filter-chip", templ.KV("is-active", currentFilter == order.OrderStatusCancelled) }>Dibatalkan</a>
+			</nav>
+		</div>
+
+		if len(orders) == 0 {
+			<div class="admin-empty-state">
+				<p class="empty-title">Tidak ada pesanan</p>
+				<p class="empty-desc">Belum ada pesanan pada kategori filter yang dipilih. Pesanan baru dari pelanggan akan otomatis tampil di sini.</p>
+				<a href="/menu" class="btn-paper-link">Buka Menu Pelanggan</a>
+			</div>
+		} else {
+			<div class="admin-order-list">
+				for _, ord := range orders {
+					<article class="admin-order-card" id={ "pesanan-" + ord.Code }>
+						<div class="admin-card-header">
+							<div class="admin-card-identity">
+								<a href={ templ.URL("/pesanan/" + ord.Code) } class="admin-order-code" title="Buka nota pesanan">
+									{ ord.Code }
+								</a>
+								<span class="admin-order-time">{ ord.CreatedAt.Format("02/01/2006, 15:04 WIB") }</span>
+							</div>
+							<div class="admin-card-badges">
+								<span class={ "status-pill", "status-" + string(ord.OrderStatus) }>{ ord.StatusLabel() }</span>
+							</div>
+						</div>
+
+						<div class="admin-card-customer">
+							<div class="admin-cust-field">
+								<span class="cust-label">Pemesan:</span>
+								<strong>{ ord.CustomerName }</strong>
+								<span class="cust-phone">({ ord.CustomerPhone })</span>
+								if ord.CustomerType == "mahasiswa" {
+									<span class="tag-pill tag-mhs">Mahasiswa</span>
+									if ord.CustomerNIM != "" {
+										<span class="tag-pill tag-nim">NIM: { ord.CustomerNIM }</span>
+									}
+								} else if ord.CustomerType == "umum" {
+									<span class="tag-pill tag-umum">Umum</span>
+								}
+							</div>
+							<div class="admin-cust-field">
+								<span class="cust-label">Layanan:</span>
+								<span>{ ord.OrderTypeLabel() }</span>
+							</div>
+							<div class="admin-cust-field">
+								<span class="cust-label">Pembayaran:</span>
+								<span>{ ord.PaymentMethodLabel() }</span>
+							</div>
+							if ord.Notes != "" {
+								<div class="admin-cust-notes">
+									<span class="cust-label">Catatan:</span>
+									<em>"{ ord.Notes }"</em>
+								</div>
+							}
+						</div>
+
+						<div class="admin-card-items">
+							<ul class="admin-items-list">
+								for _, item := range ord.Items {
+									<li class="admin-item-row">
+										<div class="admin-item-info">
+											<span class="admin-item-qty">{ fmt.Sprintf("%dx", item.Quantity) }</span>
+											<span class="admin-item-name">{ item.ProductName }</span>
+											if item.Variant != "" {
+												<span class="admin-item-variant">({ item.Variant })</span>
+											}
+										</div>
+										<span class="admin-item-price">{ FormatRupiah(item.Subtotal) }</span>
+									</li>
+								}
+							</ul>
+							<div class="admin-card-total-box">
+								if ord.Discount > 0 {
+									<div class="admin-card-subline">
+										<span>Subtotal:</span>
+										<span>{ FormatRupiah(ord.Subtotal) }</span>
+									</div>
+									<div class="admin-card-subline admin-discount-line">
+										<span>{ ord.DiscountNote }:</span>
+										<strong>−{ FormatRupiah(ord.Discount) }</strong>
+									</div>
+								}
+								<div class="admin-card-total">
+									<span>Total Pesanan</span>
+									<strong>{ FormatRupiah(ord.Total) }</strong>
+								</div>
+							</div>
+						</div>
+
+						<div class="admin-card-actions">
+							<a href={ templ.URL("/pesanan/" + ord.Code) } class="btn-admin-view" target="_blank" rel="noopener">
+								Lihat Nota
+							</a>
+
+							if ord.OrderStatus == order.OrderStatusPendingPayment {
+								<form action={ templ.URL("/admin/pesanan/" + ord.Code + "/status") } method="POST" class="admin-action-form">
+									<input type="hidden" name="status" value={ string(order.OrderStatusPaid) }/>
+									<input type="hidden" name="payment_status" value={ string(order.PaymentStatusPaid) }/>
+									<button type="submit" class="btn-admin-action btn-confirm-pay">Verifikasi Pembayaran</button>
+								</form>
+								<form action={ templ.URL("/admin/pesanan/" + ord.Code + "/status") } method="POST" class="admin-action-form">
+									<input type="hidden" name="status" value={ string(order.OrderStatusCancelled) }/>
+									<input type="hidden" name="payment_status" value={ string(ord.PaymentStatus) }/>
+									<button type="submit" class="btn-admin-action btn-cancel-order">Batalkan</button>
+								</form>
+							}
+
+							if ord.OrderStatus == order.OrderStatusPaid {
+								<form action={ templ.URL("/admin/pesanan/" + ord.Code + "/status") } method="POST" class="admin-action-form">
+									<input type="hidden" name="status" value={ string(order.OrderStatusPreparing) }/>
+									<input type="hidden" name="payment_status" value={ string(order.PaymentStatusPaid) }/>
+									<button type="submit" class="btn-admin-action btn-primary-step">Mulai Disiapkan</button>
+								</form>
+							}
+
+							if ord.OrderStatus == order.OrderStatusPreparing {
+								<form action={ templ.URL("/admin/pesanan/" + ord.Code + "/status") } method="POST" class="admin-action-form">
+									<input type="hidden" name="status" value={ string(order.OrderStatusReady) }/>
+									<input type="hidden" name="payment_status" value={ string(order.PaymentStatusPaid) }/>
+									<button type="submit" class="btn-admin-action btn-primary-step">Tandai Siap Diambil</button>
+								</form>
+							}
+
+							if ord.OrderStatus == order.OrderStatusReady {
+								<form action={ templ.URL("/admin/pesanan/" + ord.Code + "/status") } method="POST" class="admin-action-form">
+									<input type="hidden" name="status" value={ string(order.OrderStatusCompleted) }/>
+									<input type="hidden" name="payment_status" value={ string(order.PaymentStatusPaid) }/>
+									<button type="submit" class="btn-admin-action btn-complete-step">Selesaikan Pesanan</button>
+								</form>
+							}
+						</div>
+					</article>
+				}
+			</div>
+		}
+	</div>
+}

@@ -1,0 +1,192 @@
+package view
+
+import (
+	"fmt"
+	"caffe-podjok-sendja/internal/customer"
+	"caffe-podjok-sendja/internal/order"
+)
+
+templ OrderPage(ord *order.Order, cust *customer.Customer) {
+	@Layout("Pesanan "+ord.Code+" | Caffe Podjok Sendja", cust, orderContent(ord))
+}
+
+templ orderContent(ord *order.Order) {
+	<section class="hero hero-compact">
+		<p class="hero-kicker">Status Pesanan</p>
+		<h1 class="hero-title">{ ord.Code }</h1>
+	</section>
+	<div class="menu-sheet receipt-sheet" data-order-code={ ord.Code }>
+		<div class="receipt-header">
+			<div class="receipt-brand">
+				<div class="receipt-logo-wrap">
+					<img src="/static/images/logo.png" alt="Logo Caffe Sari Mulia" class="receipt-logo" width="44" height="44"/>
+				</div>
+				<div class="receipt-brand-text">
+					<span class="receipt-kicker">Caffe Podjok Sendja</span>
+					<h2 class="receipt-title">Nota Pesanan</h2>
+				</div>
+			</div>
+			<div class="receipt-badge-wrap">
+				<span class={ "status-pill", "status-" + string(ord.OrderStatus) }>{ ord.StatusLabel() }</span>
+			</div>
+		</div>
+
+		<div class="receipt-info-grid">
+			<div class="info-block">
+				<span class="info-label">Nama Pemesan</span>
+				<span class="info-value">{ ord.CustomerName }</span>
+			</div>
+			<div class="info-block">
+				<span class="info-label">Nomor Telepon</span>
+				<span class="info-value">{ ord.CustomerPhone }</span>
+			</div>
+			if ord.CustomerType == "mahasiswa" {
+				<div class="info-block">
+					<span class="info-label">Kategori Pemesan</span>
+					<span class="info-value">
+						<span class="tag-pill tag-mhs">Mahasiswa</span>
+						if ord.CustomerNIM != "" {
+							<span class="tag-pill tag-nim">NIM: { ord.CustomerNIM }</span>
+						}
+					</span>
+				</div>
+			} else if ord.CustomerType == "umum" {
+				<div class="info-block">
+					<span class="info-label">Kategori Pemesan</span>
+					<span class="info-value"><span class="tag-pill tag-umum">Pelanggan Umum</span></span>
+				</div>
+			}
+			<div class="info-block">
+				<span class="info-label">Tipe Pesanan</span>
+				<span class="info-value">{ ord.OrderTypeLabel() }</span>
+			</div>
+			<div class="info-block">
+				<span class="info-label">Metode Pembayaran</span>
+				<span class="info-value">{ ord.PaymentMethodLabel() }</span>
+			</div>
+			<div class="info-block">
+				<span class="info-label">Waktu Pemesanan</span>
+				<span class="info-value">{ ord.CreatedAt.Format("02 Jan 2006, 15:04 WIB") }</span>
+			</div>
+			if ord.Notes != "" {
+				<div class="info-block info-block-full">
+					<span class="info-label">Catatan Pesanan</span>
+					<span class="info-value">{ ord.Notes }</span>
+				</div>
+			}
+		</div>
+
+		<div class="receipt-divider"></div>
+
+		<section class="receipt-items-section" aria-label="Rincian pesanan">
+			<h3 class="receipt-subheading">Rincian Menu</h3>
+			<ul class="receipt-items-list">
+				for _, item := range ord.Items {
+					<li class="receipt-item-row">
+						<div class="receipt-item-main">
+							<span class="receipt-item-name">{ item.ProductName }</span>
+							if item.Variant != "" {
+								<span class="receipt-item-variant">({ item.Variant })</span>
+							}
+							<span class="receipt-item-math">{ fmt.Sprintf("%d × %s", item.Quantity, FormatRupiah(item.UnitPrice)) }</span>
+						</div>
+						<span class="receipt-item-subtotal">{ FormatRupiah(item.Subtotal) }</span>
+					</li>
+				}
+			</ul>
+
+			<div class="receipt-calculation">
+				if ord.Discount > 0 {
+					<div class="receipt-calc-line">
+						<span class="calc-label">Subtotal</span>
+						<span class="calc-val">{ FormatRupiah(ord.Subtotal) }</span>
+					</div>
+					<div class="receipt-calc-line calc-discount">
+						<span class="calc-label">
+							<span class="discount-chip">Diskon 25%</span>
+							{ ord.DiscountNote }
+						</span>
+						<strong class="calc-val">−{ FormatRupiah(ord.Discount) }</strong>
+					</div>
+				}
+				<div class="receipt-total-bar">
+					<span class="total-label">Total Pembayaran</span>
+					<strong class="total-amount">{ FormatRupiah(ord.Total) }</strong>
+				</div>
+			</div>
+		</section>
+
+		if ord.PaymentMethod == order.PaymentMethodQRIS && ord.OrderStatus == order.OrderStatusPendingPayment {
+			<div class="qris-payment-card" id="qris-card">
+				<div class="qris-card-header">
+					<span class="qris-badge-tag">QRIS Dinamis Otomatis</span>
+					<span class="qris-amount-badge">Total: { FormatRupiah(ord.Total) }</span>
+				</div>
+				<p class="qris-instruction">
+					Pindai kode QR di bawah menggunakan aplikasi GoPay, OVO, DANA, BCA, Mandiri, atau m-banking lainnya. Nominal pembayaran sebesar <strong>{ FormatRupiah(ord.Total) }</strong> sudah terkunci otomatis tanpa perlu diketik manual.
+				</p>
+				<div class="qris-code-box">
+					if ord.QRISURL != "" {
+						<img src={ ord.QRISURL } alt={ "Kode QRIS Pesanan " + ord.Code } class="qris-image" width="260" height="260"/>
+					}
+				</div>
+				<div class="qris-live-status">
+					<span class="qris-pulse-dot"></span>
+					<span class="qris-status-text">Menunggu pembayaran... Halaman akan otomatis beralih begitu transaksi terverifikasi.</span>
+				</div>
+				<div class="qris-sim-box">
+					<form action={ templ.SafeURL("/pesanan/" + ord.Code + "/simulasi-bayar") } method="POST">
+						<button type="submit" class="btn-sim-pay">Simulasikan Pembayaran QRIS Berhasil (Sandbox Mode)</button>
+					</form>
+				</div>
+			</div>
+			<script>
+				(function() {
+					const el = document.querySelector('.receipt-sheet');
+					if (!el) return;
+					const code = el.dataset.orderCode;
+					if (!code) return;
+					const timer = setInterval(() => {
+						fetch('/api/pesanan/' + code + '/status')
+							.then(r => r.json())
+							.then(data => {
+								if (data && data.is_paid) {
+									clearInterval(timer);
+									window.location.reload();
+								}
+							})
+							.catch(() => {});
+					}, 3000);
+				})();
+			</script>
+		}
+
+		<div class="receipt-guidance-box">
+			<h4 class="guidance-title">Langkah Pembayaran &amp; Pengambilan</h4>
+			if ord.PaymentMethod == order.PaymentMethodCash {
+				<p class="guidance-text">
+					Silakan datang ke meja kasir dan tunjukkan kode pesanan <strong>{ ord.Code }</strong> untuk membayar tunai. Pesanan Anda akan segera disiapkan oleh barista/koki.
+				</p>
+			} else if ord.OrderStatus == order.OrderStatusPendingPayment {
+				<p class="guidance-text">
+					Setelah memindai dan menyelesaikan pembayaran QRIS di ponsel Anda, status pesanan di atas akan otomatis berubah menjadi <strong>Pembayaran Diterima</strong>. Jika Anda memerlukan bantuan kasir, sebutkan kode pesanan <strong>{ ord.Code }</strong>.
+				</p>
+			} else {
+				<p class="guidance-text">
+					Pembayaran QRIS untuk pesanan <strong>{ ord.Code }</strong> telah berhasil diverifikasi. Tim kafe sedang menyiapkan hidangan Anda.
+				</p>
+			}
+		</div>
+
+		<div class="receipt-actions">
+			<a href="/menu" class="btn-action">Pesan Menu Lain</a>
+			<a href={ templ.SafeURL("/pesanan/" + ord.Code + "/cetak") } class="btn-link" target="_blank" rel="noopener">Cetak Struk</a>
+			<a href="/lacak" class="btn-link">Lacak Pesanan Lain</a>
+			if ord.OrderStatus == order.OrderStatusPendingPayment {
+				<form action={ templ.SafeURL("/pesanan/" + ord.Code + "/batal") } method="POST" class="receipt-cancel-form" onsubmit="return confirm('Apakah Anda yakin ingin membatalkan pesanan ini?');">
+					<button type="submit" class="btn-cancel-order">Batalkan Pesanan</button>
+				</form>
+			}
+		</div>
+	</div>
+}

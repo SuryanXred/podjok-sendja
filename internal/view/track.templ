@@ -1,0 +1,34 @@
+package view
+
+import (
+	"caffe-podjok-sendja/internal/customer"
+)
+
+templ TrackPage(errorMessage string, cust *customer.Customer) {
+	@Layout("Lacak Pesanan | Caffe Podjok Sendja", cust, trackContent(errorMessage))
+}
+
+templ trackContent(errorMessage string) {
+	<section class="hero hero-compact">
+		<p class="hero-kicker">Cek Perkembangan</p>
+		<h1 class="hero-title">Lacak Pesanan</h1>
+		<p class="hero-lede">Masukkan kode pesanan yang Anda terima saat melakukan pemesanan.</p>
+	</section>
+	<div class="menu-sheet track-sheet">
+		if errorMessage != "" {
+			<div class="alert alert-error" role="alert">
+				{ errorMessage }
+			</div>
+		}
+
+		<form action="/lacak" method="POST" class="track-form">
+			<div class="form-group">
+				<label for="order_code" class="form-label">Kode Pesanan</label>
+				<input type="text" id="order_code" name="code" class="form-input" required placeholder="Contoh: PDS-261025-0001" autofocus/>
+			</div>
+			<div class="form-actions">
+				<button type="submit" class="btn-action">Cek Status Pesanan</button>
+			</div>
+		</form>
+	</div>
+}

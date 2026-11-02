@@ -1,0 +1,135 @@
+package view
+
+import "caffe-podjok-sendja/internal/staff"
+
+templ StaffLoginPage(errorMessage string, successMessage string, redirectTo string) {
+	@Layout("Masuk Portal Pegawai | Caffe Podjok Sendja", nil, staffLoginContent(errorMessage, successMessage, redirectTo))
+}
+
+templ staffLoginContent(errorMessage string, successMessage string, redirectTo string) {
+	<section class="hero staff-auth-hero">
+		<div class="hero-brand">
+			<div class="hero-logo-frame">
+				<img src="/static/images/logo.png" alt="Logo Caffe Sari Mulia" class="hero-logo" width="76" height="76"/>
+			</div>
+			<div class="hero-brand-text">
+				<p class="hero-kicker">Portal Khusus Karyawan &amp; Pengelola</p>
+				<h1 class="hero-title">Masuk Portal Pegawai</h1>
+			</div>
+		</div>
+		<p class="hero-lede">Area terbatas untuk operasional kasir dan administrator Caffe Podjok Sendja.</p>
+	</section>
+
+	<div class="menu-sheet auth-sheet staff-login-sheet">
+		if errorMessage != "" {
+			<div class="auth-alert alert-error" role="alert">
+				<strong>Gagal masuk:</strong> { errorMessage }
+			</div>
+		}
+
+		if successMessage != "" {
+			<div class="auth-alert alert-success" role="status">
+				{ successMessage }
+			</div>
+		}
+
+		<form action="/pegawai/masuk" method="POST" class="auth-form">
+			if redirectTo != "" {
+				<input type="hidden" name="redirect" value={ redirectTo }/>
+			}
+
+			<div class="auth-field">
+				<label for="staff_identifier" class="field-label">Username Pegawai</label>
+				<input
+					type="text"
+					id="staff_identifier"
+					name="identifier"
+					required
+					autocomplete="username"
+					placeholder="Contoh: admin atau kasir"
+					class="field-input"
+				/>
+			</div>
+
+			<div class="auth-field">
+				<label for="staff_password" class="field-label">Kata Sandi</label>
+				<input
+					type="password"
+					id="staff_password"
+					name="password"
+					required
+					autocomplete="current-password"
+					placeholder="Masukkan kata sandi"
+					class="field-input"
+				/>
+			</div>
+
+			<button type="submit" class="btn-auth-submit">Masuk ke Portal Pegawai</button>
+		</form>
+
+		<div class="staff-credentials-box">
+			<h2 class="staff-cred-title">Kredensial Akun Percobaan:</h2>
+			<div class="staff-cred-grid">
+				<div class="staff-cred-card">
+					<div class="staff-cred-badge badge-admin">Administrator</div>
+					<div class="staff-cred-row">
+						<span>Username:</span> <code>admin</code>
+					</div>
+					<div class="staff-cred-row">
+						<span>Kata Sandi:</span> <code>admin123</code>
+					</div>
+					<small class="staff-cred-scope">Hak akses penuh: Dashboard Admin &amp; Panel Kasir</small>
+				</div>
+				<div class="staff-cred-card">
+					<div class="staff-cred-badge badge-cashier">Kasir</div>
+					<div class="staff-cred-row">
+						<span>Username:</span> <code>kasir</code>
+					</div>
+					<div class="staff-cred-row">
+						<span>Kata Sandi:</span> <code>kasir123</code>
+					</div>
+					<small class="staff-cred-scope">Hak akses terbatas: Hanya Panel Kasir</small>
+				</div>
+			</div>
+		</div>
+
+		<div class="auth-sheet-footer">
+			<a href="/menu" class="btn-back-link">Kembali ke Menu Pelanggan</a>
+		</div>
+	</div>
+}
+
+templ StaffForbiddenPage(u *staff.StaffUser) {
+	@Layout("Akses Ditolak | Caffe Podjok Sendja", nil, staffForbiddenContent(u))
+}
+
+templ staffForbiddenContent(u *staff.StaffUser) {
+	<section class="hero staff-auth-hero">
+		<div class="hero-brand">
+			<div class="hero-logo-frame">
+				<img src="/static/images/logo.png" alt="Logo Caffe Sari Mulia" class="hero-logo" width="76" height="76"/>
+			</div>
+			<div class="hero-brand-text">
+				<p class="hero-kicker" style="color: #ff9d5c;">Otorisasi Terbatas</p>
+				<h1 class="hero-title">Akses Ditolak (403)</h1>
+			</div>
+		</div>
+		<p class="hero-lede">Halaman Dashboard Manajemen hanya dapat diakses oleh akun dengan peran Administrator.</p>
+	</section>
+
+	<div class="menu-sheet auth-sheet staff-forbidden-sheet">
+		<div class="forbidden-card-box">
+			<div class="forbidden-icon-sign">🔒</div>
+			<h2 class="forbidden-heading">Hak Akses Tidak Mencukupi</h2>
+			<p class="forbidden-desc">
+				Saat ini Anda masuk sebagai <strong>{ u.Name }</strong> dengan peran <strong>{ u.Role.Label() }</strong>.
+				Peran Kasir hanya diizinkan untuk memproses antrean di Panel Kasir dan tidak memiliki hak akses untuk mengelola laporan omzet, stok inventaris, atau pengaturan kafe.
+			</p>
+
+			<div class="forbidden-action-btns">
+				<a href="/kasir" class="btn-forbidden-primary">Buka Panel Kasir</a>
+				<a href="/pegawai/keluar" class="btn-forbidden-secondary">Keluar / Ganti Akun Pegawai</a>
+			</div>
+		</div>
+	</div>
+}

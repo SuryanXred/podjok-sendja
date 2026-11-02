@@ -1,0 +1,19 @@
+# Binaries and executables
+/bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Local environment & secrets
+.env
+
+# Local data persistence
+/data/
+
+# OS and Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

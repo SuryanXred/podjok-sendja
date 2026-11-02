@@ -1,0 +1,351 @@
+package view
+
+import (
+	"fmt"
+	"caffe-podjok-sendja/internal/order"
+	"caffe-podjok-sendja/internal/staff"
+	"caffe-podjok-sendja/internal/storeconfig"
+)
+
+templ ReceiptPrintPage(ord *order.Order, staffUser *staff.StaffUser) {
+	<!DOCTYPE html>
+	<html lang="id">
+		<head>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1"/>
+			<title>{ fmt.Sprintf("Struk %s | Caffe Podjok Sendja", ord.Code) }</title>
+			<link rel="icon" href="/static/favicon.svg" type="image/svg+xml"/>
+			<style>
+				* {
+					box-sizing: border-box;
+					margin: 0;
+					padding: 0;
+				}
+				body {
+					background-color: #ECE5D8;
+					color: #111;
+					font-family: "Courier New", Courier, monospace;
+					font-size: 13px;
+					line-height: 1.35;
+					padding: 1.5rem 0.5rem;
+				}
+				.no-print-bar {
+					max-width: 360px;
+					margin: 0 auto 1.25rem;
+					display: flex;
+					gap: 0.5rem;
+					justify-content: space-between;
+					align-items: center;
+				}
+				.btn-print-act {
+					background-color: #2A1D17;
+					color: #F6EFE3;
+					border: 1px solid #2A1D17;
+					padding: 0.65rem 1rem;
+					font-family: system-ui, -apple-system, sans-serif;
+					font-size: 0.88rem;
+					font-weight: 600;
+					border-radius: 4px;
+					cursor: pointer;
+					text-decoration: none;
+					display: inline-flex;
+					align-items: center;
+					gap: 0.35rem;
+					min-height: 44px;
+				}
+				.btn-print-act:hover {
+					background-color: #9A3F1F;
+					border-color: #9A3F1F;
+				}
+				.btn-back-act {
+					background-color: #fff;
+					color: #2A1D17;
+					border: 1px solid #C9B7A5;
+					padding: 0.65rem 0.85rem;
+					font-family: system-ui, -apple-system, sans-serif;
+					font-size: 0.85rem;
+					font-weight: 500;
+					border-radius: 4px;
+					text-decoration: none;
+					display: inline-flex;
+					align-items: center;
+					min-height: 44px;
+				}
+				.btn-back-act:hover {
+					background-color: #F6EFE3;
+				}
+				.receipt-paper {
+					background: #fff;
+					width: 100%;
+					max-width: 360px;
+					margin: 0 auto;
+					padding: 1.5rem 1.25rem;
+					border: 1px solid #D5C7B7;
+					box-shadow: 0 4px 12px rgba(42, 29, 23, 0.08);
+				}
+				.r-header {
+					text-align: center;
+					margin-bottom: 0.75rem;
+				}
+				.r-title {
+					font-size: 16px;
+					font-weight: bold;
+					letter-spacing: 0.05em;
+					text-transform: uppercase;
+					margin-bottom: 2px;
+				}
+				.r-subtitle {
+					font-size: 12px;
+					font-weight: bold;
+					margin-bottom: 4px;
+				}
+				.r-address {
+					font-size: 10.5px;
+					line-height: 1.3;
+					color: #333;
+					margin-bottom: 4px;
+				}
+				.r-contact {
+					font-size: 11px;
+					color: #333;
+				}
+				.r-dash {
+					border-top: 1px dashed #444;
+					margin: 0.65rem 0;
+				}
+				.r-double-dash {
+					border-top: 2px dashed #222;
+					margin: 0.65rem 0;
+				}
+				.r-meta-row {
+					display: flex;
+					justify-content: space-between;
+					font-size: 11.5px;
+					margin-bottom: 3px;
+				}
+				.r-meta-label {
+					color: #555;
+				}
+				.r-meta-val {
+					font-weight: 600;
+					text-align: right;
+				}
+				.r-items-table {
+					width: 100%;
+					margin: 0.5rem 0;
+					border-collapse: collapse;
+				}
+				.r-item-head {
+					font-weight: bold;
+					font-size: 12px;
+				}
+				.r-item-row {
+					margin-bottom: 5px;
+				}
+				.r-item-name {
+					font-weight: 600;
+					font-size: 12px;
+					line-height: 1.25;
+				}
+				.r-item-math-row {
+					display: flex;
+					justify-content: space-between;
+					font-size: 11.5px;
+					color: #333;
+				}
+				.r-total-row {
+					display: flex;
+					justify-content: space-between;
+					font-size: 12px;
+					margin-bottom: 3px;
+				}
+				.r-grand-total {
+					display: flex;
+					justify-content: space-between;
+					font-size: 14px;
+					font-weight: bold;
+					margin: 4px 0;
+				}
+				.r-discount-row {
+					color: #9A3F1F;
+					font-weight: 600;
+				}
+				.r-footer-msg {
+					text-align: center;
+					margin-top: 1rem;
+					font-size: 11px;
+					line-height: 1.4;
+					color: #444;
+				}
+				.r-status-badge {
+					display: inline-block;
+					padding: 2px 6px;
+					font-size: 11px;
+					font-weight: bold;
+					border: 1px solid #111;
+					margin-top: 4px;
+				}
+				@media print {
+					body {
+						background: transparent;
+						padding: 0;
+						color: #000;
+					}
+					.no-print-bar {
+						display: none !important;
+					}
+					.receipt-paper {
+						max-width: 100%;
+						width: 100%;
+						border: none;
+						box-shadow: none;
+						padding: 0.25rem 0.5rem;
+					}
+					@page {
+						margin: 4mm;
+						size: auto;
+					}
+				}
+			</style>
+		</head>
+		<body>
+			<div class="no-print-bar">
+				<a href="javascript:window.history.back()" class="btn-back-act">← Kembali</a>
+				<button type="button" onclick="window.print()" class="btn-print-act">
+					<span>🖨️</span> Cetak Struk (Ctrl+P)
+				</button>
+			</div>
+
+			<main class="receipt-paper">
+				<header class="r-header">
+					<div class="r-title">Caffe Podjok Sendja</div>
+					<div class="r-subtitle">Universitas Sari Mulia</div>
+					<p class="r-address">{ storeconfig.DefaultStore.Get().Address }</p>
+					<p class="r-contact">Telp/WA: { storeconfig.DefaultStore.Get().ContactPhone }</p>
+				</header>
+
+				<div class="r-double-dash"></div>
+
+				<section class="r-meta-section">
+					<div class="r-meta-row">
+						<span class="r-meta-label">No. Pesanan:</span>
+						<span class="r-meta-val">{ ord.Code }</span>
+					</div>
+					<div class="r-meta-row">
+						<span class="r-meta-label">Waktu:</span>
+						<span class="r-meta-val">{ ord.CreatedAt.Format("02/01/2006 15:04 WITA") }</span>
+					</div>
+					<div class="r-meta-row">
+						<span class="r-meta-label">Petugas:</span>
+						if staffUser != nil {
+							<span class="r-meta-val">{ staffUser.Name }</span>
+						} else {
+							<span class="r-meta-val">Kasir Utama</span>
+						}
+					</div>
+					<div class="r-meta-row">
+						<span class="r-meta-label">Pelanggan:</span>
+						<span class="r-meta-val">{ ord.CustomerName }</span>
+					</div>
+					if ord.CustomerType == "mahasiswa" {
+						<div class="r-meta-row">
+							<span class="r-meta-label">Kategori:</span>
+							<span class="r-meta-val">
+								Mahasiswa
+								if ord.CustomerNIM != "" {
+									({ ord.CustomerNIM })
+								}
+							</span>
+						</div>
+					}
+					<div class="r-meta-row">
+						<span class="r-meta-label">Layanan:</span>
+						<span class="r-meta-val">{ ord.OrderTypeLabel() }</span>
+					</div>
+					if ord.Notes != "" {
+						<div class="r-meta-row">
+							<span class="r-meta-label">Catatan:</span>
+							<span class="r-meta-val">"{ ord.Notes }"</span>
+						</div>
+					}
+				</section>
+
+				<div class="r-dash"></div>
+
+				<section class="r-items-section">
+					for _, it := range ord.Items {
+						<div class="r-item-row">
+							<div class="r-item-name">
+								{ it.ProductName }
+								if it.Variant != "" {
+									({ it.Variant })
+								}
+							</div>
+							<div class="r-item-math-row">
+								<span>{ fmt.Sprintf("%d x %s", it.Quantity, FormatRupiah(it.UnitPrice)) }</span>
+								<span>{ FormatRupiah(it.Subtotal) }</span>
+							</div>
+						</div>
+					}
+				</section>
+
+				<div class="r-dash"></div>
+
+				<section class="r-totals-section">
+					<div class="r-total-row">
+						<span>Subtotal:</span>
+						<span>{ FormatRupiah(ord.Subtotal) }</span>
+					</div>
+					if ord.Discount > 0 {
+						<div class="r-total-row r-discount-row">
+							<span>Potongan Diskon:</span>
+							<span>−{ FormatRupiah(ord.Discount) }</span>
+						</div>
+						if ord.DiscountNote != "" {
+							<div class="r-meta-row" style="color: #9A3F1F; font-size: 10.5px;">
+								<span>{ ord.DiscountNote }</span>
+							</div>
+						}
+					}
+					<div class="r-dash"></div>
+					<div class="r-grand-total">
+						<span>TOTAL TAGIHAN:</span>
+						<span>{ FormatRupiah(ord.Total) }</span>
+					</div>
+					<div class="r-total-row">
+						<span>Metode Pembayaran:</span>
+						<span>{ ord.PaymentMethodLabel() }</span>
+					</div>
+					<div class="r-total-row">
+						<span>Status Pembayaran:</span>
+						<span>{ ord.PaymentStatusLabel() }</span>
+					</div>
+				</section>
+
+				<div class="r-double-dash"></div>
+
+				<footer class="r-footer-msg">
+					<div class="r-status-badge">
+						if ord.PaymentStatus == order.PaymentStatusPaid {
+							*** LUNAS ***
+						} else {
+							*** BELUM LUNAS ***
+						}
+					</div>
+					<p style="margin-top: 0.65rem;">Terima kasih atas kunjungan Anda!</p>
+					<p>Kopi, teh, dan jeda terbaik di kampus.</p>
+					<p style="font-size: 10px; margin-top: 0.35rem; color: #666;">Simpan struk ini sebagai bukti pesanan resmi.</p>
+				</footer>
+			</main>
+
+			<script>
+				window.addEventListener('DOMContentLoaded', function() {
+					if (window.location.search.indexOf('autoprint=1') !== -1) {
+						setTimeout(function() { window.print(); }, 250);
+					}
+				});
+			</script>
+		</body>
+	</html>
+}
+

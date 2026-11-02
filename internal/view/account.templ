@@ -1,0 +1,141 @@
+package view
+
+import (
+	"fmt"
+	"caffe-podjok-sendja/internal/customer"
+	"caffe-podjok-sendja/internal/order"
+)
+
+templ AccountPage(cust *customer.Customer, orders []*order.Order) {
+	@Layout("Akun Saya | Caffe Podjok Sendja", cust, accountContent(cust, orders))
+}
+
+templ accountContent(cust *customer.Customer, orders []*order.Order) {
+	<section class="hero hero-compact">
+		<p class="hero-kicker">Profil &amp; Riwayat Belanja</p>
+		<h1 class="hero-title">Akun Pelanggan</h1>
+		<p class="hero-lede">Kelola data pemesan dan pantau riwayat hidangan Anda di Caffe Podjok Sendja.</p>
+	</section>
+
+	<div class="menu-sheet account-sheet">
+		<div class="account-profile-card">
+			<div class="profile-header">
+				<div class="profile-badge-group">
+					<span class="profile-avatar-initial">{ string([]rune(cust.Name)[0]) }</span>
+					<div>
+						<h2 class="profile-name">{ cust.Name }</h2>
+						<div class="profile-type-tags">
+							if cust.Type == customer.CustomerTypeMahasiswa {
+								<span class="tag-pill tag-mhs">Mahasiswa Sari Mulia</span>
+								<span class="tag-pill tag-nim">NIM: { cust.NIM }</span>
+							} else {
+								<span class="tag-pill tag-umum">Pelanggan Umum</span>
+							}
+						</div>
+					</div>
+				</div>
+				<div class="profile-actions">
+					<a href="/menu" class="btn-action">Pesan Menu</a>
+					<a href="/keluar" class="btn-link">Keluar Akun</a>
+				</div>
+			</div>
+
+			<div class="profile-details-grid">
+				<div class="profile-detail-item">
+					<span class="detail-label">Nomor WhatsApp / Telepon</span>
+					<strong class="detail-value">{ cust.Phone }</strong>
+				</div>
+				if cust.Email != "" {
+					<div class="profile-detail-item profile-detail-email">
+						<span class="detail-label">Alamat Email</span>
+						<strong class="detail-value profile-email-value" title={ cust.Email }>{ cust.Email }</strong>
+					</div>
+				}
+				<div class="profile-detail-item">
+					<span class="detail-label">Terdaftar Sejak</span>
+					<strong class="detail-value">{ cust.CreatedAt.Format("02 January 2006") }</strong>
+				</div>
+			</div>
+
+			if cust.Type == customer.CustomerTypeMahasiswa {
+				<div class="mhs-promo-status-box">
+					<h3 class="mhs-promo-title">Status Promo Mahasiswa Baru</h3>
+					if !cust.FirstDiscountUsed {
+						<div class="promo-available-alert">
+							<strong>Diskon 25% Pembelian Pertama Aktif</strong>
+							<p>
+								Anda berhak mendapatkan potongan harga 25% (maksimal pembelian Rp 30.000) pada transaksi pertama Anda. Diskon ini otomatis dihitung dan diterapkan saat Anda memilih menu dan membuka keranjang belanja.
+							</p>
+						</div>
+					} else {
+						<div class="promo-used-alert">
+							<strong>Promo Pembelian Pertama Sudah Digunakan</strong>
+							<p>
+								Potongan 25% pembelian pertama untuk NIM { cust.NIM } telah berhasil digunakan pada pesanan sebelumnya. Terima kasih telah memesan di Caffe Podjok Sendja.
+							</p>
+						</div>
+					}
+				</div>
+			}
+		</div>
+
+		<section class="account-orders-section" aria-label="Riwayat pesanan">
+			<h2 class="section-heading">Riwayat Pesanan Anda</h2>
+			if len(orders) == 0 {
+				<div class="cart-empty-state">
+					<p class="cart-empty-text">Anda belum memiliki riwayat pesanan.</p>
+					<a href="/menu" class="btn-action">Mulai Pilih Menu</a>
+				</div>
+			} else {
+				<div class="orders-history-list">
+					for _, ord := range orders {
+						<article class="history-order-card">
+							<div class="history-card-header">
+								<div>
+									<a href={ templ.URL("/pesanan/" + ord.Code) } class="history-order-code">
+										{ ord.Code }
+									</a>
+									<span class="history-order-time">{ ord.CreatedAt.Format("02/01/2006, 15:04 WIB") }</span>
+								</div>
+								<span class={ "status-pill", "status-" + string(ord.OrderStatus) }>
+									{ ord.StatusLabel() }
+								</span>
+							</div>
+
+							<div class="history-card-body">
+								<ul class="history-items-list">
+									for _, item := range ord.Items {
+										<li class="history-item-row">
+											<span>{ fmt.Sprintf("%dx %s", item.Quantity, item.ProductName) }
+												if item.Variant != "" {
+													<span class="item-variant">({ item.Variant })</span>
+												}
+											</span>
+											<span>{ FormatRupiah(item.Subtotal) }</span>
+										</li>
+									}
+								</ul>
+
+								if ord.Discount > 0 {
+									<div class="history-discount-line">
+										<span>{ ord.DiscountNote }</span>
+										<strong class="discount-val">−{ FormatRupiah(ord.Discount) }</strong>
+									</div>
+								}
+
+								<div class="history-total-line">
+									<span>Total Pembayaran ({ ord.PaymentMethodLabel() })</span>
+									<strong class="total-val">{ FormatRupiah(ord.Total) }</strong>
+								</div>
+							</div>
+
+							<div class="history-card-footer">
+								<a href={ templ.URL("/pesanan/" + ord.Code) } class="btn-paper-link">Buka Nota Pesanan</a>
+							</div>
+						</article>
+					}
+				</div>
+			}
+		</section>
+	</div>
+}

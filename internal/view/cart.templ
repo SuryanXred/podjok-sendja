@@ -1,0 +1,222 @@
+package view
+
+import (
+	"fmt"
+	"caffe-podjok-sendja/internal/customer"
+	"caffe-podjok-sendja/internal/order"
+)
+
+templ CartPage(cart order.Cart, cust *customer.Customer, errorMessage string) {
+	@Layout("Keranjang | Caffe Podjok Sendja", cust, cartContent(cart, cust, errorMessage))
+}
+
+templ cartContent(cart order.Cart, cust *customer.Customer, errorMessage string) {
+	<section class="hero hero-compact">
+		<p class="hero-kicker">Pesanan Anda</p>
+		<h1 class="hero-title">Keranjang Pesanan</h1>
+	</section>
+	<div class="menu-sheet cart-sheet">
+		if errorMessage != "" {
+			<div class="alert alert-error" role="alert">
+				{ errorMessage }
+			</div>
+		}
+		if cart.IsEmpty() {
+			<div class="cart-empty-state">
+				<p class="cart-empty-text">Keranjang pesanan Anda masih kosong.</p>
+				<a href="/menu" class="btn-action">Lihat Daftar Menu</a>
+			</div>
+		} else {
+			{{
+				var discount int64
+				var discountNote string
+				if cust != nil {
+					discount, discountNote = cust.CalculateFirstDiscount(cart.Subtotal)
+				}
+				finalTotal := cart.Subtotal - discount
+			}}
+			<div class="cart-layout">
+				<section class="cart-items-section" aria-label="Daftar item belanja">
+					<h2 class="section-heading">Daftar Menu Dipilih</h2>
+					<ul class="cart-list">
+						for index, item := range cart.Items {
+							<li class="cart-item">
+								<div class="cart-item-header">
+									<img src={ "/static/images/products/" + item.ProductSlug + ".webp" } alt={ item.ProductName } class="cart-thumb-img" width="56" height="56" loading="lazy"/>
+									<div class="cart-item-details">
+										<span class="cart-item-name">{ item.ProductName }</span>
+										if item.Variant != "" {
+											<span class="cart-item-variant">Varian: { item.Variant }</span>
+										}
+										<span class="cart-item-unit-price">{ FormatRupiah(item.UnitPrice) } / porsi</span>
+									</div>
+								</div>
+								<div class="cart-item-actions">
+									<div class="qty-control">
+										<form action="/cart/update" method="POST" class="inline-form">
+											<input type="hidden" name="index" value={ fmt.Sprintf("%d", index) }/>
+											<input type="hidden" name="delta" value="-1"/>
+											<button type="submit" class="btn-qty" aria-label={ "Kurangi " + item.ProductName }>−</button>
+										</form>
+										<span class="qty-display">{ fmt.Sprintf("%d", item.Quantity) }</span>
+										<form action="/cart/update" method="POST" class="inline-form">
+											<input type="hidden" name="index" value={ fmt.Sprintf("%d", index) }/>
+											<input type="hidden" name="delta" value="1"/>
+											<button type="submit" class="btn-qty" aria-label={ "Tambah " + item.ProductName }>+</button>
+										</form>
+									</div>
+									<span class="cart-item-subtotal">{ FormatRupiah(item.Subtotal) }</span>
+									<form action="/cart/remove" method="POST" class="inline-form">
+										<input type="hidden" name="index" value={ fmt.Sprintf("%d", index) }/>
+										<button type="submit" class="btn-remove" aria-label={ "Hapus " + item.ProductName }>Hapus</button>
+									</form>
+								</div>
+							</li>
+						}
+					</ul>
+
+					<div class="cart-summary-block">
+						if discount > 0 {
+							<div class="cart-summary-row">
+								<span class="summary-label">Subtotal</span>
+								<span class="summary-value">{ FormatRupiah(cart.Subtotal) }</span>
+							</div>
+							<div class="cart-summary-row discount-row">
+								<span class="summary-label">
+									<span class="discount-chip">Diskon 25%</span>
+									{ discountNote }
+								</span>
+								<strong class="discount-value">−{ FormatRupiah(discount) }</strong>
+							</div>
+							<div class="cart-summary-row total-row">
+								<span class="summary-label">Total Pembayaran</span>
+								<strong class="summary-amount">{ FormatRupiah(finalTotal) }</strong>
+							</div>
+						} else {
+							<div class="cart-summary-line">
+								<span class="summary-label">Total Pembayaran</span>
+								<strong class="summary-amount">{ FormatRupiah(cart.Subtotal) }</strong>
+							</div>
+						}
+					</div>
+
+					if cust == nil {
+						<div class="cart-promo-callout">
+							<div class="callout-title">Mahasiswa Universitas Sari Mulia?</div>
+							<p class="callout-text">
+								Dapatkan <strong>diskon 25%</strong> untuk pembelian pertama (maksimal pembelian Rp 30.000) dengan mendaftar atau masuk menggunakan akun mahasiswa dan NIM Anda.
+							</p>
+							<div class="callout-actions">
+								<a href="/masuk" class="btn-paper-link">Masuk ke Akun</a>
+								<span class="callout-sep">atau</span>
+								<a href="/daftar?type=mahasiswa" class="btn-paper-link">Daftar Akun Mahasiswa</a>
+							</div>
+						</div>
+					}
+				</section>
+
+				<section class="cart-checkout-section" aria-label="Formulir data pesanan">
+					<h2 class="section-heading">Data Pemesan</h2>
+
+					if cust != nil {
+						<div class="checkout-logged-banner">
+							<div class="logged-banner-top">
+								<span class="logged-as-text">Pemesanan atas nama akun:</span>
+								<strong>{ cust.Name }</strong>
+							</div>
+							<div class="logged-banner-tags">
+								if cust.Type == customer.CustomerTypeMahasiswa {
+									<span class="tag-pill tag-mhs">Mahasiswa</span>
+									<span class="tag-pill tag-nim">NIM: { cust.NIM }</span>
+									if !cust.FirstDiscountUsed {
+										<span class="tag-pill tag-promo-on">Diskon 25% Pembelian Pertama Aktif</span>
+									} else {
+										<span class="tag-pill tag-promo-off">Promo Pembelian Pertama Sudah Dipakai</span>
+									}
+								} else {
+									<span class="tag-pill tag-umum">Pelanggan Umum</span>
+								}
+							</div>
+						</div>
+					}
+
+					<form action="/checkout" method="POST" class="checkout-form">
+						<div class="form-group">
+							<label for="customer_name" class="form-label">Nama Pemesan <span class="required">*</span></label>
+							<input
+								type="text"
+								id="customer_name"
+								name="customer_name"
+								class="form-input"
+								required
+								minlength="2"
+								if cust != nil {
+									value={ cust.Name }
+								}
+								placeholder="Nama Anda"
+							/>
+						</div>
+
+						<div class="form-group">
+							<label for="customer_phone" class="form-label">Nomor WhatsApp / Telepon <span class="required">*</span></label>
+							<input
+								type="tel"
+								id="customer_phone"
+								name="customer_phone"
+								class="form-input"
+								required
+								minlength="6"
+								if cust != nil {
+									value={ cust.Phone }
+								}
+								placeholder="08xxxxxxxxxx"
+							/>
+						</div>
+
+						<fieldset class="form-fieldset">
+							<legend class="form-label">Tipe Pesanan <span class="required">*</span></legend>
+							<div class="radio-options">
+								<label class="radio-label">
+									<input type="radio" name="order_type" value="dine_in" checked/>
+									<span>Makan di Tempat (Dine In)</span>
+								</label>
+								<label class="radio-label">
+									<input type="radio" name="order_type" value="takeaway"/>
+									<span>Bawa Pulang (Takeaway)</span>
+								</label>
+							</div>
+						</fieldset>
+
+						<div class="form-group">
+							<label for="table_number" class="form-label">Nomor Meja</label>
+							<input type="text" id="table_number" name="table_number" class="form-input" placeholder="Wajib jika makan di tempat, contoh: 03"/>
+						</div>
+
+						<div class="form-group">
+							<label for="notes" class="form-label">Catatan Pesanan (opsional)</label>
+							<textarea id="notes" name="notes" class="form-textarea" rows="2" placeholder="Contoh: es sedikit, gula pisah"></textarea>
+						</div>
+
+						<fieldset class="form-fieldset">
+							<legend class="form-label">Metode Pembayaran <span class="required">*</span></legend>
+							<div class="radio-options">
+								<label class="radio-label">
+									<input type="radio" name="payment_method" value="cash" checked/>
+									<span>Tunai di Kasir (Bayar langsung di kasir)</span>
+								</label>
+								<label class="radio-label">
+									<input type="radio" name="payment_method" value="qris"/>
+									<span>QRIS (Bayar via scan QRIS di kasir)</span>
+								</label>
+							</div>
+						</fieldset>
+
+						<div class="form-actions">
+							<button type="submit" class="btn-submit-order">Kirim Pesanan Sekarang</button>
+						</div>
+					</form>
+				</section>
+			</div>
+		}
+	</div>
+}

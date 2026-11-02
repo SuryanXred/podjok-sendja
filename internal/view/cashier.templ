@@ -1,0 +1,259 @@
+package view
+
+import (
+	"fmt"
+	"caffe-podjok-sendja/internal/order"
+	"caffe-podjok-sendja/internal/staff"
+)
+
+templ CashierPage(metrics order.CashierMetrics, orders []*order.Order, currentFilter order.OrderStatus, query string, staffUser *staff.StaffUser) {
+	@Layout("Panel Kasir • Antrean & Pembayaran | Caffe Podjok Sendja", nil, cashierContent(metrics, orders, currentFilter, query, staffUser))
+}
+
+templ cashierContent(metrics order.CashierMetrics, orders []*order.Order, currentFilter order.OrderStatus, query string, staffUser *staff.StaffUser) {
+	<section class="hero cashier-hero">
+		<div class="hero-brand">
+			<div class="hero-logo-frame">
+				<img src="/static/images/logo.png" alt="Logo Caffe Sari Mulia" class="hero-logo" width="76" height="76"/>
+			</div>
+			<div class="hero-brand-text">
+				<p class="hero-kicker">Operasional Meja Depan</p>
+				<h1 class="hero-title">Panel Kasir &amp; Antrean</h1>
+			</div>
+		</div>
+		<p class="hero-lede">Verifikasi transaksi pembayaran tunai atau QRIS, percepat alur penyiapan barista, dan selesaikan pesanan pelanggan tanpa antre lama.</p>
+		
+		if staffUser != nil {
+			<div class="staff-session-bar">
+				<span class="staff-role-badge badge-cashier">{ staffUser.Role.Label() }</span>
+				<span class="staff-active-name">Petugas aktif: <strong>{ staffUser.Name }</strong></span>
+				<a href="/pegawai/keluar" class="btn-staff-logout-link" title="Keluar dari sesi petugas">Keluar Shift</a>
+			</div>
+		}
+
+		<div class="cashier-quick-nav">
+			if staffUser != nil && staffUser.IsAdmin() {
+				<a href="/admin" class="btn-cashier-switch">
+					<span>Buka Dashboard Admin</span>
+				</a>
+			}
+			<a href="/menu" class="btn-cashier-sub" target="_blank" rel="noopener">
+				<span>Katalog Menu Pelanggan</span>
+			</a>
+			<a href="/lacak" class="btn-cashier-sub" target="_blank" rel="noopener">
+				<span>Lacak Pesanan</span>
+			</a>
+		</div>
+	</section>
+
+	<div class="cashier-metrics-grid" aria-label="Ringkasan antrean kasir">
+		<div class="cashier-metric-card">
+			<span class="c-metric-label">Total Masuk</span>
+			<strong class="c-metric-val">{ fmt.Sprintf("%d", metrics.TotalOrders) }</strong>
+			<span class="c-metric-sub">pesanan hari ini</span>
+		</div>
+		<div class={ "cashier-metric-card", templ.KV("c-metric-alert", metrics.PendingPayment > 0) }>
+			<span class="c-metric-label">Menunggu Bayar</span>
+			<strong class="c-metric-val">{ fmt.Sprintf("%d", metrics.PendingPayment) }</strong>
+			<span class="c-metric-sub">perlu verifikasi kasir</span>
+		</div>
+		<div class="cashier-metric-card">
+			<span class="c-metric-label">Disiapkan</span>
+			<strong class="c-metric-val">{ fmt.Sprintf("%d", metrics.InProcess) }</strong>
+			<span class="c-metric-sub">sedang diracik</span>
+		</div>
+		<div class={ "cashier-metric-card", templ.KV("c-metric-ready", metrics.ReadyForPickup > 0) }>
+			<span class="c-metric-label">Siap Diambil</span>
+			<strong class="c-metric-val">{ fmt.Sprintf("%d", metrics.ReadyForPickup) }</strong>
+			<span class="c-metric-sub">menunggu panggilan</span>
+		</div>
+		<div class="cashier-metric-card">
+			<span class="c-metric-label">Selesai</span>
+			<strong class="c-metric-val">{ fmt.Sprintf("%d", metrics.Completed) }</strong>
+			<span class="c-metric-sub">transaksi sukses</span>
+		</div>
+	</div>
+
+	<div class="menu-sheet cashier-sheet">
+		<div class="cashier-sheet-top">
+			<div class="cashier-sheet-heading">
+				<h2 class="cashier-section-title">Antrean Pesanan</h2>
+				<span class="cashier-count-badge">{ fmt.Sprintf("%d pesanan", len(orders)) }</span>
+			</div>
+
+			<form action="/kasir" method="GET" class="cashier-search-bar" role="search">
+				if currentFilter != "" {
+					<input type="hidden" name="status" value={ string(currentFilter) }/>
+				}
+				<input
+					type="search"
+					name="q"
+					value={ query }
+					placeholder="Cari kode pesanan, nama pemesan, atau nomor telepon..."
+					class="cashier-search-input"
+					aria-label="Cari pesanan di kasir"
+				/>
+				<button type="submit" class="btn-cashier-search">Cari</button>
+				if query != "" {
+					<a href="/kasir" class="btn-cashier-reset" title="Hapus pencarian">Reset</a>
+				}
+			</form>
+		</div>
+
+		<nav class="cashier-status-filter" aria-label="Filter status antrean">
+			<a href="/kasir" class={ "cashier-tab", templ.KV("is-active", currentFilter == "") }>Semua Antrean</a>
+			<a href="/kasir?status=pending_payment" class={ "cashier-tab", templ.KV("is-active", currentFilter == order.OrderStatusPendingPayment) }>
+				Menunggu Bayar
+				if metrics.PendingPayment > 0 {
+					<span class="tab-badge badge-alert">{ fmt.Sprintf("%d", metrics.PendingPayment) }</span>
+				}
+			</a>
+			<a href="/kasir?status=paid" class={ "cashier-tab", templ.KV("is-active", currentFilter == order.OrderStatusPaid) }>Sudah Dibayar</a>
+			<a href="/kasir?status=preparing" class={ "cashier-tab", templ.KV("is-active", currentFilter == order.OrderStatusPreparing) }>Disiapkan</a>
+			<a href="/kasir?status=ready" class={ "cashier-tab", templ.KV("is-active", currentFilter == order.OrderStatusReady) }>
+				Siap Diambil
+				if metrics.ReadyForPickup > 0 {
+					<span class="tab-badge badge-ready">{ fmt.Sprintf("%d", metrics.ReadyForPickup) }</span>
+				}
+			</a>
+			<a href="/kasir?status=completed" class={ "cashier-tab", templ.KV("is-active", currentFilter == order.OrderStatusCompleted) }>Selesai</a>
+			<a href="/kasir?status=cancelled" class={ "cashier-tab", templ.KV("is-active", currentFilter == order.OrderStatusCancelled) }>Dibatalkan</a>
+		</nav>
+
+		if len(orders) == 0 {
+			<div class="cashier-empty-queue">
+				<p class="empty-title">Antrean saat ini kosong</p>
+				if query != "" {
+					<p class="empty-desc">Tidak ditemukan pesanan dengan kata kunci "{ query }". Coba periksa kembali ejaan kode atau nomor telepon.</p>
+					<a href="/kasir" class="btn-paper-link">Tampilkan Semua Pesanan</a>
+				} else {
+					<p class="empty-desc">Belum ada pesanan pada filter ini. Pesanan baru dari meja atau pelanggan akan otomatis muncul di sini.</p>
+					<a href="/menu" class="btn-paper-link" target="_blank" rel="noopener">Buka Menu Pesanan Pelanggan</a>
+				}
+			</div>
+		} else {
+			<div class="cashier-card-grid">
+				for _, ord := range orders {
+					<article class={ "cashier-ticket-card", "ticket-status-" + string(ord.OrderStatus) } id={ "ticket-" + ord.Code }>
+						<header class="ticket-header">
+							<div class="ticket-identity">
+								<span class="ticket-code">{ ord.Code }</span>
+								<time class="ticket-time">{ ord.CreatedAt.Format("02/01/2006, 15:04 WIB") }</time>
+							</div>
+							<div class="ticket-badges">
+								<span class={ "status-pill", "status-" + string(ord.OrderStatus) }>{ ord.StatusLabel() }</span>
+							</div>
+						</header>
+
+						<div class="ticket-customer-section">
+							<div class="ticket-customer-name">
+								<strong>{ ord.CustomerName }</strong>
+								<span class="ticket-phone">({ ord.CustomerPhone })</span>
+							</div>
+							<div class="ticket-tags">
+								if ord.CustomerType == "mahasiswa" {
+									<span class="tag-pill tag-mhs">Mahasiswa</span>
+									if ord.CustomerNIM != "" {
+										<span class="tag-pill tag-nim">NIM: { ord.CustomerNIM }</span>
+									}
+								} else {
+									<span class="tag-pill tag-umum">Umum</span>
+								}
+								<span class="tag-pill tag-type">{ ord.OrderTypeLabel() }</span>
+								if ord.TableNumber != "" {
+									<span class="tag-pill tag-table">Meja { ord.TableNumber }</span>
+								}
+							</div>
+							if ord.Notes != "" {
+								<div class="ticket-notes">
+									<span class="notes-label">Catatan Pemesan:</span>
+									<span class="notes-text">"{ ord.Notes }"</span>
+								</div>
+							}
+						</div>
+
+						<div class="ticket-items-section">
+							<ul class="ticket-items-list">
+								for _, item := range ord.Items {
+									<li class="ticket-item-row">
+										<div class="ticket-item-info">
+											<span class="ticket-item-qty">{ fmt.Sprintf("%dx", item.Quantity) }</span>
+											<span class="ticket-item-name">{ item.ProductName }</span>
+											if item.Variant != "" {
+												<span class="ticket-item-variant">({ item.Variant })</span>
+											}
+										</div>
+										<span class="ticket-item-price">{ FormatRupiah(item.Subtotal) }</span>
+									</li>
+								}
+							</ul>
+
+							<div class="ticket-calc-box">
+								<div class="ticket-calc-row">
+									<span>Metode Pembayaran</span>
+									<strong>{ ord.PaymentMethodLabel() }</strong>
+								</div>
+								if ord.Discount > 0 {
+									<div class="ticket-calc-row ticket-discount-row">
+										<span>{ ord.DiscountNote }</span>
+										<strong>−{ FormatRupiah(ord.Discount) }</strong>
+									</div>
+								}
+								<div class="ticket-calc-row ticket-total-row">
+									<span>Total Tagihan</span>
+									<strong class="ticket-total-val">{ FormatRupiah(ord.Total) }</strong>
+								</div>
+							</div>
+						</div>
+
+						<footer class="ticket-footer-actions">
+							<a href={ templ.URL("/pesanan/" + ord.Code) } class="btn-ticket-receipt" target="_blank" rel="noopener">
+								Buka Nota
+							</a>
+							<a href={ templ.URL("/kasir/pesanan/" + ord.Code + "/cetak") } class="btn-ticket-receipt btn-ticket-print" target="_blank" rel="noopener" title="Cetak struk kasir">
+								<span>🖨️</span> Cetak Struk
+							</a>
+
+							if ord.OrderStatus == order.OrderStatusPendingPayment {
+								<form action={ templ.URL("/kasir/pesanan/" + ord.Code + "/status") } method="POST" class="ticket-action-form">
+									<input type="hidden" name="status" value={ string(order.OrderStatusPaid) }/>
+									<input type="hidden" name="payment_status" value={ string(order.PaymentStatusPaid) }/>
+									<button type="submit" class="btn-cashier-act btn-pay-confirm">Terima Pembayaran</button>
+								</form>
+								<form action={ templ.URL("/kasir/pesanan/" + ord.Code + "/status") } method="POST" class="ticket-action-form">
+									<input type="hidden" name="status" value={ string(order.OrderStatusCancelled) }/>
+									<input type="hidden" name="payment_status" value={ string(ord.PaymentStatus) }/>
+									<button type="submit" class="btn-cashier-act btn-cancel-order">Batalkan</button>
+								</form>
+							}
+
+							if ord.OrderStatus == order.OrderStatusPaid {
+								<form action={ templ.URL("/kasir/pesanan/" + ord.Code + "/status") } method="POST" class="ticket-action-form">
+									<input type="hidden" name="status" value={ string(order.OrderStatusPreparing) }/>
+									<input type="hidden" name="payment_status" value={ string(order.PaymentStatusPaid) }/>
+									<button type="submit" class="btn-cashier-act btn-prep-step">Mulai Disiapkan</button>
+								</form>
+							}
+
+							if ord.OrderStatus == order.OrderStatusPreparing {
+								<form action={ templ.URL("/kasir/pesanan/" + ord.Code + "/status") } method="POST" class="ticket-action-form">
+									<input type="hidden" name="status" value={ string(order.OrderStatusReady) }/>
+									<input type="hidden" name="payment_status" value={ string(order.PaymentStatusPaid) }/>
+									<button type="submit" class="btn-cashier-act btn-ready-step">Tandai Siap Diambil</button>
+								</form>
+							}
+
+							if ord.OrderStatus == order.OrderStatusReady {
+								<form action={ templ.URL("/kasir/pesanan/" + ord.Code + "/status") } method="POST" class="ticket-action-form">
+									<input type="hidden" name="status" value={ string(order.OrderStatusCompleted) }/>
+									<input type="hidden" name="payment_status" value={ string(order.PaymentStatusPaid) }/>
+									<button type="submit" class="btn-cashier-act btn-complete-step">Selesaikan Pesanan</button>
+								</form>
+							}
+						</footer>
+					</article>
+				}
+			</div>
+		}
+	</div>
+}

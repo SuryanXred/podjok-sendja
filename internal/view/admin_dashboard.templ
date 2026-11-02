@@ -1,0 +1,626 @@
+package view
+
+import (
+	"fmt"
+	"caffe-podjok-sendja/internal/catalog"
+	"caffe-podjok-sendja/internal/order"
+	"caffe-podjok-sendja/internal/staff"
+	"caffe-podjok-sendja/internal/storeconfig"
+)
+
+templ AdminDashboardPage(activeTab string, report order.AdminReport, categories []catalog.Category, stockList []catalog.StockItem, movements []catalog.StockMovement, cfg storeconfig.Config, message string, staffUser *staff.StaffUser) {
+	@Layout("Dashboard Admin • Pengelolaan Kafe | Caffe Podjok Sendja", nil, adminDashboardContent(activeTab, report, categories, stockList, movements, cfg, message, staffUser))
+}
+
+templ adminDashboardContent(activeTab string, report order.AdminReport, categories []catalog.Category, stockList []catalog.StockItem, movements []catalog.StockMovement, cfg storeconfig.Config, message string, staffUser *staff.StaffUser) {
+	<section class="hero admin-dash-hero">
+		<div class="hero-brand">
+			<div class="hero-logo-frame">
+				<img src="/static/images/logo.png" alt="Logo Caffe Sari Mulia" class="hero-logo" width="76" height="76"/>
+			</div>
+			<div class="hero-brand-text">
+				<p class="hero-kicker">Panel Pemilik &amp; Pengelola</p>
+				<h1 class="hero-title">Dashboard Manajemen</h1>
+			</div>
+		</div>
+		<p class="hero-lede">Pantau performa penjualan, kelola katalog dan varian menu, kontrol stok harian, serta atur jam operasional Caffe Podjok Sendja.</p>
+		
+		if staffUser != nil {
+			<div class="staff-session-bar">
+				<span class="staff-role-badge badge-admin">{ staffUser.Role.Label() }</span>
+				<span class="staff-active-name">Administrator aktif: <strong>{ staffUser.Name }</strong></span>
+				<a href="/pegawai/keluar" class="btn-staff-logout-link" title="Keluar dari sesi administrator">Keluar Shift</a>
+			</div>
+		}
+
+		<div class="admin-top-actions">
+			<a href="/kasir" class="btn-top-kasir">
+				<span>Buka Panel Kasir Meja Depan</span>
+			</a>
+			<a href="/menu" class="btn-top-menu" target="_blank" rel="noopener">
+				<span>Lihat Tampilan Menu Pelanggan</span>
+			</a>
+		</div>
+	</section>
+
+	if message != "" {
+		<aside class="admin-toast-message" role="status">
+			<span class="toast-dot"></span>
+			<span>{ message }</span>
+		</aside>
+	}
+
+	<div class="menu-sheet admin-dashboard-sheet">
+		<nav class="admin-tabs-nav" aria-label="Navigasi bagian admin">
+			<a href="/admin" class={ "admin-tab-btn", templ.KV("is-active", activeTab == "" || activeTab == "laporan") }>
+				Ringkasan &amp; Laporan
+			</a>
+			<a href="/admin?tab=menu" class={ "admin-tab-btn", templ.KV("is-active", activeTab == "menu") }>
+				Katalog Menu
+			</a>
+			<a href="/admin?tab=stok" class={ "admin-tab-btn", templ.KV("is-active", activeTab == "stok") }>
+				Kontrol Stok
+			</a>
+			<a href="/admin?tab=pengaturan" class={ "admin-tab-btn", templ.KV("is-active", activeTab == "pengaturan") }>
+				Pengaturan Kafe
+			</a>
+		</nav>
+
+		if activeTab == "" || activeTab == "laporan" {
+			@adminTabReport(report)
+		} else if activeTab == "menu" {
+			@adminTabMenu(categories)
+		} else if activeTab == "stok" {
+			@adminTabStock(stockList, movements)
+		} else if activeTab == "pengaturan" {
+			@adminTabSettings(cfg)
+		}
+	</div>
+}
+
+templ adminTabReport(report order.AdminReport) {
+	<div class="admin-tab-pane">
+		<div class="tab-pane-header">
+			<div>
+				<h2 class="tab-pane-title">Ringkasan Keuangan &amp; Operasional</h2>
+				<p class="tab-pane-desc">Performa akumulasi transaksi, rata-rata belanja, dan distribusi pelanggan kafe.</p>
+			</div>
+			<a href="/kasir" class="btn-paper-link">Buka Antrean Kasir</a>
+		</div>
+
+		<div class="admin-kpi-grid">
+			<div class="kpi-card kpi-highlight">
+				<span class="kpi-label">Omzet Terverifikasi</span>
+				<strong class="kpi-val">{ FormatRupiah(report.Metrics.ConfirmedSales) }</strong>
+				<span class="kpi-sub">total pesanan berstatus lunas</span>
+			</div>
+			<div class="kpi-card">
+				<span class="kpi-label">Total Transaksi</span>
+				<strong class="kpi-val">{ fmt.Sprintf("%d", report.Metrics.TotalOrders) }</strong>
+				<span class="kpi-sub">{ fmt.Sprintf("%d selesai, %d menunggu", report.Metrics.Completed, report.Metrics.PendingPayment) }</span>
+			</div>
+			<div class="kpi-card">
+				<span class="kpi-label">Rata-rata Nilai Pesanan</span>
+				<strong class="kpi-val">{ FormatRupiah(report.AverageOrderValue) }</strong>
+				<span class="kpi-sub">average order value</span>
+			</div>
+			<div class="kpi-card">
+				<span class="kpi-label">Segmen Pelanggan</span>
+				<div class="kpi-split">
+					<span><strong>{ fmt.Sprintf("%d", report.MahasiswaOrders) }</strong> Mahasiswa</span>
+					<span>•</span>
+					<span><strong>{ fmt.Sprintf("%d", report.UmumOrders) }</strong> Umum</span>
+				</div>
+				<span class="kpi-sub">berdasarkan akun dan tipe tamu</span>
+			</div>
+			<div class="kpi-card">
+				<span class="kpi-label">Metode Pembayaran</span>
+				<div class="kpi-split">
+					<span><strong>{ fmt.Sprintf("%d", report.CashOrders) }</strong> Tunai</span>
+					<span>•</span>
+					<span><strong>{ fmt.Sprintf("%d", report.QRISOrders) }</strong> QRIS</span>
+				</div>
+				<span class="kpi-sub">pilihan transaksi pelanggan</span>
+			</div>
+		</div>
+
+		<div class="admin-export-card">
+			<div class="export-card-text">
+				<h3 class="export-card-title">Ekspor Laporan Penjualan (CSV / Excel)</h3>
+				<p class="export-card-desc">Unduh rekapitulasi transaksi pesanan, diskon mahasiswa, dan rincian menu ke format berkas CSV yang siap diolah di Microsoft Excel atau Google Sheets.</p>
+			</div>
+			<div class="export-card-actions">
+				<a href="/admin/laporan/ekspor?period=today" class="btn-export-act" download title="Unduh transaksi tanggal hari ini">
+					<span class="export-icon">📅</span>
+					<span>Hari Ini</span>
+				</a>
+				<a href="/admin/laporan/ekspor?period=month" class="btn-export-act" download title="Unduh transaksi bulan berjalan">
+					<span class="export-icon">🗓️</span>
+					<span>Bulan Ini</span>
+				</a>
+				<a href="/admin/laporan/ekspor?period=all" class="btn-export-act btn-export-primary" download title="Unduh seluruh rekam jejak transaksi">
+					<span class="export-icon">📊</span>
+					<span>Semua Transaksi (.CSV)</span>
+				</a>
+			</div>
+		</div>
+
+		<div class="admin-split-tables">
+			<section class="table-section" aria-labelledby="heading-top-products">
+				<div class="section-title-wrap">
+					<h3 id="heading-top-products" class="sub-section-title">Produk Paling Banyak Dipesan</h3>
+					<span class="section-note">Porsi terjual dari pesanan lunas</span>
+				</div>
+				if len(report.TopProducts) == 0 {
+					<div class="empty-table-box">
+						<p>Belum ada produk yang terjual pada pesanan lunas.</p>
+					</div>
+				} else {
+					<div class="table-frame">
+						<table class="report-table">
+							<thead>
+								<tr>
+									<th>Menu</th>
+									<th class="text-right">Terjual</th>
+									<th class="text-right">Kontribusi Omzet</th>
+								</tr>
+							</thead>
+							<tbody>
+								for _, p := range report.TopProducts {
+									<tr>
+										<td><strong>{ p.ProductName }</strong></td>
+										<td class="text-right">{ fmt.Sprintf("%d porsi", p.Quantity) }</td>
+										<td class="text-right tabular-nums">{ FormatRupiah(p.TotalSales) }</td>
+									</tr>
+								}
+							</tbody>
+						</table>
+					</div>
+				}
+			</section>
+
+			<section class="table-section" aria-labelledby="heading-recent-orders">
+				<div class="section-title-wrap">
+					<h3 id="heading-recent-orders" class="sub-section-title">Riwayat Transaksi Terbaru</h3>
+					<span class="section-note">10 pesanan terkini</span>
+				</div>
+				if len(report.RecentOrders) == 0 {
+					<div class="empty-table-box">
+						<p>Belum ada riwayat pesanan.</p>
+					</div>
+				} else {
+					<div class="table-frame">
+						<table class="report-table">
+							<thead>
+								<tr>
+									<th>Kode</th>
+									<th>Pemesan</th>
+									<th>Status</th>
+									<th class="text-right">Total</th>
+									<th class="text-center">Struk</th>
+								</tr>
+							</thead>
+							<tbody>
+								for _, ord := range report.RecentOrders {
+									<tr>
+										<td>
+											<a href={ templ.URL("/pesanan/" + ord.Code) } class="order-code-link" target="_blank" rel="noopener">
+												{ ord.Code }
+											</a>
+										</td>
+										<td>
+											<span>{ ord.CustomerName }</span>
+											if ord.CustomerType == "mahasiswa" {
+												<span class="tag-pill tag-mhs" style="font-size: 0.72rem; padding: 0.1rem 0.35rem;">Mhs</span>
+											}
+										</td>
+										<td>
+											<span class={ "status-pill-small", "status-" + string(ord.OrderStatus) }>{ ord.StatusLabel() }</span>
+										</td>
+										<td class="text-right tabular-nums"><strong>{ FormatRupiah(ord.Total) }</strong></td>
+										<td class="text-center">
+											<a href={ templ.URL("/kasir/pesanan/" + ord.Code + "/cetak") } target="_blank" rel="noopener" class="btn-receipt-link" title="Cetak struk pesanan ini">
+												🖨️ Cetak
+											</a>
+										</td>
+									</tr>
+								}
+							</tbody>
+						</table>
+					</div>
+				}
+			</section>
+		</div>
+	</div>
+}
+
+templ adminTabMenu(categories []catalog.Category) {
+	<div class="admin-tab-pane">
+		<div class="tab-pane-header">
+			<div>
+				<h2 class="tab-pane-title">Katalog &amp; Varian Menu</h2>
+				<p class="tab-pane-desc">Kelola nama menu, kategori saji, penetapan harga dasar, dan varian pesanan.</p>
+			</div>
+		</div>
+
+		<div class="admin-form-split">
+			<section class="admin-form-panel" aria-labelledby="form-add-product-title">
+				<h3 id="form-add-product-title" class="form-panel-title">Tambah Menu Baru</h3>
+				<p class="form-panel-desc">Menu baru akan langsung tersedia di katalog pelanggan dan inventaris stok.</p>
+
+				<form action="/admin/menu/tambah" method="POST" class="styled-admin-form">
+					<div class="form-group">
+						<label for="new_category_slug">Kategori Menu</label>
+						<select id="new_category_slug" name="category_slug" required class="styled-select">
+							for _, c := range categories {
+								<option value={ c.Slug }>{ c.Name }</option>
+							}
+						</select>
+					</div>
+
+					<div class="form-group">
+						<label for="new_product_name">Nama Menu</label>
+						<input type="text" id="new_product_name" name="name" placeholder="Contoh: Kopi Susu Senja" required class="styled-input"/>
+					</div>
+
+					<div class="form-group">
+						<label for="new_base_price">Harga Dasar (Rupiah)</label>
+						<input type="number" id="new_base_price" name="base_price" min="1000" step="500" placeholder="Contoh: 15000" required class="styled-input"/>
+					</div>
+
+					<div class="form-group">
+						<label for="new_variants">Varian Opsional</label>
+						<input type="text" id="new_variants" name="variants" placeholder="Contoh: Ice:3000, Hot:0 (atau kosongkan jika tanpa varian)" class="styled-input"/>
+						<small class="form-help">Format: NamaVarian:SelisihHarga. Pisahkan dengan tanda koma.</small>
+					</div>
+
+					<button type="submit" class="btn-admin-submit">Simpan Menu Baru</button>
+				</form>
+			</section>
+
+			<section class="admin-form-panel" aria-labelledby="form-update-price-title">
+				<h3 id="form-update-price-title" class="form-panel-title">Perbarui Harga Dasar Menu</h3>
+				<p class="form-panel-desc">Ubah harga satuan dasar menu yang sudah terdaftar.</p>
+
+				<form action="/admin/menu/harga" method="POST" class="styled-admin-form">
+					<div class="form-group">
+						<label for="price_product_slug">Pilih Menu</label>
+						<select id="price_product_slug" name="product_slug" required class="styled-select">
+							for _, c := range categories {
+								<optgroup label={ c.Name }>
+									for _, p := range c.Products {
+										<option value={ p.Slug }>{ p.Name } ({ FormatRupiah(p.BasePrice) })</option>
+									}
+								</optgroup>
+							}
+						</select>
+					</div>
+
+					<div class="form-group">
+						<label for="updated_new_price">Harga Dasar Baru (Rupiah)</label>
+						<input type="number" id="updated_new_price" name="new_price" min="1000" step="500" placeholder="Contoh: 18000" required class="styled-input"/>
+					</div>
+
+					<button type="submit" class="btn-admin-submit">Perbarui Harga Menu</button>
+				</form>
+			</section>
+		</div>
+
+		<section class="catalog-list-section" aria-labelledby="catalog-table-title">
+			<div class="section-title-wrap">
+				<h3 id="catalog-table-title" class="sub-section-title">Daftar Menu Aktif</h3>
+				<span class="section-note">Dikelompokkan menurut kategori</span>
+			</div>
+
+			<div class="catalog-category-blocks">
+				for _, cat := range categories {
+					<div class="category-block">
+						<div class="cat-block-header">
+							<h4 class="cat-block-title">{ cat.Name }</h4>
+							<span class="cat-block-count">{ fmt.Sprintf("%d menu", len(cat.Products)) }</span>
+						</div>
+						<div class="table-frame">
+							<table class="report-table">
+								<thead>
+									<tr>
+										<th>Nama Menu</th>
+										<th>Varian Tersedia</th>
+										<th class="text-right">Harga Dasar</th>
+									</tr>
+								</thead>
+								<tbody>
+									for _, p := range cat.Products {
+										<tr>
+											<td>
+												<strong>{ p.Name }</strong>
+												<span class="product-slug-label">{ p.Slug }</span>
+											</td>
+											<td>
+												if p.HasVariants() {
+													<div class="variant-tags">
+														for _, v := range p.Variants {
+															<span class="variant-tag-chip">
+																{ v.Name }
+																if v.PriceDelta > 0 {
+																	<span class="variant-delta">+{ FormatRupiah(v.PriceDelta) }</span>
+																}
+															</span>
+														}
+													</div>
+												} else {
+													<span class="no-variant-text">Tanpa Varian</span>
+												}
+											</td>
+											<td class="text-right tabular-nums">
+												<strong>{ FormatRupiah(p.BasePrice) }</strong>
+											</td>
+										</tr>
+									}
+								</tbody>
+							</table>
+						</div>
+					</div>
+				}
+			</div>
+		</section>
+	</div>
+}
+
+templ adminTabStock(stockList []catalog.StockItem, movements []catalog.StockMovement) {
+	<div class="admin-tab-pane">
+		<div class="tab-pane-header">
+			<div>
+				<h2 class="tab-pane-title">Kontrol &amp; Penyesuaian Stok</h2>
+				<p class="tab-pane-desc">Pantau ketersediaan porsi bahan menu harian dan lakukan pencatatan penyesuaian stok.</p>
+			</div>
+		</div>
+
+		<div class="admin-form-split">
+			<section class="admin-form-panel" aria-labelledby="form-adjust-stock-title">
+				<h3 id="form-adjust-stock-title" class="form-panel-title">Penyesuaian Stok Produk</h3>
+				<p class="form-panel-desc">Tambah stok masuk (restock) atau kurangi karena penyusutan/koreksi fisik.</p>
+
+				<form action="/admin/stok/sesuaikan" method="POST" class="styled-admin-form">
+					<div class="form-group">
+						<label for="stock_product_slug">Pilih Menu Produk</label>
+						<select id="stock_product_slug" name="product_slug" required class="styled-select">
+							for _, it := range stockList {
+								<option value={ it.ProductSlug }>
+									{ it.ProductName } (Sisa: { fmt.Sprintf("%d", it.Qty) } porsi)
+								</option>
+							}
+						</select>
+					</div>
+
+					<div class="form-group">
+						<label for="stock_action_type">Jenis Penyesuaian</label>
+						<select id="stock_action_type" name="action_type" required class="styled-select">
+							<option value="add">Tambah Stok Masuk (Restock / Barang Datang)</option>
+							<option value="sub">Kurangi Stok (Koreksi / Rusak / Terbuang)</option>
+						</select>
+					</div>
+
+					<div class="form-group">
+						<label for="stock_change_qty">Jumlah Porsi</label>
+						<input type="number" id="stock_change_qty" name="quantity" min="1" step="1" placeholder="Contoh: 15" required class="styled-input"/>
+					</div>
+
+					<div class="form-group">
+						<label for="stock_reason">Catatan Alasan</label>
+						<input type="text" id="stock_reason" name="reason" placeholder="Contoh: Pembelian bahan susu pagi hari" required class="styled-input"/>
+					</div>
+
+					<button type="submit" class="btn-admin-submit">Simpan Penyesuaian Stok</button>
+				</form>
+			</section>
+
+			<section class="admin-form-panel" aria-labelledby="stock-summary-title">
+				<h3 id="stock-summary-title" class="form-panel-title">Status Inventaris Kafe</h3>
+				<p class="form-panel-desc">Ringkasan kondisi stok menu saat ini.</p>
+
+				<div class="stock-status-summary-cards">
+					<div class="summary-stat-box stat-safe">
+						<span class="stat-number">{ fmt.Sprintf("%d", countStockByStatus(stockList, "safe")) }</span>
+						<span class="stat-text">Menu Stok Aman</span>
+					</div>
+					<div class="summary-stat-box stat-low">
+						<span class="stat-number">{ fmt.Sprintf("%d", countStockByStatus(stockList, "low")) }</span>
+						<span class="stat-text">Menu Stok Menipis (≤ 5)</span>
+					</div>
+					<div class="summary-stat-box stat-empty">
+						<span class="stat-number">{ fmt.Sprintf("%d", countStockByStatus(stockList, "empty")) }</span>
+						<span class="stat-text">Menu Stok Habis</span>
+					</div>
+				</div>
+
+				<div class="stock-note-info">
+					<p>Menu dengan stok kurang dari atau sama dengan 5 porsi ditandai peringatan agar barista dapat segera menyiapkan restock bahan.</p>
+				</div>
+			</section>
+		</div>
+
+		<section class="stock-inventory-section" aria-labelledby="stock-table-title">
+			<div class="section-title-wrap">
+				<h3 id="stock-table-title" class="sub-section-title">Daftar Stok Produk</h3>
+				<span class="section-note">{ fmt.Sprintf("%d item terdata", len(stockList)) }</span>
+			</div>
+
+			<div class="table-frame">
+				<table class="report-table">
+					<thead>
+						<tr>
+							<th>Nama Menu</th>
+							<th>Kategori</th>
+							<th class="text-right">Sisa Stok</th>
+							<th class="text-center">Status</th>
+						</tr>
+					</thead>
+					<tbody>
+						for _, it := range stockList {
+							<tr>
+								<td><strong>{ it.ProductName }</strong></td>
+								<td>{ it.CategoryName }</td>
+								<td class="text-right tabular-nums"><strong>{ fmt.Sprintf("%d porsi", it.Qty) }</strong></td>
+								<td class="text-center">
+									<span class={ "stock-badge", "badge-" + it.StatusCode() }>
+										{ it.StatusLabel() }
+									</span>
+								</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		</section>
+
+		if len(movements) > 0 {
+			<section class="stock-movements-section" aria-labelledby="movements-table-title">
+				<div class="section-title-wrap">
+					<h3 id="movements-table-title" class="sub-section-title">Catatan Riwayat Pergerakan Stok</h3>
+					<span class="section-note">Pencatatan penyesuaian terbaru</span>
+				</div>
+
+				<div class="table-frame">
+					<table class="report-table">
+						<thead>
+							<tr>
+								<th>Waktu</th>
+								<th>Menu</th>
+								<th class="text-right">Perubahan</th>
+								<th>Catatan / Alasan</th>
+							</tr>
+						</thead>
+						<tbody>
+							for _, m := range movements {
+								<tr>
+									<td><time>{ m.CreatedAt.Format("02/01/2006, 15:04 WIB") }</time></td>
+									<td><strong>{ m.ProductName }</strong></td>
+									<td class="text-right tabular-nums">
+										if m.Change > 0 {
+											<span class="change-pos">+{ fmt.Sprintf("%d", m.Change) }</span>
+										} else {
+											<span class="change-neg">{ fmt.Sprintf("%d", m.Change) }</span>
+										}
+									</td>
+									<td>{ m.Reason }</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</section>
+		}
+	</div>
+}
+
+templ adminTabSettings(cfg storeconfig.Config) {
+	<div class="admin-tab-pane">
+		<div class="tab-pane-header">
+			<div>
+				<h2 class="tab-pane-title">Pengaturan Kafe &amp; Operasional</h2>
+				<p class="tab-pane-desc">Atur ketersediaan penerimaan pesanan, jam buka toko, dan informasi kontak kafe.</p>
+			</div>
+		</div>
+
+		<div class="admin-form-split">
+			<section class="admin-form-panel" aria-labelledby="form-settings-title" style="flex: 1.2;">
+				<h3 id="form-settings-title" class="form-panel-title">Parameter Operasional Kafe</h3>
+				<p class="form-panel-desc">Perubahan akan langsung berdampak pada halaman pemesanan pelanggan.</p>
+
+				<form action="/admin/pengaturan" method="POST" class="styled-admin-form">
+					<div class="form-group">
+						<label>Status Buka Toko</label>
+						<div class="radio-selector-group">
+							<label class="radio-label">
+								<input type="radio" name="is_open" value="true" checked?={ cfg.IsOpen }/>
+								<span><strong>Kafe Buka</strong> (menerima pesanan meja dan bawa pulang)</span>
+							</label>
+							<label class="radio-label">
+								<input type="radio" name="is_open" value="false" checked?={ !cfg.IsOpen }/>
+								<span><strong>Kafe Tutup Sementara</strong> (halaman checkout dihentikan sementara)</span>
+							</label>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label for="set_opening_hours">Jam Operasional Kafe</label>
+						<input type="text" id="set_opening_hours" name="opening_hours" value={ cfg.OpeningHours } required class="styled-input"/>
+						<small class="form-help">Contoh: 09.00 - 22.00 WITA (Senin sampai Sabtu)</small>
+					</div>
+
+					<div class="form-group">
+						<label for="set_table_count">Jumlah Meja Aktif</label>
+						<input type="number" id="set_table_count" name="table_count" min="1" max="100" value={ fmt.Sprintf("%d", cfg.TableCount) } required class="styled-input"/>
+						<small class="form-help">Kapasitas meja untuk pilihan pesanan Makan di Tempat.</small>
+					</div>
+
+					<div class="form-group">
+						<label for="set_contact_phone">Nomor Telepon / WhatsApp Kafe</label>
+						<input type="text" id="set_contact_phone" name="contact_phone" value={ cfg.ContactPhone } required class="styled-input"/>
+						<small class="form-help">Untuk bantuan pelanggan saat konfirmasi pesanan.</small>
+					</div>
+
+					<div class="form-group">
+						<label for="set_address">Alamat Lengkap Kafe</label>
+						<input type="text" id="set_address" name="address" value={ cfg.Address } required class="styled-input"/>
+						<small class="form-help">Lokasi fisik kafe di lingkungan kampus.</small>
+					</div>
+
+					<div class="form-group">
+						<label for="set_announcement">Teks Pengumuman Kafe</label>
+						<textarea id="set_announcement" name="announcement" rows="3" class="styled-textarea">{ cfg.Announcement }</textarea>
+						<small class="form-help">Pemberitahuan khusus promo atau informasi penting bagi pelanggan.</small>
+					</div>
+
+					<button type="submit" class="btn-admin-submit">Simpan Pengaturan Kafe</button>
+				</form>
+			</section>
+
+			<section class="admin-form-panel" aria-labelledby="settings-preview-title" style="flex: 0.8;">
+				<h3 id="settings-preview-title" class="form-panel-title">Pratinjau Status Kafe</h3>
+				<p class="form-panel-desc">Status aktif yang terbaca oleh sistem saat ini.</p>
+
+				<div class="settings-preview-box">
+					<div class="preview-item">
+						<span class="preview-label">Kondisi Toko:</span>
+						if cfg.IsOpen {
+							<span class="preview-tag tag-open">Buka Melayani</span>
+						} else {
+							<span class="preview-tag tag-closed">Tutup Sementara</span>
+						}
+					</div>
+					<div class="preview-item">
+						<span class="preview-label">Jam Layanan:</span>
+						<strong>{ cfg.OpeningHours }</strong>
+					</div>
+					<div class="preview-item">
+						<span class="preview-label">Kapasitas Meja:</span>
+						<strong>{ fmt.Sprintf("%d meja", cfg.TableCount) }</strong>
+					</div>
+					<div class="preview-item">
+						<span class="preview-label">Kontak Meja Kasir:</span>
+						<strong>{ cfg.ContactPhone }</strong>
+					</div>
+					<div class="preview-item">
+						<span class="preview-label">Alamat Kafe:</span>
+						<strong>{ cfg.Address }</strong>
+					</div>
+					<div class="preview-item">
+						<span class="preview-label">Pengumuman:</span>
+						<p class="preview-announcement">{ cfg.Announcement }</p>
+					</div>
+				</div>
+			</section>
+		</div>
+	</div>
+}
+
+func countStockByStatus(items []catalog.StockItem, status string) int {
+	var count int
+	for _, it := range items {
+		if it.StatusCode() == status {
+			count++
+		}
+	}
+	return count
+}

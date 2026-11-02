@@ -1,0 +1,256 @@
+package view
+
+templ LoginPage(errorMessage, successMessage string) {
+	@Layout("Masuk Akun Pelanggan | Caffe Podjok Sendja", nil, loginContent(errorMessage, successMessage))
+}
+
+templ loginContent(errorMessage, successMessage string) {
+	<section class="hero hero-compact">
+		<p class="hero-kicker">Pelanggan Caffe Podjok Sendja</p>
+		<h1 class="hero-title">Masuk ke Akun</h1>
+		<p class="hero-lede">Masuk untuk memesan lebih praktis dan menikmati promo khusus pelanggan kampus.</p>
+	</section>
+
+	<div class="menu-sheet auth-sheet">
+		if errorMessage != "" {
+			<div class="alert alert-error" role="alert">
+				{ errorMessage }
+			</div>
+		}
+
+		if successMessage != "" {
+			<div class="alert alert-success" role="status">
+				{ successMessage }
+			</div>
+		}
+
+		<div class="auth-box">
+			<form action="/masuk" method="POST" class="auth-form">
+				<div class="form-group">
+					<label for="identifier" class="form-label">
+						Nomor WhatsApp / Telepon atau NIM <span class="required">*</span>
+					</label>
+					<input
+						type="text"
+						id="identifier"
+						name="identifier"
+						class="form-input"
+						required
+						autocomplete="username"
+						placeholder="Contoh: 081234567890 atau NIM 211001001"
+					/>
+					<small class="form-help-text">Gunakan nomor WhatsApp aktif atau NIM mahasiswa Anda yang telah terdaftar.</small>
+				</div>
+
+				<div class="form-group">
+					<label for="password" class="form-label">
+						Kata Sandi <span class="required">*</span>
+					</label>
+					<input
+						type="password"
+						id="password"
+						name="password"
+						class="form-input"
+						required
+						autocomplete="current-password"
+						placeholder="Masukkan kata sandi akun Anda"
+					/>
+				</div>
+
+				<div class="form-actions">
+					<button type="submit" class="btn-submit-order">Masuk Sekarang</button>
+				</div>
+			</form>
+
+			<div class="auth-promo-notice">
+				<div class="notice-badge">Promo Mahasiswa</div>
+				<p class="notice-desc">
+					Khusus mahasiswa Universitas Sari Mulia, nikmati <strong>potongan harga 25%</strong> pada pembelian pertama Anda (maksimal pembelian Rp 30.000) dengan mendaftar akun mahasiswa dan mengisi NIM aktif.
+				</p>
+			</div>
+
+			<div class="auth-footer-links">
+				<p class="auth-switch-text">
+					Belum memiliki akun?
+					<a href="/daftar" class="auth-link">Daftar sebagai Pelanggan Umum atau Mahasiswa</a>
+				</p>
+				<p class="auth-switch-text">
+					Ingin memesan tanpa akun?
+					<a href="/menu" class="auth-link">Lihat Menu Langsung</a>
+				</p>
+			</div>
+		</div>
+	</div>
+}
+
+templ RegisterPage(errorMessage, initialType string) {
+	@Layout("Daftar Akun Pelanggan | Caffe Podjok Sendja", nil, registerContent(errorMessage, initialType))
+}
+
+templ registerContent(errorMessage, initialType string) {
+	<section class="hero hero-compact">
+		<p class="hero-kicker">Pendaftaran Pelanggan</p>
+		<h1 class="hero-title">Buat Akun Pelanggan</h1>
+		<p class="hero-lede">Pilih jenis akun Anda. Mahasiswa Universitas Sari Mulia mendapatkan potongan khusus pada pesanan pertama.</p>
+	</section>
+
+	<div class="menu-sheet auth-sheet">
+		if errorMessage != "" {
+			<div class="alert alert-error" role="alert">
+				{ errorMessage }
+			</div>
+		}
+
+		<div class="auth-box">
+			<form action="/daftar" method="POST" class="auth-form" id="register-form">
+				<fieldset class="form-fieldset">
+					<legend class="form-label">Jenis Pelanggan <span class="required">*</span></legend>
+					<div class="customer-type-selector">
+						<label class="type-card-label" for="type_mahasiswa">
+							<input
+								type="radio"
+								id="type_mahasiswa"
+								name="type"
+								value="mahasiswa"
+								if initialType != "umum" {
+									checked
+								}
+								onchange="toggleNIMField(true)"
+							/>
+							<div class="type-card-body">
+								<strong class="type-title">Pelanggan Mahasiswa</strong>
+								<span class="type-subtitle">Mahasiswa aktif Universitas Sari Mulia</span>
+								<span class="type-highlight">Dapat diskon 25% untuk pembelian pertama (maks. pembelian Rp 30.000)</span>
+							</div>
+						</label>
+
+						<label class="type-card-label" for="type_umum">
+							<input
+								type="radio"
+								id="type_umum"
+								name="type"
+								value="umum"
+								if initialType == "umum" {
+									checked
+								}
+								onchange="toggleNIMField(false)"
+							/>
+							<div class="type-card-body">
+								<strong class="type-title">Pelanggan Umum</strong>
+								<span class="type-subtitle">Dosen, staf, pengunjung, atau masyarakat umum</span>
+								<span class="type-benefit">Pesan cepat, simpan data pemesan, dan lacak riwayat nota</span>
+							</div>
+						</label>
+					</div>
+				</fieldset>
+
+				<div class="form-group" id="nim-group">
+					<label for="nim" class="form-label">
+						NIM (Nomor Induk Mahasiswa) <span class="required">*</span>
+					</label>
+					<input
+						type="text"
+						id="nim"
+						name="nim"
+						class="form-input"
+						placeholder="Contoh: 211001001"
+					/>
+					<small class="form-help-text" id="nim-help">
+						NIM digunakan untuk verifikasi status mahasiswa aktif dan aktivasi potongan harga 25% pada pembelian pertama.
+					</small>
+				</div>
+
+				<div class="form-group">
+					<label for="name" class="form-label">
+						Nama Lengkap <span class="required">*</span>
+					</label>
+					<input
+						type="text"
+						id="name"
+						name="name"
+						class="form-input"
+						required
+						minlength="2"
+						placeholder="Nama lengkap Anda"
+					/>
+				</div>
+
+				<div class="form-group">
+					<label for="phone" class="form-label">
+						Nomor WhatsApp / Telepon <span class="required">*</span>
+					</label>
+					<input
+						type="tel"
+						id="phone"
+						name="phone"
+						class="form-input"
+						required
+						minlength="6"
+						placeholder="08xxxxxxxxxx"
+					/>
+					<small class="form-help-text">Digunakan untuk konfirmasi pesanan dan pemanggilan saat hidangan siap.</small>
+				</div>
+
+				<div class="form-group">
+					<label for="email" class="form-label">
+						Alamat Email (opsional)
+					</label>
+					<input
+						type="email"
+						id="email"
+						name="email"
+						class="form-input"
+						placeholder="contoh@unism.ac.id"
+					/>
+				</div>
+
+				<div class="form-group">
+					<label for="reg_password" class="form-label">
+						Kata Sandi <span class="required">*</span>
+					</label>
+					<input
+						type="password"
+						id="reg_password"
+						name="password"
+						class="form-input"
+						required
+						minlength="6"
+						placeholder="Minimal 6 karakter"
+					/>
+				</div>
+
+				<div class="form-actions">
+					<button type="submit" class="btn-submit-order">Daftar Akun Sekarang</button>
+				</div>
+			</form>
+
+			<script>
+				function toggleNIMField(isMhs) {
+					var nimGroup = document.getElementById("nim-group");
+					var nimInput = document.getElementById("nim");
+					if (!nimGroup || !nimInput) return;
+					if (isMhs) {
+						nimGroup.style.display = "block";
+						nimInput.setAttribute("required", "required");
+					} else {
+						nimGroup.style.display = "none";
+						nimInput.removeAttribute("required");
+						nimInput.value = "";
+					}
+				}
+				// Jalankan penyesuaian awal saat dokumen siap
+				(function() {
+					var mhsRadio = document.getElementById("type_mahasiswa");
+					toggleNIMField(mhsRadio && mhsRadio.checked);
+				})();
+			</script>
+
+			<div class="auth-footer-links">
+				<p class="auth-switch-text">
+					Sudah memiliki akun?
+					<a href="/masuk" class="auth-link">Masuk di sini</a>
+				</p>
+			</div>
+		</div>
+	</div>
+}

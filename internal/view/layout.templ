@@ -1,0 +1,72 @@
+package view
+
+import (
+	"caffe-podjok-sendja/internal/customer"
+	"caffe-podjok-sendja/internal/storeconfig"
+)
+
+templ Layout(title string, cust *customer.Customer, content templ.Component) {
+	<!DOCTYPE html>
+	<html lang="id">
+		<head>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1"/>
+			<meta name="theme-color" content="#2A1D17"/>
+			<title>{ title }</title>
+			<link rel="preconnect" href="https://fonts.googleapis.com"/>
+			<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+			<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Fraunces:opsz,wght@9..144,500;9..144,650&display=swap" rel="stylesheet"/>
+			<link rel="icon" href="/static/favicon.svg" type="image/svg+xml"/>
+			<link rel="stylesheet" href="/static/app.css"/>
+		</head>
+		<body id="top" class="site-table">
+			<header class="site-header">
+				<a class="wordmark brand-link" href="/menu">
+					<span class="brand-logo-frame">
+						<img src="/static/images/logo.png" alt="Logo Caffe Sari Mulia" class="brand-logo" width="34" height="34"/>
+					</span>
+					<span class="brand-title">Podjok Sendja</span>
+				</a>
+				<nav aria-label="Navigasi utama" class="main-nav">
+					<a class="nav-link" href="/menu">Menu</a>
+					<a class="nav-link" href="/keranjang">Keranjang</a>
+					<a class="nav-link" href="/lacak">Lacak</a>
+					if cust != nil {
+						<a class="nav-link nav-link-user" href="/akun" title="Buka Akun Saya">
+							<span class="nav-user-text">Halo, { cust.ShortName() }</span>
+							if cust.Type == customer.CustomerTypeMahasiswa {
+								<span class="nav-badge-mhs">Mhs</span>
+							}
+						</a>
+						<a class="nav-link nav-link-auth" href="/keluar">Keluar</a>
+					} else {
+						<a class="nav-link nav-link-auth" href="/masuk">Masuk</a>
+					}
+				</nav>
+			</header>
+			<main class="site-main">
+				@content
+			</main>
+			<footer class="site-footer">
+				<div class="footer-content">
+					<div class="footer-info">
+						<p class="footer-brand">Caffe Podjok Sendja, Universitas Sari Mulia</p>
+						<address class="footer-address">{ storeconfig.DefaultStore.Get().Address }</address>
+					</div>
+					<div class="footer-links">
+						if cust != nil {
+							<a class="footer-link" href="/akun">Akun Saya</a>
+							<span class="footer-sep">•</span>
+						} else {
+							<a class="footer-link" href="/masuk">Masuk Akun</a>
+							<span class="footer-sep">•</span>
+							<a class="footer-link" href="/daftar">Daftar Akun</a>
+							<span class="footer-sep">•</span>
+						}
+						<a class="back-to-top" href="#top">Kembali ke atas</a>
+					</div>
+				</div>
+			</footer>
+		</body>
+	</html>
+}

@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"time"
 
 	"caffe-podjok-sendja/internal/catalog"
 	"caffe-podjok-sendja/internal/customer"
@@ -27,6 +28,23 @@ type CatalogState struct {
 type OrdersState struct {
 	Orders map[string]*order.Order `json:"orders"`
 	Seq    int                     `json:"seq"`
+}
+
+// customerRecord adalah representasi pelanggan khusus untuk penyimpanan berkas.
+// Berbeda dengan customer.Customer yang menandai PasswordHash dengan json:"-"
+// (agar tidak bocor ke API), record ini WAJIB menyertakan hash sandi supaya
+// pelanggan tetap bisa login setelah server dimulai ulang.
+type customerRecord struct {
+	ID                string                `json:"id"`
+	Type              customer.CustomerType `json:"type"`
+	Name              string                `json:"name"`
+	Phone             string                `json:"phone"`
+	Email             string                `json:"email"`
+	NIM               string                `json:"nim"`
+	PasswordHash      string                `json:"password_hash"`
+	FirstDiscountUsed bool                  `json:"first_discount_used"`
+	CreatedAt         time.Time             `json:"created_at"`
+	UpdatedAt         time.Time             `json:"updated_at"`
 }
 
 // Init menginisialisasi penyimpanan berbasis file pada direktori yang ditentukan.
@@ -93,8 +111,23 @@ func loadCustomers() {
 		return
 	}
 
-	var list []*customer.Customer
-	if err := json.Unmarshal(bytes, &list); err == nil {
+	var records []customerRecord
+	if err := json.Unmarshal(bytes, &records); err == nil {
+		list := make([]*customer.Customer, 0, len(records))
+		for _, r := range records {
+			list = append(list, &customer.Customer{
+				ID:                r.ID,
+				Type:              r.Type,
+				Name:              r.Name,
+				Phone:             r.Phone,
+				Email:             r.Email,
+				NIM:               r.NIM,
+				PasswordHash:      r.PasswordHash,
+				FirstDiscountUsed: r.FirstDiscountUsed,
+				CreatedAt:         r.CreatedAt,
+				UpdatedAt:         r.UpdatedAt,
+			})
+		}
 		customer.DefaultStore.ImportCustomers(list)
 	}
 }
@@ -161,12 +194,36 @@ func SaveCustomers() {
 		return
 	}
 
-	list := customer.DefaultStore.ExportCustomers()
-	bytes, err := json.MarshalIndent(list, "", "  ")
+	customers := customer.DefaultStore.ExportCustomers()
+	records := make([]customerRecord, 0, len(customers))
+	for _, c := range customers {
+		if c == nil {
+			continue
+		}
+		records = append(records, customerRecord{
+			ID:                c.ID,
+			Type:              c.Type,
+			Name:              c.Name,
+			Phone:             c.Phone,
+			Email:             c.Email,
+			NIM:               c.NIM,
+			PasswordHash:      c.PasswordHash,
+			FirstDiscountUsed: c.FirstDiscountUsed,
+			CreatedAt:         c.CreatedAt,
+			UpdatedAt:         c.UpdatedAt,
+		})
+	}
+
+	bytes, err := json.MarshalIndent(records, "", "  ")
 	if err != nil {
+		log.Printf("[persistence] gagal mengubah data pelanggan ke JSON: %v", err)
 		return
 	}
-	_ = os.WriteFile(filepath.Join(dataDir, "customers.json"), bytes, 0644)
+
+	path := filepath.Join(dataDir, "customers.json")
+	if err := os.WriteFile(path, bytes, 0644); err != nil {
+		log.Printf("[persistence] gagal menyimpan %s: %v", path, err)
+	}
 }
 
 // SaveOrders menyimpan seluruh riwayat pesanan ke disk.
@@ -198,4 +255,3 @@ func SaveAll() {
 	SaveCustomers()
 	SaveOrders()
 }
-

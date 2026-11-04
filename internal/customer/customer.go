@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -14,7 +15,7 @@ import (
 
 var (
 	ErrCustomerNotFound   = errors.New("akun pelanggan tidak ditemukan")
-	ErrInvalidCredentials  = errors.New("nomor telepon, NIM, atau kata sandi tidak cocok")
+	ErrInvalidCredentials = errors.New("nomor telepon, NIM, atau kata sandi tidak cocok")
 	ErrNameRequired       = errors.New("nama lengkap wajib diisi minimal 2 karakter")
 	ErrPhoneRequired      = errors.New("nomor WhatsApp atau telepon wajib diisi minimal 6 digit")
 	ErrPasswordTooShort   = errors.New("kata sandi minimal 6 karakter")
@@ -350,8 +351,34 @@ func (s *Store) ImportCustomers(list []*Customer) {
 	defer s.mu.Unlock()
 
 	for _, c := range list {
-		if c != nil && c.ID != "" {
-			s.customers[c.ID] = c
+		if c == nil || c.ID == "" {
+			continue
+		}
+
+		// Jangan menimpa hash sandi yang sudah valid (misalnya hasil pemuatan
+		// dari MySQL) dengan hash kosong dari berkas lama.
+		if existing, ok := s.customers[c.ID]; ok && c.PasswordHash == "" {
+			c.PasswordHash = existing.PasswordHash
+		}
+
+		s.customers[c.ID] = c
+
+		// Pulihkan urutan ID agar registrasi berikutnya tidak memakai ID
+		// yang sudah ada dan menimpa akun pelanggan lain.
+		if n, ok := parseCustomerSeq(c.ID); ok && n > s.seq {
+			s.seq = n
 		}
 	}
+}
+
+func parseCustomerSeq(id string) (int, bool) {
+	const prefix = "CUST-"
+	if !strings.HasPrefix(id, prefix) {
+		return 0, false
+	}
+	n, err := strconv.Atoi(strings.TrimPrefix(id, prefix))
+	if err != nil || n <= 0 {
+		return 0, false
+	}
+	return n, true
 }

@@ -2,6 +2,7 @@ package httpapi
 
 import (
 	"bytes"
+	"log"
 	"net/http"
 	"strings"
 
@@ -141,7 +142,9 @@ func registerPostHandler(c *gin.Context) {
 	}
 
 	setCustomerSession(c, cust)
-	_ = database.SaveCustomer(cust)
+	if err := database.SaveCustomer(cust); err != nil {
+		log.Printf("[register] gagal menyimpan pelanggan %s ke MySQL: %v", cust.ID, err)
+	}
 	persistence.SaveCustomers()
 
 	// Jika ada barang di keranjang, langsung arahkan ke keranjang

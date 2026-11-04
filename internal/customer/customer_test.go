@@ -2,6 +2,8 @@ package customer
 
 import (
 	"testing"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 func TestRegisterAndAuthCustomer(t *testing.T) {
@@ -83,6 +85,49 @@ func TestRegisterAndAuthCustomer(t *testing.T) {
 	_, err = store.Authenticate("rina@gmail.com", "password123")
 	if err != ErrInvalidCredentials {
 		t.Errorf("login via email umum harus ditolak dengan ErrInvalidCredentials, dapat: %v", err)
+	}
+}
+
+func TestImportCustomersPreservesHashAndRestoresSequence(t *testing.T) {
+	store := NewStore()
+
+	hash, err := bcrypt.GenerateFromPassword([]byte("sandi123"), bcrypt.DefaultCost)
+	if err != nil {
+		t.Fatalf("gagal membuat hash: %v", err)
+	}
+
+	store.ImportCustomers([]*Customer{{
+		ID:           "CUST-0009",
+		Type:         CustomerTypeUmum,
+		Name:         "Akun Lama",
+		Phone:        "081300000009",
+		Email:        "lama@example.com",
+		PasswordHash: string(hash),
+	}})
+
+	// Registrasi berikutnya tidak boleh memakai ID yang sudah ada.
+	baru, err := store.Register(RegisterInput{
+		Type:     CustomerTypeUmum,
+		Name:     "Akun Baru",
+		Phone:    "081300000010",
+		Password: "sandi123",
+	})
+	if err != nil {
+		t.Fatalf("gagal registrasi: %v", err)
+	}
+	if baru.ID != "CUST-0010" {
+		t.Errorf("ID registrasi baru = %s, want CUST-0010", baru.ID)
+	}
+
+	// Impor data lama tanpa hash tidak boleh menghapus hash yang valid.
+	store.ImportCustomers([]*Customer{{
+		ID:    "CUST-0009",
+		Type:  CustomerTypeUmum,
+		Name:  "Akun Lama",
+		Phone: "081300000009",
+	}})
+	if _, err := store.Authenticate("081300000009", "sandi123"); err != nil {
+		t.Errorf("hash sandi akun lama seharusnya dipertahankan, dapat: %v", err)
 	}
 }
 

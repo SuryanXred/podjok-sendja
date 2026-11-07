@@ -166,6 +166,66 @@ func resolveDSN() (string, string) {
 	return cfg.DSN(), fmt.Sprintf("%s:%s/%s", cfg.Host, cfg.Port, cfg.DBName)
 }
 
+func tryCreateDatabaseIfMissing(cfg Config, dsn string, pingErr error) (*sql.DB, error) {
+	errStr := pingErr.Error()
+	if !strings.Contains(errStr, "1049") && !strings.Contains(strings.ToLower(errStr), "unknown database") {
+		return nil, pingErr
+	}
+
+	targetDB := cfg.DBName
+	if targetDB == "" {
+		targetDB = "caffe_podjok_sendja"
+	}
+
+	tlsParam := ""
+	if os.Getenv("DB_TLS") == "true" || (cfg.Host != "127.0.0.1" && cfg.Host != "localhost" && cfg.Host != "") {
+		tlsParam = "&tls=true"
+	}
+
+	// Coba buka koneksi ke database default 'test' atau root untuk membuat database baru
+	rootDSN := fmt.Sprintf("%s:%s@tcp(%s:%s)/test?parseTime=true&charset=utf8mb4&loc=Local%s",
+		cfg.User, cfg.Password, cfg.Host, cfg.Port, tlsParam)
+	rootDB, err := sql.Open("mysql", rootDSN)
+	if err != nil {
+		return nil, pingErr
+	}
+	defer rootDB.Close()
+
+	if pingTestErr := rootDB.Ping(); pingTestErr != nil {
+		// Coba lagi tanpa nama database
+		fallbackDSN := fmt.Sprintf("%s:%s@tcp(%s:%s)/?parseTime=true&charset=utf8mb4&loc=Local%s",
+			cfg.User, cfg.Password, cfg.Host, cfg.Port, tlsParam)
+		fallbackDB, fbErr := sql.Open("mysql", fallbackDSN)
+		if fbErr != nil {
+			return nil, pingErr
+		}
+		defer fallbackDB.Close()
+		rootDB = fallbackDB
+	}
+
+	_, execErr := rootDB.Exec(fmt.Sprintf("CREATE DATABASE IF NOT EXISTS `%s` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci", targetDB))
+	if execErr != nil {
+		log.Printf("[database] auto-create database `%s` gagal: %v", targetDB, execErr)
+		return nil, pingErr
+	}
+
+	log.Printf("[database] berhasil membuat database `%s` otomatis di server MySQL/TiDB.", targetDB)
+
+	newDB, err := sql.Open("mysql", dsn)
+	if err != nil {
+		return nil, err
+	}
+	newDB.SetMaxOpenConns(25)
+	newDB.SetMaxIdleConns(10)
+	newDB.SetConnMaxLifetime(5 * time.Minute)
+
+	if err := newDB.Ping(); err != nil {
+		return nil, err
+	}
+
+	return newDB, nil
+}
+
 // Init menginisialisasi koneksi MySQL, menjalankan migrasi skema tabel jika belum ada,
 // dan menyinkronkan data antara database dan state aplikasi.
 func Init() (*sql.DB, error) {
@@ -173,6 +233,7 @@ func Init() (*sql.DB, error) {
 	defer mu.Unlock()
 
 	dsn, source := resolveDSN()
+	cfg := LoadConfigFromEnv()
 
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
@@ -185,8 +246,12 @@ func Init() (*sql.DB, error) {
 	db.SetConnMaxLifetime(5 * time.Minute)
 
 	if err := db.Ping(); err != nil {
-		log.Printf("[database] MySQL tidak terhubung (%s): %v. Berjalan dalam mode penyimpanan lokal.", source, err)
-		return nil, err
+		if autoDB, autoErr := tryCreateDatabaseIfMissing(cfg, dsn, err); autoErr == nil && autoDB != nil {
+			db = autoDB
+		} else {
+			log.Printf("[database] MySQL tidak terhubung (%s): %v. Berjalan dalam mode penyimpanan lokal.", source, err)
+			return nil, err
+		}
 	}
 
 	globalDB = db

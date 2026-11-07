@@ -130,7 +130,7 @@ func cartContent(cart order.Cart, cust *customer.Customer, errorMessage string) 
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "\" class=\"cart-thumb-img\" width=\"56\" height=\"56\" loading=\"lazy\"><div class=\"cart-item-details\"><span class=\"cart-item-name\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "\" class=\"cart-thumb-img\" width=\"60\" height=\"60\" loading=\"lazy\"><div class=\"cart-item-details\"><span class=\"cart-item-name\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -179,111 +179,111 @@ func cartContent(cart order.Cart, cust *customer.Customer, errorMessage string) 
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, " / porsi</span></div></div><div class=\"cart-item-actions\"><div class=\"qty-control\"><form action=\"/cart/update\" method=\"POST\" class=\"inline-form\"><input type=\"hidden\" name=\"index\" value=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, " / porsi</span></div><form action=\"/cart/remove\" method=\"POST\" class=\"inline-form cart-item-remove-form\"><input type=\"hidden\" name=\"index\" value=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var9 string
 				templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.ResolveAttributeValue(fmt.Sprintf("%d", index))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 57, Col: 77}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 54, Col: 76}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var9)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "\"> <input type=\"hidden\" name=\"delta\" value=\"-1\"> <button type=\"submit\" class=\"btn-qty\" aria-label=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "\"> <button type=\"submit\" class=\"btn-remove\" aria-label=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var10 string
-				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.ResolveAttributeValue("Kurangi " + item.ProductName)
+				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.ResolveAttributeValue("Hapus " + item.ProductName)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 59, Col: 91}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 55, Col: 91}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var10)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "\">−</button></form><span class=\"qty-display\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "\" title=\"Hapus menu ini\"><svg class=\"icon-trash\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"3 6 5 6 21 6\"></polyline> <path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\"></path></svg> <span class=\"btn-remove-text\">Hapus</span></button></form></div><div class=\"cart-item-actions\"><div class=\"qty-control\"><form action=\"/cart/update\" method=\"POST\" class=\"inline-form\"><input type=\"hidden\" name=\"index\" value=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var11 string
-				templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", item.Quantity))
+				templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.ResolveAttributeValue(fmt.Sprintf("%d", index))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 61, Col: 70}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 67, Col: 77}
 				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var11)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</span><form action=\"/cart/update\" method=\"POST\" class=\"inline-form\"><input type=\"hidden\" name=\"index\" value=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "\"> <input type=\"hidden\" name=\"delta\" value=\"-1\"> <button type=\"submit\" class=\"btn-qty\" aria-label=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var12 string
-				templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.ResolveAttributeValue(fmt.Sprintf("%d", index))
+				templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.ResolveAttributeValue("Kurangi " + item.ProductName)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 63, Col: 77}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 69, Col: 91}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var12)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "\"> <input type=\"hidden\" name=\"delta\" value=\"1\"> <button type=\"submit\" class=\"btn-qty\" aria-label=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "\">−</button></form><span class=\"qty-display\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var13 string
-				templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.ResolveAttributeValue("Tambah " + item.ProductName)
+				templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", item.Quantity))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 65, Col: 90}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 71, Col: 70}
 				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var13)
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "\">+</button></form></div><span class=\"cart-item-subtotal\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "</span><form action=\"/cart/update\" method=\"POST\" class=\"inline-form\"><input type=\"hidden\" name=\"index\" value=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var14 string
-				templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(FormatRupiah(item.Subtotal))
+				templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.ResolveAttributeValue(fmt.Sprintf("%d", index))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 68, Col: 71}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 73, Col: 77}
 				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var14)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "</span><form action=\"/cart/remove\" method=\"POST\" class=\"inline-form\"><input type=\"hidden\" name=\"index\" value=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "\"> <input type=\"hidden\" name=\"delta\" value=\"1\"> <button type=\"submit\" class=\"btn-qty\" aria-label=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var15 string
-				templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.ResolveAttributeValue(fmt.Sprintf("%d", index))
+				templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.ResolveAttributeValue("Tambah " + item.ProductName)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 70, Col: 76}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 75, Col: 90}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var15)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "\"> <button type=\"submit\" class=\"btn-remove\" aria-label=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "\">+</button></form></div><div class=\"cart-item-subtotal-group\"><span class=\"cart-item-subtotal-prefix\">Subtotal</span> <span class=\"cart-item-subtotal\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var16 string
-				templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.ResolveAttributeValue("Hapus " + item.ProductName)
+				templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(FormatRupiah(item.Subtotal))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 71, Col: 91}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 80, Col: 72}
 				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var16)
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "\">Hapus</button></form></div></li>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "</span></div></div></li>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -300,46 +300,46 @@ func cartContent(cart order.Cart, cust *customer.Customer, errorMessage string) 
 				var templ_7745c5c3_Var17 string
 				templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(FormatRupiah(cart.Subtotal))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 82, Col: 65}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 91, Col: 65}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "</span></div><div class=\"cart-summary-row discount-row\"><span class=\"summary-label\"><span class=\"discount-chip\">Diskon 25%</span> ")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "</span></div><div class=\"cart-summary-row discount-row\"><div class=\"discount-info-col\"><span class=\"discount-chip\">Diskon 25%</span> <span class=\"discount-desc\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var18 string
 				templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(discountNote)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 87, Col: 23}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 96, Col: 51}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "</span> <strong class=\"discount-value\">−")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "</span></div><strong class=\"discount-value\">−")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var19 string
 				templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(FormatRupiah(discount))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 89, Col: 66}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 98, Col: 66}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "</strong></div><div class=\"cart-summary-row total-row\"><span class=\"summary-label\">Total Pembayaran</span> <strong class=\"summary-amount\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "</strong></div><div class=\"cart-summary-row total-row\"><div class=\"total-info-col\"><span class=\"summary-label\">Total Pembayaran</span> <span class=\"total-tax-note\">Harga bersih termasuk pajak</span></div><strong class=\"summary-amount\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var20 string
 				templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(FormatRupiah(finalTotal))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 93, Col: 65}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 105, Col: 65}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 				if templ_7745c5c3_Err != nil {
@@ -350,14 +350,14 @@ func cartContent(cart order.Cart, cust *customer.Customer, errorMessage string) 
 					return templ_7745c5c3_Err
 				}
 			} else {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "<div class=\"cart-summary-line\"><span class=\"summary-label\">Total Pembayaran</span> <strong class=\"summary-amount\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "<div class=\"cart-summary-row total-row\"><div class=\"total-info-col\"><span class=\"summary-label\">Total Pembayaran</span> <span class=\"total-tax-note\">Harga bersih termasuk pajak</span></div><strong class=\"summary-amount\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var21 string
 				templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(FormatRupiah(cart.Subtotal))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 98, Col: 68}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 113, Col: 68}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 				if templ_7745c5c3_Err != nil {
@@ -390,7 +390,7 @@ func cartContent(cart order.Cart, cust *customer.Customer, errorMessage string) 
 				var templ_7745c5c3_Var22 string
 				templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(cust.Name)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 125, Col: 27}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 140, Col: 27}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 				if templ_7745c5c3_Err != nil {
@@ -408,7 +408,7 @@ func cartContent(cart order.Cart, cust *customer.Customer, errorMessage string) 
 					var templ_7745c5c3_Var23 string
 					templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(cust.NIM)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 130, Col: 55}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 145, Col: 55}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 					if templ_7745c5c3_Err != nil {
@@ -452,7 +452,7 @@ func cartContent(cart order.Cart, cust *customer.Customer, errorMessage string) 
 				var templ_7745c5c3_Var24 string
 				templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.ResolveAttributeValue(cust.Name)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 154, Col: 26}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 169, Col: 26}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var24)
 				if templ_7745c5c3_Err != nil {
@@ -475,7 +475,7 @@ func cartContent(cart order.Cart, cust *customer.Customer, errorMessage string) 
 				var templ_7745c5c3_Var25 string
 				templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.ResolveAttributeValue(cust.Phone)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 170, Col: 27}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 185, Col: 27}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var25)
 				if templ_7745c5c3_Err != nil {

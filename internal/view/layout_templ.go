@@ -47,7 +47,7 @@ func Layout(title string, cust *customer.Customer, content templ.Component) temp
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</title><link rel=\"preconnect\" href=\"https://fonts.googleapis.com\"><link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin><link href=\"https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Fraunces:opsz,wght@9..144,500;9..144,650&display=swap\" rel=\"stylesheet\"><link rel=\"icon\" href=\"/static/favicon.svg\" type=\"image/svg+xml\"><link rel=\"stylesheet\" href=\"/static/app.css\"></head><body id=\"top\" class=\"site-table\"><header class=\"site-header\"><a class=\"wordmark brand-link\" href=\"/menu\"><span class=\"brand-logo-frame\"><img src=\"/static/images/logo.png\" alt=\"Logo Caffe Sari Mulia\" class=\"brand-logo\" width=\"34\" height=\"34\"></span> <span class=\"brand-title\">Podjok Sendja</span></a><nav aria-label=\"Navigasi utama\" class=\"main-nav\"><a class=\"nav-link\" href=\"/menu\">Menu</a> <a class=\"nav-link\" href=\"/keranjang\">Keranjang</a> <a class=\"nav-link\" href=\"/lacak\">Lacak</a> ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</title><link rel=\"preconnect\" href=\"https://fonts.googleapis.com\"><link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin><link href=\"https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Fraunces:opsz,wght@9..144,500;9..144,650&display=swap\" rel=\"stylesheet\"><link rel=\"icon\" href=\"/static/favicon.svg\" type=\"image/svg+xml\"><link rel=\"stylesheet\" href=\"/static/app.css\"></head><body id=\"top\" class=\"site-table\"><header class=\"site-header\"><a class=\"wordmark brand-link\" href=\"/menu\"><span class=\"brand-logo-frame\"><img src=\"/static/images/logo.png\" alt=\"Logo Caffe Sari Mulia\" class=\"brand-logo\" width=\"34\" height=\"34\"></span> <span class=\"brand-title\">Podjok Sendja</span></a><nav aria-label=\"Navigasi utama\" class=\"main-nav desktop-nav\"><a class=\"nav-link\" href=\"/menu\">Menu</a> <a class=\"nav-link\" href=\"/keranjang\">Keranjang</a> <a class=\"nav-link\" href=\"/lacak\">Lacak</a> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -85,7 +85,58 @@ func Layout(title string, cust *customer.Customer, content templ.Component) temp
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</nav></header><main class=\"site-main\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</nav><div class=\"mobile-header-actions\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if cust != nil {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<a class=\"mobile-user-badge\" href=\"/akun\" title=\"Buka Akun Saya\"><span class=\"mobile-user-avatar\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var4 string
+			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(string([]rune(cust.Name)[0:1]))
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/layout.templ`, Line: 49, Col: 72}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</span> <span class=\"mobile-user-name\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var5 string
+			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(cust.ShortName())
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/layout.templ`, Line: 50, Col: 56}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</span> ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			if cust.Type == customer.CustomerTypeMahasiswa {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<span class=\"nav-badge-mhs\">Mhs</span>")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</a> <a class=\"mobile-exit-link\" href=\"/keluar\" title=\"Keluar\">Keluar</a>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<a class=\"mobile-auth-btn\" href=\"/masuk\">Masuk</a>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</div></header><main class=\"site-main\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -93,35 +144,50 @@ func Layout(title string, cust *customer.Customer, content templ.Component) temp
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</main><footer class=\"site-footer\"><div class=\"footer-content\"><div class=\"footer-info\"><p class=\"footer-brand\">Caffe Podjok Sendja, Universitas Sari Mulia</p><address class=\"footer-address\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</main><footer class=\"site-footer\"><div class=\"footer-content\"><div class=\"footer-info\"><p class=\"footer-brand\">Caffe Podjok Sendja, Universitas Sari Mulia</p><address class=\"footer-address\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var4 string
-		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(storeconfig.DefaultStore.Get().Address)
+		var templ_7745c5c3_Var6 string
+		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(storeconfig.DefaultStore.Get().Address)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/layout.templ`, Line: 54, Col: 78}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/layout.templ`, Line: 68, Col: 78}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</address></div><div class=\"footer-links\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "</address></div><div class=\"footer-links\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if cust != nil {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<a class=\"footer-link\" href=\"/akun\">Akun Saya</a> <span class=\"footer-sep\">•</span> ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "<a class=\"footer-link\" href=\"/akun\">Akun Saya</a> <span class=\"footer-sep\">•</span> ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<a class=\"footer-link\" href=\"/masuk\">Masuk Akun</a> <span class=\"footer-sep\">•</span> <a class=\"footer-link\" href=\"/daftar\">Daftar Akun</a> <span class=\"footer-sep\">•</span> ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "<a class=\"footer-link\" href=\"/masuk\">Masuk Akun</a> <span class=\"footer-sep\">•</span> <a class=\"footer-link\" href=\"/daftar\">Daftar Akun</a> <span class=\"footer-sep\">•</span> ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<a class=\"back-to-top\" href=\"#top\">Kembali ke atas</a></div></div></footer></body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "<a class=\"back-to-top\" href=\"#top\">Kembali ke atas</a></div></div></footer><nav class=\"mobile-bottom-nav\" aria-label=\"Navigasi cepat ponsel\"><a class=\"mobile-bottom-tab\" href=\"/menu\"><svg class=\"mobile-tab-icon\" width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M18 8h1a4 4 0 0 1 0 8h-1\"></path> <path d=\"M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z\"></path> <line x1=\"6\" y1=\"1\" x2=\"6\" y2=\"4\"></line> <line x1=\"10\" y1=\"1\" x2=\"10\" y2=\"4\"></line> <line x1=\"14\" y1=\"1\" x2=\"14\" y2=\"4\"></line></svg> <span class=\"mobile-tab-label\">Menu</span></a> <a class=\"mobile-bottom-tab\" href=\"/keranjang\"><svg class=\"mobile-tab-icon\" width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"9\" cy=\"21\" r=\"1\"></circle> <circle cx=\"20\" cy=\"21\" r=\"1\"></circle> <path d=\"M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6\"></path></svg> <span class=\"mobile-tab-label\">Keranjang</span></a> <a class=\"mobile-bottom-tab\" href=\"/lacak\"><svg class=\"mobile-tab-icon\" width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z\"></path> <polyline points=\"14 2 14 8 20 8\"></polyline> <line x1=\"16\" y1=\"13\" x2=\"8\" y2=\"13\"></line> <line x1=\"16\" y1=\"17\" x2=\"8\" y2=\"17\"></line> <polyline points=\"10 9 9 9 8 9\"></polyline></svg> <span class=\"mobile-tab-label\">Lacak</span></a> ")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if cust != nil {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "<a class=\"mobile-bottom-tab\" href=\"/akun\"><svg class=\"mobile-tab-icon\" width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2\"></path> <circle cx=\"12\" cy=\"7\" r=\"4\"></circle></svg> <span class=\"mobile-tab-label\">Akun</span></a>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "<a class=\"mobile-bottom-tab\" href=\"/masuk\"><svg class=\"mobile-tab-icon\" width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4\"></path> <polyline points=\"10 17 15 12 10 7\"></polyline> <line x1=\"15\" y1=\"12\" x2=\"3\" y2=\"12\"></line></svg> <span class=\"mobile-tab-label\">Masuk</span></a>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "</nav></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

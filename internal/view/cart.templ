@@ -42,7 +42,7 @@ templ cartContent(cart order.Cart, cust *customer.Customer, errorMessage string)
 						for index, item := range cart.Items {
 							<li class="cart-item">
 								<div class="cart-item-header">
-									<img src={ "/static/images/products/" + item.ProductSlug + ".webp" } alt={ item.ProductName } class="cart-thumb-img" width="56" height="56" loading="lazy"/>
+									<img src={ "/static/images/products/" + item.ProductSlug + ".webp" } alt={ item.ProductName } class="cart-thumb-img" width="60" height="60" loading="lazy"/>
 									<div class="cart-item-details">
 										<span class="cart-item-name">{ item.ProductName }</span>
 										if item.Variant != "" {
@@ -50,6 +50,16 @@ templ cartContent(cart order.Cart, cust *customer.Customer, errorMessage string)
 										}
 										<span class="cart-item-unit-price">{ FormatRupiah(item.UnitPrice) } / porsi</span>
 									</div>
+									<form action="/cart/remove" method="POST" class="inline-form cart-item-remove-form">
+										<input type="hidden" name="index" value={ fmt.Sprintf("%d", index) }/>
+										<button type="submit" class="btn-remove" aria-label={ "Hapus " + item.ProductName } title="Hapus menu ini">
+											<svg class="icon-trash" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+												<polyline points="3 6 5 6 21 6"></polyline>
+												<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+											</svg>
+											<span class="btn-remove-text">Hapus</span>
+										</button>
+									</form>
 								</div>
 								<div class="cart-item-actions">
 									<div class="qty-control">
@@ -65,11 +75,10 @@ templ cartContent(cart order.Cart, cust *customer.Customer, errorMessage string)
 											<button type="submit" class="btn-qty" aria-label={ "Tambah " + item.ProductName }>+</button>
 										</form>
 									</div>
-									<span class="cart-item-subtotal">{ FormatRupiah(item.Subtotal) }</span>
-									<form action="/cart/remove" method="POST" class="inline-form">
-										<input type="hidden" name="index" value={ fmt.Sprintf("%d", index) }/>
-										<button type="submit" class="btn-remove" aria-label={ "Hapus " + item.ProductName }>Hapus</button>
-									</form>
+									<div class="cart-item-subtotal-group">
+										<span class="cart-item-subtotal-prefix">Subtotal</span>
+										<span class="cart-item-subtotal">{ FormatRupiah(item.Subtotal) }</span>
+									</div>
 								</div>
 							</li>
 						}
@@ -82,19 +91,25 @@ templ cartContent(cart order.Cart, cust *customer.Customer, errorMessage string)
 								<span class="summary-value">{ FormatRupiah(cart.Subtotal) }</span>
 							</div>
 							<div class="cart-summary-row discount-row">
-								<span class="summary-label">
+								<div class="discount-info-col">
 									<span class="discount-chip">Diskon 25%</span>
-									{ discountNote }
-								</span>
+									<span class="discount-desc">{ discountNote }</span>
+								</div>
 								<strong class="discount-value">−{ FormatRupiah(discount) }</strong>
 							</div>
 							<div class="cart-summary-row total-row">
-								<span class="summary-label">Total Pembayaran</span>
+								<div class="total-info-col">
+									<span class="summary-label">Total Pembayaran</span>
+									<span class="total-tax-note">Harga bersih termasuk pajak</span>
+								</div>
 								<strong class="summary-amount">{ FormatRupiah(finalTotal) }</strong>
 							</div>
 						} else {
-							<div class="cart-summary-line">
-								<span class="summary-label">Total Pembayaran</span>
+							<div class="cart-summary-row total-row">
+								<div class="total-info-col">
+									<span class="summary-label">Total Pembayaran</span>
+									<span class="total-tax-note">Harga bersih termasuk pajak</span>
+								</div>
 								<strong class="summary-amount">{ FormatRupiah(cart.Subtotal) }</strong>
 							</div>
 						}

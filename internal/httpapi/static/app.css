@@ -1597,6 +1597,353 @@ a:focus-visible {
 		font-size: 1.05rem;
 		border-radius: 10px;
 	}
+
+	/* Auth Pages (Masuk & Daftar) on Mobile */
+	.auth-sheet,
+	.track-sheet {
+		margin-top: 0;
+		padding: 1.25rem 1rem;
+		border-radius: 16px;
+		border-top-right-radius: 16px;
+	}
+
+	.customer-type-selector {
+		grid-template-columns: 1fr;
+		gap: 0.75rem;
+	}
+
+	.type-card-label {
+		padding: 0.85rem 1rem;
+		border-radius: 10px;
+		min-height: 48px;
+	}
+
+	.type-card-label:has(input:checked) {
+		border-radius: 10px;
+	}
+
+	.auth-promo-notice {
+		border-radius: 10px;
+		padding: 0.95rem 1rem;
+	}
+
+	.auth-footer-links {
+		text-align: center;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.form-input,
+	.form-textarea {
+		font-size: 1rem;
+		min-height: 48px;
+		border-radius: 8px;
+	}
+
+	/* Account Page on Mobile */
+	.account-sheet {
+		margin-top: 0;
+		padding: 1.25rem 1rem;
+		border-radius: 16px;
+		border-top-right-radius: 16px;
+	}
+
+	.account-profile-card {
+		padding: 1.15rem 1rem;
+		border-radius: 12px;
+		margin-bottom: 1.5rem;
+	}
+
+	.profile-header {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 1rem;
+	}
+
+	.profile-badge-group {
+		align-items: center;
+		gap: 0.85rem;
+	}
+
+	.profile-avatar-initial {
+		width: 48px;
+		height: 48px;
+		font-size: 1.35rem;
+		flex-shrink: 0;
+	}
+
+	.profile-name {
+		font-size: 1.25rem;
+	}
+
+	.profile-actions {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 0.65rem;
+		width: 100%;
+	}
+
+	.profile-actions .btn-action,
+	.profile-actions .btn-link {
+		width: 100%;
+		min-height: 44px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+		border-radius: 8px;
+		padding: 0.5rem 0.75rem;
+		font-size: 0.88rem;
+	}
+
+	.profile-details-grid {
+		grid-template-columns: 1fr;
+		gap: 0.75rem;
+		padding: 1rem 0;
+	}
+
+	.mhs-promo-status-box {
+		padding-top: 1rem;
+	}
+
+	.promo-available-alert,
+	.promo-used-alert {
+		border-radius: 8px;
+		padding: 0.85rem;
+	}
+
+	.history-order-card {
+		padding: 1rem;
+		border-radius: 10px;
+	}
+
+	.history-card-header {
+		align-items: center;
+	}
+
+	.history-card-footer {
+		margin-top: 0.75rem;
+		padding-top: 0.75rem;
+		border-top: 1px dashed var(--line);
+	}
+
+	.history-card-footer .btn-paper-link {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		min-height: 44px;
+		padding: 0.65rem 1rem;
+		border-radius: 8px;
+		border: 1.5px solid var(--accent);
+		color: var(--accent);
+		font-weight: 600;
+		text-decoration: none;
+		text-align: center;
+		background: rgba(154, 63, 31, 0.04);
+	}
+
+	.history-card-footer .btn-paper-link:active {
+		background: rgba(154, 63, 31, 0.12);
+	}
+
+	/* Order Status / Receipt Page on Mobile */
+	.receipt-sheet {
+		margin-top: 0;
+		padding: 1.25rem 1rem;
+		border-radius: 16px;
+		border-top-right-radius: 16px;
+	}
+
+	.receipt-header {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.85rem;
+		margin-bottom: 1.25rem;
+		padding-bottom: 0.85rem;
+	}
+
+	.receipt-brand {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	.receipt-logo {
+		width: 38px;
+		height: 38px;
+	}
+
+	.receipt-title {
+		font-size: 1.35rem;
+	}
+
+	.receipt-badge-wrap {
+		width: 100%;
+	}
+
+	.receipt-badge-wrap .status-pill {
+		display: flex;
+		justify-content: center;
+		width: 100%;
+		text-align: center;
+		padding: 0.5rem 0.85rem;
+		font-size: 0.88rem;
+		border-radius: 6px;
+	}
+
+	.receipt-info-grid {
+		grid-template-columns: 1fr 1fr;
+		gap: 0.85rem 0.65rem;
+		margin-bottom: 1.25rem;
+	}
+
+	.receipt-item-row {
+		padding: 0.65rem 0;
+	}
+
+	.receipt-item-subtotal {
+		white-space: nowrap !important;
+		flex-shrink: 0 !important;
+	}
+
+	.receipt-calc-line.calc-discount .calc-val {
+		white-space: nowrap !important;
+		flex-shrink: 0 !important;
+	}
+
+	.receipt-total-bar {
+		padding: 1rem 0 0.5rem;
+	}
+
+	.receipt-total-bar .total-amount {
+		font-size: 1.35rem;
+		white-space: nowrap !important;
+		flex-shrink: 0 !important;
+	}
+
+	.qris-payment-card {
+		padding: 1.25rem 0.85rem;
+		border-radius: 12px;
+		margin: 1.5rem 0;
+	}
+
+	.qris-image {
+		max-width: 220px;
+		width: 100%;
+		height: auto;
+		border-radius: 8px;
+		margin: 0 auto;
+		display: block;
+	}
+
+	.btn-sim-pay {
+		width: 100%;
+		min-height: 48px;
+		font-size: 0.9rem;
+		border-radius: 8px;
+		padding: 0.75rem;
+		white-space: normal;
+		line-height: 1.3;
+	}
+
+	.receipt-guidance-box {
+		padding: 1rem;
+		border-radius: 8px;
+	}
+
+	.receipt-actions {
+		display: flex;
+		flex-direction: column;
+		gap: 0.65rem;
+		width: 100%;
+		margin-top: 1.5rem;
+	}
+
+	.receipt-actions .btn-action,
+	.receipt-actions .btn-link,
+	.receipt-actions .btn-cancel-order {
+		width: 100%;
+		min-height: 48px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+		border-radius: 8px;
+		font-size: 0.95rem;
+	}
+
+	.receipt-cancel-form {
+		width: 100%;
+	}
+
+	/* Menu Page Elements on Mobile */
+	.menu-item {
+		padding: 0.85rem 0;
+		border-bottom: 1px dashed var(--line);
+	}
+
+	.menu-item-media {
+		flex: 0 0 68px;
+		width: 68px;
+		height: 68px;
+		border-radius: 8px;
+		overflow: hidden;
+	}
+
+	.product-thumb-img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		border-radius: 8px;
+	}
+
+	.menu-name {
+		font-size: 0.98rem;
+		font-weight: 600;
+	}
+
+	.menu-price {
+		font-size: 0.95rem;
+		font-weight: 700;
+		color: var(--accent);
+		white-space: nowrap;
+	}
+
+	.btn-order-add {
+		padding: 0.45rem 1rem;
+		min-height: 44px;
+		border-radius: 999px;
+		font-size: 0.85rem;
+		font-weight: 600;
+	}
+
+	.menu-variants {
+		display: flex;
+		flex-direction: column;
+		gap: 0.45rem;
+		margin-top: 0.5rem;
+	}
+
+	.menu-variant {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+		padding: 0.4rem 0.65rem;
+		background: rgba(246, 239, 227, 0.7);
+		border: 1px solid var(--line);
+		border-radius: 8px;
+	}
+
+	.btn-order-add-small {
+		padding: 0.35rem 0.75rem;
+		min-height: 40px;
+		border-radius: 999px;
+		font-size: 0.82rem;
+		font-weight: 600;
+	}
 }
 
 @media (prefers-reduced-motion: reduce) {

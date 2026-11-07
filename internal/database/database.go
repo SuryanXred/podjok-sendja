@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"strings"
 	"sync"
@@ -108,8 +109,61 @@ func loadDotEnv(filepath string) {
 
 // DSN menghasilkan connection string format MySQL driver.
 func (c Config) DSN() string {
-	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&charset=utf8mb4&loc=Local",
-		c.User, c.Password, c.Host, c.Port, c.DBName)
+	tlsParam := ""
+	if os.Getenv("DB_TLS") == "true" || (c.Host != "127.0.0.1" && c.Host != "localhost" && c.Host != "") {
+		tlsParam = "&tls=true"
+	}
+	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&charset=utf8mb4&loc=Local%s",
+		c.User, c.Password, c.Host, c.Port, c.DBName, tlsParam)
+}
+
+func parseURLToDSN(rawURL string) string {
+	if strings.Contains(rawURL, "@tcp(") {
+		return rawURL
+	}
+
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		return ""
+	}
+
+	user := u.User.Username()
+	pass, _ := u.User.Password()
+	host := u.Host
+	dbName := strings.TrimPrefix(u.Path, "/")
+	if dbName == "" {
+		dbName = "test"
+	}
+
+	tlsParam := ""
+	if strings.Contains(rawURL, "ssl") || (!strings.HasPrefix(host, "127.0.0.1") && !strings.HasPrefix(host, "localhost")) {
+		tlsParam = "&tls=true"
+	}
+
+	return fmt.Sprintf("%s:%s@tcp(%s)/%s?parseTime=true&charset=utf8mb4&loc=Local%s",
+		user, pass, host, dbName, tlsParam)
+}
+
+func resolveDSN() (string, string) {
+	loadDotEnv(".env")
+
+	// 1. Cek langsung MYSQL_DSN jika sudah diformat untuk Go MySQL driver
+	if dsn := os.Getenv("MYSQL_DSN"); dsn != "" {
+		return dsn, "MYSQL_DSN"
+	}
+
+	// 2. Cek DATABASE_URL atau MYSQL_URL (format URI: mysql://user:pass@host:port/dbname)
+	for _, envKey := range []string{"DATABASE_URL", "MYSQL_URL"} {
+		if rawURL := os.Getenv(envKey); rawURL != "" {
+			if parsed := parseURLToDSN(rawURL); parsed != "" {
+				return parsed, envKey
+			}
+		}
+	}
+
+	// 3. Fallback ke konfigurasi individual
+	cfg := LoadConfigFromEnv()
+	return cfg.DSN(), fmt.Sprintf("%s:%s/%s", cfg.Host, cfg.Port, cfg.DBName)
 }
 
 // Init menginisialisasi koneksi MySQL, menjalankan migrasi skema tabel jika belum ada,
@@ -118,8 +172,7 @@ func Init() (*sql.DB, error) {
 	mu.Lock()
 	defer mu.Unlock()
 
-	cfg := LoadConfigFromEnv()
-	dsn := cfg.DSN()
+	dsn, source := resolveDSN()
 
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
@@ -132,13 +185,13 @@ func Init() (*sql.DB, error) {
 	db.SetConnMaxLifetime(5 * time.Minute)
 
 	if err := db.Ping(); err != nil {
-		log.Printf("[database] MySQL tidak terhubung (%s): %v. Berjalan dalam mode penyimpanan lokal.", dsn, err)
+		log.Printf("[database] MySQL tidak terhubung (%s): %v. Berjalan dalam mode penyimpanan lokal.", source, err)
 		return nil, err
 	}
 
 	globalDB = db
 	isOnline = true
-	log.Printf("[database] terhubung ke MySQL: %s:%s/%s", cfg.Host, cfg.Port, cfg.DBName)
+	log.Printf("[database] terhubung ke MySQL (%s)", source)
 
 	if err := createTables(db); err != nil {
 		log.Printf("[database] gagal membuat tabel: %v", err)

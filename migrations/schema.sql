@@ -125,6 +125,7 @@ CREATE TABLE IF NOT EXISTS store_settings (
     contact_phone VARCHAR(50) NOT NULL,
     table_count INT NOT NULL DEFAULT 15,
     announcement TEXT NULL,
+    address VARCHAR(255) NULL,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

@@ -332,7 +332,11 @@ func cleanPhone(raw string) string {
 			sb.WriteRune(r)
 		}
 	}
-	return sb.String()
+	s := sb.String()
+	if strings.HasPrefix(s, "62") {
+		s = "0" + strings.TrimPrefix(s, "62")
+	}
+	return s
 }
 
 func (s *Store) ExportCustomers() []*Customer {

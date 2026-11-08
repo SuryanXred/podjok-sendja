@@ -118,6 +118,7 @@ func (c Config) DSN() string {
 }
 
 func parseURLToDSN(rawURL string) string {
+	rawURL = strings.Trim(strings.TrimSpace(rawURL), "\"'`")
 	if strings.Contains(rawURL, "@tcp(") {
 		return rawURL
 	}
@@ -144,24 +145,96 @@ func parseURLToDSN(rawURL string) string {
 		user, pass, host, dbName, tlsParam)
 }
 
+func cleanDSN(raw string) string {
+	raw = strings.Trim(strings.TrimSpace(raw), "\"'`")
+	if raw == "" {
+		return ""
+	}
+
+	// 1. Tangani jika pengguna menempel perintah CLI: mysql -u user -h host -P port ...
+	if strings.HasPrefix(raw, "mysql ") {
+		fields := strings.Fields(raw)
+		var user, pass, host, port, dbName string
+		port = "4000"
+		dbName = "test"
+		for i := 0; i < len(fields); i++ {
+			f := fields[i]
+			if f == "-u" && i+1 < len(fields) {
+				user = strings.Trim(fields[i+1], "'\"")
+				i++
+			} else if strings.HasPrefix(f, "-u") {
+				user = strings.Trim(strings.TrimPrefix(f, "-u"), "'\"")
+			} else if f == "-h" && i+1 < len(fields) {
+				host = strings.Trim(fields[i+1], "'\"")
+				i++
+			} else if strings.HasPrefix(f, "-h") {
+				host = strings.Trim(strings.TrimPrefix(f, "-h"), "'\"")
+			} else if f == "-P" && i+1 < len(fields) {
+				port = strings.Trim(fields[i+1], "'\"")
+				i++
+			} else if strings.HasPrefix(f, "-P") {
+				port = strings.Trim(strings.TrimPrefix(f, "-P"), "'\"")
+			} else if f == "-D" && i+1 < len(fields) {
+				dbName = strings.Trim(fields[i+1], "'\"")
+				i++
+			} else if strings.HasPrefix(f, "-D") {
+				dbName = strings.Trim(strings.TrimPrefix(f, "-D"), "'\"")
+			} else if f == "-p" && i+1 < len(fields) && !strings.HasPrefix(fields[i+1], "-") {
+				pass = strings.Trim(fields[i+1], "'\"")
+				i++
+			} else if strings.HasPrefix(f, "-p") && len(f) > 2 {
+				pass = strings.Trim(strings.TrimPrefix(f, "-p"), "'\"")
+			}
+		}
+		if user != "" && host != "" {
+			return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&charset=utf8mb4&loc=Local&tls=true",
+				user, pass, host, port, dbName)
+		}
+	}
+
+	// 2. Format URL: mysql://user:pass@host:port/dbname
+	if strings.HasPrefix(raw, "mysql://") || strings.HasPrefix(raw, "mysql:") {
+		return parseURLToDSN(raw)
+	}
+
+	// 3. Format Go Driver: user:pass@tcp(host:port)/dbname?params
+	if strings.Contains(raw, "@tcp(") {
+		dsn := raw
+		if !strings.Contains(dsn, "127.0.0.1") && !strings.Contains(dsn, "localhost") {
+			if !strings.Contains(dsn, "tls=") {
+				if strings.Contains(dsn, "?") {
+					dsn += "&tls=true"
+				} else {
+					dsn += "?tls=true"
+				}
+			}
+		}
+		if !strings.Contains(dsn, "parseTime=") {
+			if strings.Contains(dsn, "?") {
+				dsn += "&parseTime=true"
+			} else {
+				dsn += "?parseTime=true"
+			}
+		}
+		return dsn
+	}
+
+	return parseURLToDSN(raw)
+}
+
 func resolveDSN() (string, string) {
 	loadDotEnv(".env")
 
-	// 1. Cek langsung MYSQL_DSN jika sudah diformat untuk Go MySQL driver
-	if dsn := os.Getenv("MYSQL_DSN"); dsn != "" {
-		return dsn, "MYSQL_DSN"
-	}
-
-	// 2. Cek DATABASE_URL atau MYSQL_URL (format URI: mysql://user:pass@host:port/dbname)
-	for _, envKey := range []string{"DATABASE_URL", "MYSQL_URL"} {
-		if rawURL := os.Getenv(envKey); rawURL != "" {
-			if parsed := parseURLToDSN(rawURL); parsed != "" {
-				return parsed, envKey
+	// 1. Cek variabel lingkungan DSN atau URL
+	for _, envKey := range []string{"MYSQL_DSN", "DATABASE_URL", "MYSQL_URL", "TIDB_DSN", "TIDB_URL"} {
+		if raw := os.Getenv(envKey); raw != "" {
+			if cleaned := cleanDSN(raw); cleaned != "" {
+				return cleaned, envKey
 			}
 		}
 	}
 
-	// 3. Fallback ke konfigurasi individual
+	// 2. Fallback ke konfigurasi individual
 	cfg := LoadConfigFromEnv()
 	return cfg.DSN(), fmt.Sprintf("%s:%s/%s", cfg.Host, cfg.Port, cfg.DBName)
 }

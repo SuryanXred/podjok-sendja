@@ -909,11 +909,106 @@ a:focus-visible {
 }
 
 .form-fieldset {
-	border: 1px solid var(--line);
-	border-radius: 4px;
-	padding: 0.85rem 1rem;
-	margin: 0 0 1.25rem;
-	background: rgba(231, 216, 195, 0.2);
+	border: none;
+	padding: 0;
+	margin: 0 0 1.35rem;
+}
+
+.form-legend {
+	display: block;
+	font-weight: 600;
+	font-size: 0.95rem;
+	color: var(--ink);
+	margin-bottom: 0.55rem;
+}
+
+.option-cards-grid {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 0.75rem;
+}
+
+.option-card-label {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.85rem;
+	padding: 0.95rem 1.15rem;
+	border: 1.5px solid var(--line);
+	border-radius: 12px;
+	background: #ffffff;
+	cursor: pointer;
+	min-height: 56px;
+	transition: border-color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.option-card-label:hover {
+	border-color: var(--ink);
+}
+
+.option-card-label:has(input:checked) {
+	border-color: var(--accent);
+	background: rgba(154, 63, 31, 0.04);
+	box-shadow: 0 3px 12px rgba(154, 63, 31, 0.1);
+}
+
+.option-card-label input[type="radio"] {
+	margin-top: 0.25rem;
+	width: 1.15rem;
+	height: 1.15rem;
+	accent-color: var(--accent);
+	flex-shrink: 0;
+}
+
+.option-card-body {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.option-card-head {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+.option-icon {
+	color: var(--accent);
+	flex-shrink: 0;
+}
+
+.option-title {
+	font-size: 0.98rem;
+	font-weight: 650;
+	color: var(--ink);
+}
+
+.option-card-label:has(input:checked) .option-title {
+	color: var(--accent);
+}
+
+.option-badge {
+	font-size: 0.7rem;
+	font-weight: 700;
+	color: var(--accent);
+	background: rgba(154, 63, 31, 0.08);
+	padding: 0.15rem 0.5rem;
+	border-radius: 999px;
+	letter-spacing: 0.02em;
+}
+
+.option-badge-instant {
+	color: #1e6b37;
+	background: #e3f5e9;
+	border: 1px solid #a3d9b5;
+}
+
+.option-desc {
+	font-size: 0.82rem;
+	color: var(--muted);
+	line-height: 1.35;
 }
 
 .radio-options {
@@ -1608,6 +1703,16 @@ a:focus-visible {
 		flex-direction: column;
 		align-items: flex-start;
 		padding: 1.5rem 1rem;
+	}
+
+	.option-cards-grid {
+		grid-template-columns: 1fr;
+		gap: 0.65rem;
+	}
+
+	.option-card-label {
+		padding: 0.85rem 1rem;
+		border-radius: 10px;
 	}
 
 	.radio-options {

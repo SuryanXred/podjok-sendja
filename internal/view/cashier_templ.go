@@ -64,7 +64,7 @@ func cashierContent(metrics order.CashierMetrics, orders []*order.Order, current
 			templ_7745c5c3_Var2 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<section class=\"hero cashier-hero\"><div class=\"hero-brand\"><div class=\"hero-logo-frame\"><img src=\"/static/images/logo.png\" alt=\"Logo Caffe Sari Mulia\" class=\"hero-logo\" width=\"76\" height=\"76\"></div><div class=\"hero-brand-text\"><p class=\"hero-kicker\">Operasional Meja Depan</p><h1 class=\"hero-title\">Panel Kasir &amp; Antrean</h1></div></div><p class=\"hero-lede\">Verifikasi transaksi pembayaran tunai atau QRIS, percepat alur penyiapan barista, dan selesaikan pesanan pelanggan tanpa antre lama.</p>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<section class=\"hero cashier-hero\"><div class=\"hero-brand\"><div class=\"hero-logo-frame\"><img src=\"/static/images/logo.png?v=2\" alt=\"Logo Caffe Sari Mulia\" class=\"hero-logo\" width=\"76\" height=\"76\"></div><div class=\"hero-brand-text\"><p class=\"hero-kicker\">Operasional Meja Depan</p><h1 class=\"hero-title\">Panel Kasir &amp; Antrean</h1></div></div><p class=\"hero-lede\">Verifikasi transaksi pembayaran tunai atau QRIS, percepat alur penyiapan barista, dan selesaikan pesanan pelanggan tanpa antre lama.</p>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

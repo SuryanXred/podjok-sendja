@@ -60,7 +60,7 @@ func staffLoginContent(errorMessage string, successMessage string, redirectTo st
 			templ_7745c5c3_Var2 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<section class=\"hero staff-auth-hero\"><div class=\"hero-brand\"><div class=\"hero-logo-frame\"><img src=\"/static/images/logo.png\" alt=\"Logo Caffe Sari Mulia\" class=\"hero-logo\" width=\"76\" height=\"76\"></div><div class=\"hero-brand-text\"><p class=\"hero-kicker\">Portal Khusus Karyawan &amp; Pengelola</p><h1 class=\"hero-title\">Masuk Portal Pegawai</h1></div></div><p class=\"hero-lede\">Area terbatas untuk operasional kasir dan administrator Caffe Podjok Sendja.</p></section><div class=\"menu-sheet auth-sheet staff-login-sheet\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<section class=\"hero staff-auth-hero\"><div class=\"hero-brand\"><div class=\"hero-logo-frame\"><img src=\"/static/images/logo.png?v=2\" alt=\"Logo Caffe Sari Mulia\" class=\"hero-logo\" width=\"76\" height=\"76\"></div><div class=\"hero-brand-text\"><p class=\"hero-kicker\">Portal Khusus Karyawan &amp; Pengelola</p><h1 class=\"hero-title\">Masuk Portal Pegawai</h1></div></div><p class=\"hero-lede\">Area terbatas untuk operasional kasir dan administrator Caffe Podjok Sendja.</p></section><div class=\"menu-sheet auth-sheet staff-login-sheet\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -183,7 +183,7 @@ func staffForbiddenContent(u *staff.StaffUser) templ.Component {
 			templ_7745c5c3_Var7 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<section class=\"hero staff-auth-hero\"><div class=\"hero-brand\"><div class=\"hero-logo-frame\"><img src=\"/static/images/logo.png\" alt=\"Logo Caffe Sari Mulia\" class=\"hero-logo\" width=\"76\" height=\"76\"></div><div class=\"hero-brand-text\"><p class=\"hero-kicker\" style=\"color: #ff9d5c;\">Otorisasi Terbatas</p><h1 class=\"hero-title\">Akses Ditolak (403)</h1></div></div><p class=\"hero-lede\">Halaman Dashboard Manajemen hanya dapat diakses oleh akun dengan peran Administrator.</p></section><div class=\"menu-sheet auth-sheet staff-forbidden-sheet\"><div class=\"forbidden-card-box\"><div class=\"forbidden-icon-sign\">🔒</div><h2 class=\"forbidden-heading\">Hak Akses Tidak Mencukupi</h2><p class=\"forbidden-desc\">Saat ini Anda masuk sebagai <strong>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<section class=\"hero staff-auth-hero\"><div class=\"hero-brand\"><div class=\"hero-logo-frame\"><img src=\"/static/images/logo.png?v=2\" alt=\"Logo Caffe Sari Mulia\" class=\"hero-logo\" width=\"76\" height=\"76\"></div><div class=\"hero-brand-text\"><p class=\"hero-kicker\" style=\"color: #ff9d5c;\">Otorisasi Terbatas</p><h1 class=\"hero-title\">Akses Ditolak (403)</h1></div></div><p class=\"hero-lede\">Halaman Dashboard Manajemen hanya dapat diakses oleh akun dengan peran Administrator.</p></section><div class=\"menu-sheet auth-sheet staff-forbidden-sheet\"><div class=\"forbidden-card-box\"><div class=\"forbidden-icon-sign\">🔒</div><h2 class=\"forbidden-heading\">Hak Akses Tidak Mencukupi</h2><p class=\"forbidden-desc\">Saat ini Anda masuk sebagai <strong>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

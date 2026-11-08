@@ -66,7 +66,7 @@ func adminDashboardContent(activeTab string, report order.AdminReport, categorie
 			templ_7745c5c3_Var2 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<section class=\"hero admin-dash-hero\"><div class=\"hero-brand\"><div class=\"hero-logo-frame\"><img src=\"/static/images/logo.png\" alt=\"Logo Caffe Sari Mulia\" class=\"hero-logo\" width=\"76\" height=\"76\"></div><div class=\"hero-brand-text\"><p class=\"hero-kicker\">Panel Pemilik &amp; Pengelola</p><h1 class=\"hero-title\">Dashboard Manajemen</h1></div></div><p class=\"hero-lede\">Pantau performa penjualan, kelola katalog dan varian menu, kontrol stok harian, serta atur jam operasional Caffe Podjok Sendja.</p>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<section class=\"hero admin-dash-hero\"><div class=\"hero-brand\"><div class=\"hero-logo-frame\"><img src=\"/static/images/logo.png?v=2\" alt=\"Logo Caffe Sari Mulia\" class=\"hero-logo\" width=\"76\" height=\"76\"></div><div class=\"hero-brand-text\"><p class=\"hero-kicker\">Panel Pemilik &amp; Pengelola</p><h1 class=\"hero-title\">Dashboard Manajemen</h1></div></div><p class=\"hero-lede\">Pantau performa penjualan, kelola katalog dan varian menu, kontrol stok harian, serta atur jam operasional Caffe Podjok Sendja.</p>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

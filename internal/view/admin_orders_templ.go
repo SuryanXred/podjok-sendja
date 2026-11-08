@@ -63,7 +63,7 @@ func adminOrdersContent(metrics order.StoreMetrics, orders []*order.Order, curre
 			templ_7745c5c3_Var2 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<section class=\"hero admin-hero\"><div class=\"hero-brand\"><div class=\"hero-logo-frame\"><img src=\"/static/images/logo.png\" alt=\"Logo Caffe Sari Mulia\" class=\"hero-logo\" width=\"76\" height=\"76\"></div><div class=\"hero-brand-text\"><p class=\"hero-kicker\">Panel Operasional Kasir</p><h1 class=\"hero-title\">Antrean &amp; Pembayaran</h1></div></div><p class=\"hero-lede\">Kelola pesanan masuk, verifikasi bukti pembayaran, dan perbarui status saji secara langsung.</p></section><div class=\"metrics-grid\" aria-label=\"Ringkasan operasional hari ini\"><div class=\"metric-card\"><span class=\"metric-label\">Total Pesanan</span> <strong class=\"metric-value\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<section class=\"hero admin-hero\"><div class=\"hero-brand\"><div class=\"hero-logo-frame\"><img src=\"/static/images/logo.png?v=2\" alt=\"Logo Caffe Sari Mulia\" class=\"hero-logo\" width=\"76\" height=\"76\"></div><div class=\"hero-brand-text\"><p class=\"hero-kicker\">Panel Operasional Kasir</p><h1 class=\"hero-title\">Antrean &amp; Pembayaran</h1></div></div><p class=\"hero-lede\">Kelola pesanan masuk, verifikasi bukti pembayaran, dan perbarui status saji secara langsung.</p></section><div class=\"metrics-grid\" aria-label=\"Ringkasan operasional hari ini\"><div class=\"metric-card\"><span class=\"metric-label\">Total Pesanan</span> <strong class=\"metric-value\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

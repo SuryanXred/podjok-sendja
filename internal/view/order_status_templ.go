@@ -90,7 +90,7 @@ func orderContent(ord *order.Order) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "\"><div class=\"receipt-header\"><div class=\"receipt-brand\"><div class=\"receipt-logo-wrap\"><img src=\"/static/images/logo.png\" alt=\"Logo Caffe Sari Mulia\" class=\"receipt-logo\" width=\"44\" height=\"44\"></div><div class=\"receipt-brand-text\"><span class=\"receipt-kicker\">Caffe Podjok Sendja</span><h2 class=\"receipt-title\">Nota Pesanan</h2></div></div><div class=\"receipt-badge-wrap\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "\"><div class=\"receipt-header\"><div class=\"receipt-brand\"><div class=\"receipt-logo-wrap\"><img src=\"/static/images/logo.png?v=2\" alt=\"Logo Caffe Sari Mulia\" class=\"receipt-logo\" width=\"44\" height=\"44\"></div><div class=\"receipt-brand-text\"><span class=\"receipt-kicker\">Caffe Podjok Sendja</span><h2 class=\"receipt-title\">Nota Pesanan</h2></div></div><div class=\"receipt-badge-wrap\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

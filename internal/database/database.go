@@ -46,20 +46,47 @@ func LoadConfigFromEnv() Config {
 		host = getEnvCaseInsensitive("MYSQLHOST")
 	}
 	if host == "" {
+		host = getEnvCaseInsensitive("TIDB_HOST")
+	}
+	if host == "" {
+		host = getEnvCaseInsensitive("HOST")
+	}
+	if host == "" {
 		host = "127.0.0.1"
 	}
+
+	isRemote := host != "127.0.0.1" && host != "localhost" && host != ""
 
 	port := getEnvCaseInsensitive("DB_PORT")
 	if port == "" {
 		port = getEnvCaseInsensitive("MYSQLPORT")
 	}
 	if port == "" {
-		port = "3306"
+		port = getEnvCaseInsensitive("TIDB_PORT")
+	}
+	if port == "" {
+		p := getEnvCaseInsensitive("PORT")
+		if p == "4000" || p == "3306" {
+			port = p
+		}
+	}
+	if port == "" {
+		if isRemote && strings.Contains(host, "tidbcloud.com") {
+			port = "4000"
+		} else {
+			port = "3306"
+		}
 	}
 
 	user := getEnvCaseInsensitive("DB_USER")
 	if user == "" {
 		user = getEnvCaseInsensitive("MYSQLUSER")
+	}
+	if user == "" && isRemote {
+		user = getEnvCaseInsensitive("USERNAME")
+	}
+	if user == "" && isRemote {
+		user = getEnvCaseInsensitive("USER")
 	}
 	if user == "" {
 		user = "root"
@@ -69,13 +96,29 @@ func LoadConfigFromEnv() Config {
 	if pass == "" {
 		pass = getEnvCaseInsensitive("MYSQLPASSWORD")
 	}
+	if pass == "" {
+		pass = getEnvCaseInsensitive("PASSWORD")
+	}
+	if pass == "" {
+		pass = getEnvCaseInsensitive("PASS")
+	}
 
 	name := getEnvCaseInsensitive("DB_NAME")
 	if name == "" {
 		name = getEnvCaseInsensitive("MYSQLDATABASE")
 	}
 	if name == "" {
-		name = "caffe_podjok_sendja"
+		name = getEnvCaseInsensitive("DATABASE")
+	}
+	if name == "" {
+		name = getEnvCaseInsensitive("DB")
+	}
+	if name == "" {
+		if isRemote {
+			name = "test"
+		} else {
+			name = "caffe_podjok_sendja"
+		}
 	}
 
 	return Config{
@@ -301,7 +344,11 @@ func resolveDSN() (string, string) {
 
 	// 2. Fallback ke konfigurasi individual
 	cfg := LoadConfigFromEnv()
-	return cfg.DSN(), fmt.Sprintf("%s:%s/%s", cfg.Host, cfg.Port, cfg.DBName)
+	sourceDesc := fmt.Sprintf("%s:%s/%s", cfg.Host, cfg.Port, cfg.DBName)
+	if cfg.Host != "127.0.0.1" && cfg.Host != "localhost" {
+		sourceDesc = fmt.Sprintf("HOST=%s, DB=%s (TiDB/Remote)", cfg.Host, cfg.DBName)
+	}
+	return cfg.DSN(), sourceDesc
 }
 
 func tryCreateDatabaseIfMissing(cfg Config, dsn string, pingErr error) (*sql.DB, error) {

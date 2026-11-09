@@ -21,9 +21,11 @@ import (
 )
 
 var (
-	mu       sync.RWMutex
-	globalDB *sql.DB
-	isOnline bool
+	mu             sync.RWMutex
+	globalDB       *sql.DB
+	isOnline       bool
+	lastSource     string
+	lastConnectErr error
 )
 
 // Config menyimpan kredensial koneksi basis data MySQL.
@@ -307,9 +309,11 @@ func Init() (*sql.DB, error) {
 
 	dsn, source := resolveDSN()
 	cfg := LoadConfigFromEnv()
+	lastSource = source
 
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
+		lastConnectErr = err
 		log.Printf("[database] gagal membuka driver mysql: %v", err)
 		return nil, err
 	}
@@ -322,6 +326,7 @@ func Init() (*sql.DB, error) {
 		if autoDB, autoErr := tryCreateDatabaseIfMissing(cfg, dsn, err); autoErr == nil && autoDB != nil {
 			db = autoDB
 		} else {
+			lastConnectErr = err
 			log.Printf("[database] MySQL tidak terhubung (%s): %v. Berjalan dalam mode penyimpanan lokal.", source, err)
 			return nil, err
 		}
@@ -329,6 +334,7 @@ func Init() (*sql.DB, error) {
 
 	globalDB = db
 	isOnline = true
+	lastConnectErr = nil
 	log.Printf("[database] terhubung ke MySQL (%s)", source)
 
 	if err := createTables(db); err != nil {
@@ -354,6 +360,21 @@ func IsConnected() bool {
 	mu.RLock()
 	defer mu.RUnlock()
 	return isOnline && globalDB != nil
+}
+
+// StatusInfo mengembalikan status koneksi, sumber DSN, dan error terakhir jika ada.
+func StatusInfo() (bool, string, string) {
+	mu.RLock()
+	defer mu.RUnlock()
+	errStr := ""
+	if lastConnectErr != nil {
+		errStr = lastConnectErr.Error()
+	}
+	src := lastSource
+	if src == "" {
+		src = "127.0.0.1:3306"
+	}
+	return isOnline && globalDB != nil, src, errStr
 }
 
 // GetDB mengembalikan instance sql.DB aktif.

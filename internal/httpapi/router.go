@@ -6,6 +6,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
+	"caffe-podjok-sendja/internal/database"
 )
 
 //go:embed static/*
@@ -37,6 +39,19 @@ func NewRouter() *gin.Engine {
 	router.POST("/pesanan/:kode/simulasi-bayar", simulateQRISPaymentHandler)
 	router.GET("/api/pesanan/:kode/status", orderStatusAPIHandler)
 	router.POST("/webhook/midtrans", midtransWebhookHandler)
+	router.GET("/api/status", func(c *gin.Context) {
+		connected, src, lastErr := database.StatusInfo()
+		storageMode := "Penyimpanan Lokal JSON (Fallback)"
+		if connected {
+			storageMode = "MySQL / TiDB Cloud (Permanen)"
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"database_terhubung": connected,
+			"sumber_dsn":         src,
+			"mode_penyimpanan":   storageMode,
+			"pesan_error":        lastErr,
+		})
+	})
 
 	router.GET("/lacak", trackPageHandler)
 	router.POST("/lacak", trackSearchHandler)

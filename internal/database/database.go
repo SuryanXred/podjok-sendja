@@ -39,40 +39,40 @@ type Config struct {
 
 // LoadConfigFromEnv membaca pengaturan database dari berkas .env atau variabel lingkungan.
 func LoadConfigFromEnv() Config {
-	loadDotEnv(".env")
+	loadAllConfigSources()
 
-	host := os.Getenv("DB_HOST")
+	host := getEnvCaseInsensitive("DB_HOST")
 	if host == "" {
-		host = os.Getenv("MYSQLHOST")
+		host = getEnvCaseInsensitive("MYSQLHOST")
 	}
 	if host == "" {
 		host = "127.0.0.1"
 	}
 
-	port := os.Getenv("DB_PORT")
+	port := getEnvCaseInsensitive("DB_PORT")
 	if port == "" {
-		port = os.Getenv("MYSQLPORT")
+		port = getEnvCaseInsensitive("MYSQLPORT")
 	}
 	if port == "" {
 		port = "3306"
 	}
 
-	user := os.Getenv("DB_USER")
+	user := getEnvCaseInsensitive("DB_USER")
 	if user == "" {
-		user = os.Getenv("MYSQLUSER")
+		user = getEnvCaseInsensitive("MYSQLUSER")
 	}
 	if user == "" {
 		user = "root"
 	}
 
-	pass := os.Getenv("DB_PASSWORD")
+	pass := getEnvCaseInsensitive("DB_PASSWORD")
 	if pass == "" {
-		pass = os.Getenv("MYSQLPASSWORD")
+		pass = getEnvCaseInsensitive("MYSQLPASSWORD")
 	}
 
-	name := os.Getenv("DB_NAME")
+	name := getEnvCaseInsensitive("DB_NAME")
 	if name == "" {
-		name = os.Getenv("MYSQLDATABASE")
+		name = getEnvCaseInsensitive("MYSQLDATABASE")
 	}
 	if name == "" {
 		name = "caffe_podjok_sendja"
@@ -84,6 +84,69 @@ func LoadConfigFromEnv() Config {
 		User:     user,
 		Password: pass,
 		DBName:   name,
+	}
+}
+
+func getEnvCaseInsensitive(targetKey string) string {
+	if val := os.Getenv(targetKey); val != "" {
+		return val
+	}
+	targetLower := strings.ToLower(strings.TrimSpace(targetKey))
+	for _, env := range os.Environ() {
+		parts := strings.SplitN(env, "=", 2)
+		if len(parts) == 2 {
+			k := strings.ToLower(strings.TrimSpace(parts[0]))
+			if k == targetLower {
+				return parts[1]
+			}
+		}
+	}
+	return ""
+}
+
+func loadAllConfigSources() {
+	loadDotEnv(".env")
+	loadDotEnv("/etc/secrets/.env")
+	loadDotEnv("/etc/secrets/env")
+
+	// Baca berkas rahasia Render di /etc/secrets jika ada
+	if entries, err := os.ReadDir("/etc/secrets"); err == nil {
+		for _, e := range entries {
+			if e.IsDir() {
+				continue
+			}
+			content, err := os.ReadFile("/etc/secrets/" + e.Name())
+			if err != nil {
+				continue
+			}
+			text := strings.TrimSpace(string(content))
+			if text == "" {
+				continue
+			}
+			// Jika file berformat KEY=VALUE
+			if strings.Contains(text, "=") {
+				for _, line := range strings.Split(text, "\n") {
+					line = strings.TrimSpace(line)
+					if line == "" || strings.HasPrefix(line, "#") {
+						continue
+					}
+					parts := strings.SplitN(line, "=", 2)
+					if len(parts) == 2 {
+						k := strings.TrimSpace(parts[0])
+						v := strings.Trim(strings.TrimSpace(parts[1]), "\"'")
+						_ = os.Setenv(k, v)
+					}
+				}
+			} else {
+				// Jika file hanya berisi string DSN
+				k := strings.ToUpper(strings.TrimSpace(e.Name()))
+				if k == "MYSQL_DSN" || k == "DATABASE_URL" || k == "MYSQL_URL" || k == "FILENAME" {
+					if os.Getenv("MYSQL_DSN") == "" {
+						_ = os.Setenv("MYSQL_DSN", text)
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -225,11 +288,11 @@ func cleanDSN(raw string) string {
 }
 
 func resolveDSN() (string, string) {
-	loadDotEnv(".env")
+	loadAllConfigSources()
 
-	// 1. Cek variabel lingkungan DSN atau URL
+	// 1. Cek variabel lingkungan DSN atau URL (case-insensitive)
 	for _, envKey := range []string{"MYSQL_DSN", "DATABASE_URL", "MYSQL_URL", "TIDB_DSN", "TIDB_URL"} {
-		if raw := os.Getenv(envKey); raw != "" {
+		if raw := getEnvCaseInsensitive(envKey); raw != "" {
 			if cleaned := cleanDSN(raw); cleaned != "" {
 				return cleaned, envKey
 			}

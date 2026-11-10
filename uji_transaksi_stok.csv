@@ -1,0 +1,16 @@
+﻿No;Kode Pesanan;Nama Pelanggan;Kategori;NIM;Tipe Pesanan;No Meja;Metode Pembayaran;Item Pesanan;Harga Satuan Katalog;Jumlah (Qty);Subtotal (Rp);Diskon (Rp);Keterangan Diskon;Total Hitungan Manual (Rp);Total Sistem (Rp);Selisih (Rp);Status Pesanan;Kesesuaian
+1;PDS-UJI-0001;Budi Pratama;Mahasiswa;221001011;Dine In;02;QRIS (Simulasi);Americano (Ice);Rp 16,000;2;32000;8000;Diskon Mahasiswa 25% (NIM: 221001011);24000;24000;0;Selesai;Sesuai
+2;PDS-UJI-0002;Siti Aisyah;Mahasiswa;221001012;Takeaway;-;Tunai di Kasir;Caramel (Hot);Rp 15,000;1;15000;0;Total <= Rp 20.000 (Tanpa Diskon);15000;15000;0;Selesai;Sesuai
+3;PDS-UJI-0003;Ahmad Dani;Mahasiswa;221001013;Dine In;05;QRIS (Simulasi);Mix Platter + French Fries;Rp 20,000 + Rp 12,000;1 + 1;32000;8000;Diskon Mahasiswa 25% (NIM: 221001013);24000;24000;0;Selesai;Sesuai
+4;PDS-UJI-0004;Rina Wulandari;Umum;-;Dine In;08;Tunai di Kasir;Vanilla Latte (Ice);Rp 18,000;2;36000;0;-;36000;36000;0;Dibatalkan;Sesuai
+5;PDS-UJI-0005;Dimas Setiawan;Umum;-;Dine In;04;Tunai di Kasir;Mie Rebus Spesial + Telur Rebus/Goreng + Ginger Tea (Hot);Rp 12,000 + Rp 4,000 + Rp 7,000;1 + 1 + 1;23000;0;-;23000;23000;0;Selesai;Sesuai
+6;PDS-UJI-0006;Nurul Hidayah;Mahasiswa;221001014;Takeaway;-;QRIS (Simulasi);Matcha Latte + Choco Milk;Rp 18,000 + Rp 18,000;1 + 1;36000;9000;Diskon Mahasiswa 25% (NIM: 221001014);27000;27000;0;Selesai;Sesuai
+7;PDS-UJI-0007;Hendra Saputra;Umum;-;Dine In;01;QRIS (Simulasi);Brown Sugar (Ice) + Mie Goreng Spesial;Rp 18,000 + Rp 12,000;1 + 1;30000;0;-;30000;30000;0;Selesai;Sesuai
+8;PDS-UJI-0008;Fajar Ramadhan;Mahasiswa;221001015;Takeaway;-;QRIS (Simulasi);Spanish Latte (Ice) + French Fries;Rp 20,000 + Rp 12,000;1 + 1;32000;8000;Diskon Mahasiswa 25% (NIM: 221001015);24000;24000;0;Dibatalkan;Sesuai
+9;PDS-UJI-0009;Budi Pratama;Mahasiswa;221001011;Dine In;02;Tunai di Kasir;Americano (Ice) + Mie Rebus/Goreng Aneka Rasa;Rp 16,000 + Rp 7,000;1 + 1;23000;0;Promo Pertama Sudah Terpakai;23000;23000;0;Selesai;Sesuai
+10;PDS-UJI-0010;Wahyu Kurniawan;Umum;-;Dine In;06;Tunai di Kasir;Espresso + Mix Platter;Rp 10,000 + Rp 20,000;1 + 1;30000;0;-;30000;30000;0;Selesai;Sesuai
+11;PDS-UJI-0011;Maya Anggraini;Mahasiswa;221001016;Takeaway;-;QRIS (Simulasi);Strawberry Milk;Rp 18,000;2;36000;9000;Diskon Mahasiswa 25% (NIM: 221001016);27000;27000;0;Selesai;Sesuai
+12;PDS-UJI-0012;Tri Utami;Umum;-;Dine In;09;Tunai di Kasir;Caramel (Ice) + Telur Rebus/Goreng;Rp 18,000 + Rp 4,000;1 + 1;22000;0;-;22000;22000;0;Dibatalkan;Sesuai
+13;PDS-UJI-0013;Bagas Wicaksono;Umum;-;Takeaway;-;QRIS (Simulasi);Lemongrass (Ice) + Mie Rebus Spesial;Rp 12,000 + Rp 12,000;1 + 1;24000;0;-;24000;24000;0;Selesai;Sesuai
+14;PDS-UJI-0014;Cindy Claudia;Mahasiswa;221001017;Dine In;10;QRIS (Simulasi);Vanilla Latte (Hot) + French Fries;Rp 15,000 + Rp 12,000;1 + 1;27000;6750;Diskon Mahasiswa 25% (NIM: 221001017);20250;20250;0;Selesai;Sesuai
+15;PDS-UJI-0015;Reza Pahlevi;Umum;-;Dine In;11;Tunai di Kasir;Spanish Latte (Hot) + Mix Platter;Rp 18,000 + Rp 20,000;1 + 1;38000;0;-;38000;38000;0;Selesai;Sesuai

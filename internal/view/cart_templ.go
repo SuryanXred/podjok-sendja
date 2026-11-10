@@ -373,7 +373,7 @@ func cartContent(cart order.Cart, cust *customer.Customer, errorMessage string) 
 				return templ_7745c5c3_Err
 			}
 			if cust == nil {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "<div class=\"cart-promo-callout\"><div class=\"callout-title\">Mahasiswa Universitas Sari Mulia?</div><p class=\"callout-text\">Dapatkan <strong>diskon 25%</strong> untuk pembelian pertama (maksimal pembelian Rp 30.000) dengan mendaftar atau masuk menggunakan akun mahasiswa dan NIM Anda.</p><div class=\"callout-actions\"><a href=\"/masuk\" class=\"btn-paper-link\">Masuk ke Akun</a> <span class=\"callout-sep\">atau</span> <a href=\"/daftar?type=mahasiswa\" class=\"btn-paper-link\">Daftar Akun Mahasiswa</a></div></div>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "<div class=\"cart-promo-callout\"><div class=\"callout-title\">Mahasiswa Universitas Sari Mulia?</div><p class=\"callout-text\">Dapatkan <strong>diskon 25%</strong> untuk pembelian pertama (total pembelian di atas Rp 20.000) dengan mendaftar atau masuk menggunakan akun mahasiswa dan NIM Anda.</p><div class=\"callout-actions\"><a href=\"/masuk\" class=\"btn-paper-link\">Masuk ke Akun</a> <span class=\"callout-sep\">atau</span> <a href=\"/daftar?type=mahasiswa\" class=\"btn-paper-link\">Daftar Akun Mahasiswa</a></div></div>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -419,79 +419,86 @@ func cartContent(cart order.Cart, cust *customer.Customer, errorMessage string) 
 						return templ_7745c5c3_Err
 					}
 					if !cust.FirstDiscountUsed {
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "<span class=\"tag-pill tag-promo-on\">Diskon 25% Pembelian Pertama Aktif</span>")
-						if templ_7745c5c3_Err != nil {
-							return templ_7745c5c3_Err
+						if cart.Subtotal > 20000 {
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "<span class=\"tag-pill tag-promo-on\">Diskon 25% Pembelian Pertama Aktif</span>")
+							if templ_7745c5c3_Err != nil {
+								return templ_7745c5c3_Err
+							}
+						} else {
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 38, "<span class=\"tag-pill tag-promo-off\">Diskon 25% Aktif Jika Total &gt; Rp 20.000</span>")
+							if templ_7745c5c3_Err != nil {
+								return templ_7745c5c3_Err
+							}
 						}
 					} else {
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 38, "<span class=\"tag-pill tag-promo-off\">Promo Pembelian Pertama Sudah Dipakai</span>")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, "<span class=\"tag-pill tag-promo-off\">Promo Pembelian Pertama Sudah Dipakai</span>")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 					}
 				} else {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, "<span class=\"tag-pill tag-umum\">Pelanggan Umum</span>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 40, "<span class=\"tag-pill tag-umum\">Pelanggan Umum</span>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 40, "</div></div>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 41, "</div></div>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 41, "<form action=\"/checkout\" method=\"POST\" class=\"checkout-form\"><div class=\"form-group\"><label for=\"customer_name\" class=\"form-label\">Nama Pemesan <span class=\"required\">*</span></label> <input type=\"text\" id=\"customer_name\" name=\"customer_name\" class=\"form-input\" required minlength=\"2\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 42, "<form action=\"/checkout\" method=\"POST\" class=\"checkout-form\"><div class=\"form-group\"><label for=\"customer_name\" class=\"form-label\">Nama Pemesan <span class=\"required\">*</span></label> <input type=\"text\" id=\"customer_name\" name=\"customer_name\" class=\"form-input\" required minlength=\"2\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			if cust != nil {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 42, " value=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 43, " value=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var24 string
 				templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.ResolveAttributeValue(cust.Name)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 169, Col: 26}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 173, Col: 26}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var24)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 43, "\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 44, "\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 44, " placeholder=\"Nama Anda\"></div><div class=\"form-group\"><label for=\"customer_phone\" class=\"form-label\">Nomor WhatsApp / Telepon <span class=\"required\">*</span></label> <input type=\"tel\" id=\"customer_phone\" name=\"customer_phone\" class=\"form-input\" required minlength=\"6\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 45, " placeholder=\"Nama Anda\"></div><div class=\"form-group\"><label for=\"customer_phone\" class=\"form-label\">Nomor WhatsApp / Telepon <span class=\"required\">*</span></label> <input type=\"tel\" id=\"customer_phone\" name=\"customer_phone\" class=\"form-input\" required minlength=\"6\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			if cust != nil {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 45, " value=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 46, " value=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var25 string
 				templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.ResolveAttributeValue(cust.Phone)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 185, Col: 27}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/cart.templ`, Line: 189, Col: 27}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var25)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 46, "\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 47, "\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 47, " placeholder=\"08xxxxxxxxxx\"></div><fieldset class=\"form-fieldset\"><legend class=\"form-label form-legend\">Tipe Pesanan <span class=\"required\">*</span></legend><div class=\"option-cards-grid\"><label class=\"option-card-label\" for=\"type_dine_in\"><input type=\"radio\" id=\"type_dine_in\" name=\"order_type\" value=\"dine_in\" checked><div class=\"option-card-body\"><div class=\"option-card-head\"><svg class=\"option-icon\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M18 8h1a4 4 0 0 1 0 8h-1\"></path> <path d=\"M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z\"></path> <line x1=\"6\" y1=\"1\" x2=\"6\" y2=\"4\"></line> <line x1=\"10\" y1=\"1\" x2=\"10\" y2=\"4\"></line> <line x1=\"14\" y1=\"1\" x2=\"14\" y2=\"4\"></line></svg> <strong class=\"option-title\">Makan di Tempat</strong> <span class=\"option-badge\">Dine In</span></div><span class=\"option-desc\">Pesanan dihidangkan langsung ke meja Anda di kafe.</span></div></label> <label class=\"option-card-label\" for=\"type_takeaway\"><input type=\"radio\" id=\"type_takeaway\" name=\"order_type\" value=\"takeaway\"><div class=\"option-card-body\"><div class=\"option-card-head\"><svg class=\"option-icon\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z\"></path> <line x1=\"3\" y1=\"6\" x2=\"21\" y2=\"6\"></line> <path d=\"M16 10a4 4 0 0 1-8 0\"></path></svg> <strong class=\"option-title\">Bawa Pulang</strong> <span class=\"option-badge\">Takeaway</span></div><span class=\"option-desc\">Pesanan dikemas rapi untuk dibawa ke kelas atau perjalanan.</span></div></label></div></fieldset><div class=\"form-group\" id=\"table-number-group\"><label for=\"table_number\" class=\"form-label\">Nomor Meja</label> <input type=\"text\" id=\"table_number\" name=\"table_number\" class=\"form-input\" placeholder=\"Wajib jika makan di tempat, contoh: 03\"></div><div class=\"form-group\"><label for=\"notes\" class=\"form-label\">Catatan Pesanan (opsional)</label> <textarea id=\"notes\" name=\"notes\" class=\"form-textarea\" rows=\"2\" placeholder=\"Contoh: es sedikit, gula pisah\"></textarea></div><fieldset class=\"form-fieldset\"><legend class=\"form-label form-legend\">Metode Pembayaran <span class=\"required\">*</span></legend><div class=\"option-cards-grid\"><label class=\"option-card-label\" for=\"pay_cash\"><input type=\"radio\" id=\"pay_cash\" name=\"payment_method\" value=\"cash\" checked><div class=\"option-card-body\"><div class=\"option-card-head\"><svg class=\"option-icon\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"2\" y=\"6\" width=\"20\" height=\"12\" rx=\"2\"></rect> <circle cx=\"12\" cy=\"12\" r=\"2\"></circle> <path d=\"M6 12h.01M18 12h.01\"></path></svg> <strong class=\"option-title\">Tunai di Kasir</strong></div><span class=\"option-desc\">Bayar tunai langsung di meja kasir saat mengambil pesanan.</span></div></label> <label class=\"option-card-label\" for=\"pay_qris\"><input type=\"radio\" id=\"pay_qris\" name=\"payment_method\" value=\"qris\"><div class=\"option-card-body\"><div class=\"option-card-head\"><svg class=\"option-icon\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"3\" width=\"7\" height=\"7\"></rect> <rect x=\"14\" y=\"3\" width=\"7\" height=\"7\"></rect> <rect x=\"14\" y=\"14\" width=\"7\" height=\"7\"></rect> <rect x=\"3\" y=\"14\" width=\"7\" height=\"7\"></rect> <path d=\"M7 7h.01M17 7h.01M7 17h.01M17 17h.01\"></path></svg> <strong class=\"option-title\">QRIS Dinamis</strong> <span class=\"option-badge option-badge-instant\">Instan</span></div><span class=\"option-desc\">Scan via GoPay, OVO, DANA, BCA, Mandiri &amp; m-Banking langsung di layar.</span></div></label></div></fieldset><div class=\"form-actions\"><button type=\"submit\" class=\"btn-submit-order\">Kirim Pesanan Sekarang</button></div></form></section></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 48, " placeholder=\"08xxxxxxxxxx\"></div><fieldset class=\"form-fieldset\"><legend class=\"form-label form-legend\">Tipe Pesanan <span class=\"required\">*</span></legend><div class=\"option-cards-grid\"><label class=\"option-card-label\" for=\"type_dine_in\"><input type=\"radio\" id=\"type_dine_in\" name=\"order_type\" value=\"dine_in\" checked><div class=\"option-card-body\"><div class=\"option-card-head\"><svg class=\"option-icon\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M18 8h1a4 4 0 0 1 0 8h-1\"></path> <path d=\"M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z\"></path> <line x1=\"6\" y1=\"1\" x2=\"6\" y2=\"4\"></line> <line x1=\"10\" y1=\"1\" x2=\"10\" y2=\"4\"></line> <line x1=\"14\" y1=\"1\" x2=\"14\" y2=\"4\"></line></svg> <strong class=\"option-title\">Makan di Tempat</strong> <span class=\"option-badge\">Dine In</span></div><span class=\"option-desc\">Pesanan dihidangkan langsung ke meja Anda di kafe.</span></div></label> <label class=\"option-card-label\" for=\"type_takeaway\"><input type=\"radio\" id=\"type_takeaway\" name=\"order_type\" value=\"takeaway\"><div class=\"option-card-body\"><div class=\"option-card-head\"><svg class=\"option-icon\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z\"></path> <line x1=\"3\" y1=\"6\" x2=\"21\" y2=\"6\"></line> <path d=\"M16 10a4 4 0 0 1-8 0\"></path></svg> <strong class=\"option-title\">Bawa Pulang</strong> <span class=\"option-badge\">Takeaway</span></div><span class=\"option-desc\">Pesanan dikemas rapi untuk dibawa ke kelas atau perjalanan.</span></div></label></div></fieldset><div class=\"form-group\" id=\"table-number-group\"><label for=\"table_number\" class=\"form-label\">Nomor Meja</label> <input type=\"text\" id=\"table_number\" name=\"table_number\" class=\"form-input\" placeholder=\"Wajib jika makan di tempat, contoh: 03\"></div><div class=\"form-group\"><label for=\"notes\" class=\"form-label\">Catatan Pesanan (opsional)</label> <textarea id=\"notes\" name=\"notes\" class=\"form-textarea\" rows=\"2\" placeholder=\"Contoh: es sedikit, gula pisah\"></textarea></div><fieldset class=\"form-fieldset\"><legend class=\"form-label form-legend\">Metode Pembayaran <span class=\"required\">*</span></legend><div class=\"option-cards-grid\"><label class=\"option-card-label\" for=\"pay_cash\"><input type=\"radio\" id=\"pay_cash\" name=\"payment_method\" value=\"cash\" checked><div class=\"option-card-body\"><div class=\"option-card-head\"><svg class=\"option-icon\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"2\" y=\"6\" width=\"20\" height=\"12\" rx=\"2\"></rect> <circle cx=\"12\" cy=\"12\" r=\"2\"></circle> <path d=\"M6 12h.01M18 12h.01\"></path></svg> <strong class=\"option-title\">Tunai di Kasir</strong></div><span class=\"option-desc\">Bayar tunai langsung di meja kasir saat mengambil pesanan.</span></div></label> <label class=\"option-card-label\" for=\"pay_qris\"><input type=\"radio\" id=\"pay_qris\" name=\"payment_method\" value=\"qris\"><div class=\"option-card-body\"><div class=\"option-card-head\"><svg class=\"option-icon\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"3\" width=\"7\" height=\"7\"></rect> <rect x=\"14\" y=\"3\" width=\"7\" height=\"7\"></rect> <rect x=\"14\" y=\"14\" width=\"7\" height=\"7\"></rect> <rect x=\"3\" y=\"14\" width=\"7\" height=\"7\"></rect> <path d=\"M7 7h.01M17 7h.01M7 17h.01M17 17h.01\"></path></svg> <strong class=\"option-title\">QRIS Dinamis</strong> <span class=\"option-badge option-badge-instant\">Instan</span></div><span class=\"option-desc\">Scan via GoPay, OVO, DANA, BCA, Mandiri &amp; m-Banking langsung di layar.</span></div></label></div></fieldset><div class=\"form-actions\"><button type=\"submit\" class=\"btn-submit-order\">Kirim Pesanan Sekarang</button></div></form></section></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 48, "</div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 49, "</div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

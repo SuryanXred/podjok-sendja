@@ -1,0 +1,522 @@
+================================================================================
+LAPORAN HASIL PENGUJIAN OTOMATIS & KOMPILASI (TEST & BUILD REPORT)
+SISTEM WEB ORDER & MANAJEMEN CAFFE PODJOK SENDJA (KAFE SARMUL)
+================================================================================
+
+INFORMASI LINGKUNGAN PENGUJIAN:
+- Tanggal Pengujian : 10 November 2026, 18:58:29
+- Sistem Operasi    : Windows 11 (64-bit)
+- Versi Go          : go version go1.26.5 windows/amd64
+- Versi Templ       : v0.3.1070
+- Database Mode     : Fallback Penyimpanan Lokal Terenkripsi (JSON Storage Engine)
+
+================================================================================
+RINGKASAN EKSEKUTIF PENGUJIAN (KPI 1 - 4):
+================================================================================
+- Total Kasus Uji Riil (termasuk subtest) : 74 kasus
+- Kasus Uji Lulus (PASS)                  : 73 kasus (98.6%)
+- Kasus Uji Dilewati (SKIP)               : 1 kasus (live MySQL test pada environment lokal tanpa service aktif)
+- Kasus Uji Gagal (FAIL / ERROR)          : 0 kasus (0%)
+
+Rincian Tingkat Fungsi Pengujian:
+- Total Fungsi Uji Utama (func Test...)   : 50 fungsi
+- Fungsi Utama Lulus                      : 49 fungsi
+- Sub-kasus Varian Menu Lulus (t.Run)     : 24 kasus
+
+Status Perintah Makefile:
+- Status Pengujian make vet               : BERHASIL (0 issue / clean, exit code 0)
+- Status Pengujian make test              : BERHASIL (Exit Code 0)
+- Status Kompilasi make build             : BERHASIL (Binary: bin/web.exe, 26.99 MB, exit code 0)
+
+================================================================================
+BAGIAN 1: KELUARAN 'make vet' (STATIC CODE ANALYSIS & CODE INTEGRITY)
+Perintah: templ generate && go vet ./...
+================================================================================
+[templ generate]
+(✓) Post-generation event received, processing... [ updates=0 needsRestart=true needsBrowserReload=true ]
+(✓) Complete [ updates=0 duration=85.004ms ]
+
+[go vet ./...]
+Hasil: Bersih tanpa error / peringatan (Code integrity 100% lulus standar Go vet).
+
+================================================================================
+BAGIAN 2: KELUARAN 'make build' (APPLICATION BINARY COMPILATION)
+Perintah: templ generate && go build -o bin/web.exe ./cmd/web
+================================================================================
+[templ generate]
+(✓) Post-generation event received, processing... [ updates=0 needsRestart=true needsBrowserReload=true ]
+(✓) Complete [ updates=0 duration=83.14ms ]
+
+[go build -o bin/web.exe ./cmd/web]
+Status: BERHASIL (Exit Code 0, kompilasi bersih tanpa warning/error)
+Target Binary : bin/web.exe
+Ukuran Binary : 28,299,776 bytes (26.99 MB)
+Waktu Build   : 10 November 2026, 18:58:24
+
+================================================================================
+BAGIAN 3: KELUARAN 'make test' RINGKAS PER PAKET
+Perintah: templ generate && go test ./...
+================================================================================
+?   	caffe-podjok-sendja/cmd/web	[no test files]
+ok  	caffe-podjok-sendja/internal/catalog	(cached)
+ok  	caffe-podjok-sendja/internal/customer	0.923s
+ok  	caffe-podjok-sendja/internal/database	0.334s
+ok  	caffe-podjok-sendja/internal/httpapi	0.905s
+ok  	caffe-podjok-sendja/internal/order	(cached)
+ok  	caffe-podjok-sendja/internal/payment	(cached)
+ok  	caffe-podjok-sendja/internal/persistence	0.308s
+?   	caffe-podjok-sendja/internal/staff	[no test files]
+?   	caffe-podjok-sendja/internal/storeconfig	[no test files]
+ok  	caffe-podjok-sendja/internal/view	0.228s
+
+================================================================================
+BAGIAN 4: KELUARAN LENGKAP PENGUJIAN TERPERINCI (VERBOSE OUTPUT)
+Perintah: go test -v ./...
+================================================================================
+?   	caffe-podjok-sendja/cmd/web	[no test files]
+=== RUN   TestSeedHasCategoriesInDisplayOrder
+--- PASS: TestSeedHasCategoriesInDisplayOrder (0.00s)
+=== RUN   TestSeedHasSeventeenProducts
+--- PASS: TestSeedHasSeventeenProducts (0.00s)
+=== RUN   TestVariantPrices
+=== RUN   TestVariantPrices/Americano_ice
+=== RUN   TestVariantPrices/Americano_hot
+=== RUN   TestVariantPrices/Espresso
+=== RUN   TestVariantPrices/Caramel_ice
+=== RUN   TestVariantPrices/Caramel_hot
+=== RUN   TestVariantPrices/Vanilla_Latte_ice
+=== RUN   TestVariantPrices/Vanilla_Latte_hot
+=== RUN   TestVariantPrices/Brown_Sugar_ice
+=== RUN   TestVariantPrices/Brown_Sugar_hot
+=== RUN   TestVariantPrices/Spanish_Latte_ice
+=== RUN   TestVariantPrices/Spanish_Latte_hot
+=== RUN   TestVariantPrices/Ginger_Tea_ice
+=== RUN   TestVariantPrices/Ginger_Tea_hot
+=== RUN   TestVariantPrices/Lemongrass_ice
+=== RUN   TestVariantPrices/Lemongrass_hot
+=== RUN   TestVariantPrices/Choco_Milk
+=== RUN   TestVariantPrices/Strawberry_Milk
+=== RUN   TestVariantPrices/Matcha_Latte
+=== RUN   TestVariantPrices/Mie_Aneka_Rasa
+=== RUN   TestVariantPrices/Mie_Rebus_Spesial
+=== RUN   TestVariantPrices/Mie_Goreng_Spesial
+=== RUN   TestVariantPrices/Telur
+=== RUN   TestVariantPrices/French_Fries
+=== RUN   TestVariantPrices/Mix_Platter
+--- PASS: TestVariantPrices (0.00s)
+    --- PASS: TestVariantPrices/Americano_ice (0.00s)
+    --- PASS: TestVariantPrices/Americano_hot (0.00s)
+    --- PASS: TestVariantPrices/Espresso (0.00s)
+    --- PASS: TestVariantPrices/Caramel_ice (0.00s)
+    --- PASS: TestVariantPrices/Caramel_hot (0.00s)
+    --- PASS: TestVariantPrices/Vanilla_Latte_ice (0.00s)
+    --- PASS: TestVariantPrices/Vanilla_Latte_hot (0.00s)
+    --- PASS: TestVariantPrices/Brown_Sugar_ice (0.00s)
+    --- PASS: TestVariantPrices/Brown_Sugar_hot (0.00s)
+    --- PASS: TestVariantPrices/Spanish_Latte_ice (0.00s)
+    --- PASS: TestVariantPrices/Spanish_Latte_hot (0.00s)
+    --- PASS: TestVariantPrices/Ginger_Tea_ice (0.00s)
+    --- PASS: TestVariantPrices/Ginger_Tea_hot (0.00s)
+    --- PASS: TestVariantPrices/Lemongrass_ice (0.00s)
+    --- PASS: TestVariantPrices/Lemongrass_hot (0.00s)
+    --- PASS: TestVariantPrices/Choco_Milk (0.00s)
+    --- PASS: TestVariantPrices/Strawberry_Milk (0.00s)
+    --- PASS: TestVariantPrices/Matcha_Latte (0.00s)
+    --- PASS: TestVariantPrices/Mie_Aneka_Rasa (0.00s)
+    --- PASS: TestVariantPrices/Mie_Rebus_Spesial (0.00s)
+    --- PASS: TestVariantPrices/Mie_Goreng_Spesial (0.00s)
+    --- PASS: TestVariantPrices/Telur (0.00s)
+    --- PASS: TestVariantPrices/French_Fries (0.00s)
+    --- PASS: TestVariantPrices/Mix_Platter (0.00s)
+=== RUN   TestPriceForRejectsUnknownVariant
+--- PASS: TestPriceForRejectsUnknownVariant (0.00s)
+=== RUN   TestPriceForRequiresVariantWhenProductHasVariants
+--- PASS: TestPriceForRequiresVariantWhenProductHasVariants (0.00s)
+=== RUN   TestPriceForRejectsVariantOnSingleProduct
+--- PASS: TestPriceForRejectsVariantOnSingleProduct (0.00s)
+=== RUN   TestSlugsAreUnique
+--- PASS: TestSlugsAreUnique (0.00s)
+PASS
+ok  	caffe-podjok-sendja/internal/catalog	(cached)
+=== RUN   TestRegisterAndAuthCustomer
+--- PASS: TestRegisterAndAuthCustomer (0.57s)
+=== RUN   TestImportCustomersPreservesHashAndRestoresSequence
+--- PASS: TestImportCustomersPreservesHashAndRestoresSequence (0.38s)
+=== RUN   TestCalculateFirstDiscount
+--- PASS: TestCalculateFirstDiscount (0.00s)
+PASS
+ok  	caffe-podjok-sendja/internal/customer	1.129s
+=== RUN   TestDatabaseConfigDSN
+--- PASS: TestDatabaseConfigDSN (0.00s)
+=== RUN   TestDatabaseInitAndOperations
+2026/11/10 18:58:28 [database] MySQL tidak terhubung (127.0.0.1:3306/caffe_podjok_sendja): dial tcp 127.0.0.1:3306: connectex: No connection could be made because the target machine actively refused it.. Berjalan dalam mode penyimpanan lokal.
+    database_test.go:31: MySQL not available on local test environment (dial tcp 127.0.0.1:3306: connectex: No connection could be made because the target machine actively refused it.), skipping live MySQL test
+--- SKIP: TestDatabaseInitAndOperations (0.04s)
+PASS
+ok  	caffe-podjok-sendja/internal/database	0.417s
+=== RUN   TestUnauthenticatedStaffRedirectsToLogin
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /static/*filepath         --> github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1 (2 handlers)
+[GIN-debug] HEAD   /static/*filepath         --> github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1 (2 handlers)
+[GIN-debug] GET    /                         --> caffe-podjok-sendja/internal/httpapi.homeHandler (2 handlers)
+[GIN-debug] GET    /menu                     --> caffe-podjok-sendja/internal/httpapi.menuPageHandler (2 handlers)
+[GIN-debug] GET    /api/menu                 --> caffe-podjok-sendja/internal/httpapi.menuHandler (2 handlers)
+[GIN-debug] POST   /cart/add                 --> caffe-podjok-sendja/internal/httpapi.cartAddHandler (2 handlers)
+[GIN-debug] POST   /cart/update              --> caffe-podjok-sendja/internal/httpapi.cartUpdateHandler (2 handlers)
+[GIN-debug] POST   /cart/remove              --> caffe-podjok-sendja/internal/httpapi.cartRemoveHandler (2 handlers)
+[GIN-debug] GET    /keranjang                --> caffe-podjok-sendja/internal/httpapi.cartPageHandler (2 handlers)
+[GIN-debug] POST   /checkout                 --> caffe-podjok-sendja/internal/httpapi.checkoutHandler (2 handlers)
+[GIN-debug] GET    /pesanan/:kode            --> caffe-podjok-sendja/internal/httpapi.orderPageHandler (2 handlers)
+[GIN-debug] GET    /pesanan/:kode/cetak      --> caffe-podjok-sendja/internal/httpapi.publicPrintReceiptHandler (2 handlers)
+[GIN-debug] POST   /pesanan/:kode/batal      --> caffe-podjok-sendja/internal/httpapi.orderCancelHandler (2 handlers)
+[GIN-debug] POST   /pesanan/:kode/simulasi-bayar --> caffe-podjok-sendja/internal/httpapi.simulateQRISPaymentHandler (2 handlers)
+[GIN-debug] GET    /api/pesanan/:kode/status --> caffe-podjok-sendja/internal/httpapi.orderStatusAPIHandler (2 handlers)
+[GIN-debug] POST   /webhook/midtrans         --> caffe-podjok-sendja/internal/httpapi.midtransWebhookHandler (2 handlers)
+[GIN-debug] GET    /api/status               --> caffe-podjok-sendja/internal/httpapi.NewRouter.func1 (2 handlers)
+[GIN-debug] GET    /lacak                    --> caffe-podjok-sendja/internal/httpapi.trackPageHandler (2 handlers)
+[GIN-debug] POST   /lacak                    --> caffe-podjok-sendja/internal/httpapi.trackSearchHandler (2 handlers)
+[GIN-debug] GET    /masuk                    --> caffe-podjok-sendja/internal/httpapi.loginPageHandler (2 handlers)
+[GIN-debug] POST   /masuk                    --> caffe-podjok-sendja/internal/httpapi.loginPostHandler (2 handlers)
+[GIN-debug] GET    /daftar                   --> caffe-podjok-sendja/internal/httpapi.registerPageHandler (2 handlers)
+[GIN-debug] POST   /daftar                   --> caffe-podjok-sendja/internal/httpapi.registerPostHandler (2 handlers)
+[GIN-debug] GET    /keluar                   --> caffe-podjok-sendja/internal/httpapi.logoutHandler (2 handlers)
+[GIN-debug] POST   /keluar                   --> caffe-podjok-sendja/internal/httpapi.logoutHandler (2 handlers)
+[GIN-debug] GET    /akun                     --> caffe-podjok-sendja/internal/httpapi.accountPageHandler (2 handlers)
+[GIN-debug] GET    /pegawai/masuk            --> caffe-podjok-sendja/internal/httpapi.staffLoginPageHandler (2 handlers)
+[GIN-debug] POST   /pegawai/masuk            --> caffe-podjok-sendja/internal/httpapi.staffLoginPostHandler (2 handlers)
+[GIN-debug] GET    /pegawai/keluar           --> caffe-podjok-sendja/internal/httpapi.staffLogoutHandler (2 handlers)
+[GIN-debug] POST   /pegawai/keluar           --> caffe-podjok-sendja/internal/httpapi.staffLogoutHandler (2 handlers)
+[GIN-debug] GET    /kasir                    --> caffe-podjok-sendja/internal/httpapi.cashierPageHandler (2 handlers)
+[GIN-debug] GET    /kasir/pesanan/:kode/cetak --> caffe-podjok-sendja/internal/httpapi.cashierPrintReceiptHandler (2 handlers)
+[GIN-debug] POST   /kasir/pesanan/:kode/status --> caffe-podjok-sendja/internal/httpapi.cashierUpdateOrderStatusHandler (2 handlers)
+[GIN-debug] GET    /admin                    --> caffe-podjok-sendja/internal/httpapi.adminDashboardHandler (2 handlers)
+[GIN-debug] GET    /admin/laporan/ekspor     --> caffe-podjok-sendja/internal/httpapi.adminExportSalesReportCSVHandler (2 handlers)
+[GIN-debug] POST   /admin/menu/tambah        --> caffe-podjok-sendja/internal/httpapi.adminAddProductHandler (2 handlers)
+[GIN-debug] POST   /admin/menu/harga         --> caffe-podjok-sendja/internal/httpapi.adminUpdatePriceHandler (2 handlers)
+[GIN-debug] POST   /admin/stok/sesuaikan     --> caffe-podjok-sendja/internal/httpapi.adminAdjustStockHandler (2 handlers)
+[GIN-debug] POST   /admin/pengaturan         --> caffe-podjok-sendja/internal/httpapi.adminUpdateSettingsHandler (2 handlers)
+[GIN-debug] GET    /admin/pesanan            --> caffe-podjok-sendja/internal/httpapi.adminOrdersPageHandler (2 handlers)
+[GIN-debug] POST   /admin/pesanan/:kode/status --> caffe-podjok-sendja/internal/httpapi.adminUpdateOrderStatusHandler (2 handlers)
+--- PASS: TestUnauthenticatedStaffRedirectsToLogin (0.00s)
+=== RUN   TestStaffLoginPageLoads
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /static/*filepath         --> github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1 (2 handlers)
+[GIN-debug] HEAD   /static/*filepath         --> github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1 (2 handlers)
+[GIN-debug] GET    /                         --> caffe-podjok-sendja/internal/httpapi.homeHandler (2 handlers)
+[GIN-debug] GET    /menu                     --> caffe-podjok-sendja/internal/httpapi.menuPageHandler (2 handlers)
+[GIN-debug] GET    /api/menu                 --> caffe-podjok-sendja/internal/httpapi.menuHandler (2 handlers)
+[GIN-debug] POST   /cart/add                 --> caffe-podjok-sendja/internal/httpapi.cartAddHandler (2 handlers)
+[GIN-debug] POST   /cart/update              --> caffe-podjok-sendja/internal/httpapi.cartUpdateHandler (2 handlers)
+[GIN-debug] POST   /cart/remove              --> caffe-podjok-sendja/internal/httpapi.cartRemoveHandler (2 handlers)
+[GIN-debug] GET    /keranjang                --> caffe-podjok-sendja/internal/httpapi.cartPageHandler (2 handlers)
+[GIN-debug] POST   /checkout                 --> caffe-podjok-sendja/internal/httpapi.checkoutHandler (2 handlers)
+[GIN-debug] GET    /pesanan/:kode            --> caffe-podjok-sendja/internal/httpapi.orderPageHandler (2 handlers)
+[GIN-debug] GET    /pesanan/:kode/cetak      --> caffe-podjok-sendja/internal/httpapi.publicPrintReceiptHandler (2 handlers)
+[GIN-debug] POST   /pesanan/:kode/batal      --> caffe-podjok-sendja/internal/httpapi.orderCancelHandler (2 handlers)
+[GIN-debug] POST   /pesanan/:kode/simulasi-bayar --> caffe-podjok-sendja/internal/httpapi.simulateQRISPaymentHandler (2 handlers)
+[GIN-debug] GET    /api/pesanan/:kode/status --> caffe-podjok-sendja/internal/httpapi.orderStatusAPIHandler (2 handlers)
+[GIN-debug] POST   /webhook/midtrans         --> caffe-podjok-sendja/internal/httpapi.midtransWebhookHandler (2 handlers)
+[GIN-debug] GET    /api/status               --> caffe-podjok-sendja/internal/httpapi.NewRouter.func1 (2 handlers)
+[GIN-debug] GET    /lacak                    --> caffe-podjok-sendja/internal/httpapi.trackPageHandler (2 handlers)
+[GIN-debug] POST   /lacak                    --> caffe-podjok-sendja/internal/httpapi.trackSearchHandler (2 handlers)
+[GIN-debug] GET    /masuk                    --> caffe-podjok-sendja/internal/httpapi.loginPageHandler (2 handlers)
+[GIN-debug] POST   /masuk                    --> caffe-podjok-sendja/internal/httpapi.loginPostHandler (2 handlers)
+[GIN-debug] GET    /daftar                   --> caffe-podjok-sendja/internal/httpapi.registerPageHandler (2 handlers)
+[GIN-debug] POST   /daftar                   --> caffe-podjok-sendja/internal/httpapi.registerPostHandler (2 handlers)
+[GIN-debug] GET    /keluar                   --> caffe-podjok-sendja/internal/httpapi.logoutHandler (2 handlers)
+[GIN-debug] POST   /keluar                   --> caffe-podjok-sendja/internal/httpapi.logoutHandler (2 handlers)
+[GIN-debug] GET    /akun                     --> caffe-podjok-sendja/internal/httpapi.accountPageHandler (2 handlers)
+[GIN-debug] GET    /pegawai/masuk            --> caffe-podjok-sendja/internal/httpapi.staffLoginPageHandler (2 handlers)
+[GIN-debug] POST   /pegawai/masuk            --> caffe-podjok-sendja/internal/httpapi.staffLoginPostHandler (2 handlers)
+[GIN-debug] GET    /pegawai/keluar           --> caffe-podjok-sendja/internal/httpapi.staffLogoutHandler (2 handlers)
+[GIN-debug] POST   /pegawai/keluar           --> caffe-podjok-sendja/internal/httpapi.staffLogoutHandler (2 handlers)
+[GIN-debug] GET    /kasir                    --> caffe-podjok-sendja/internal/httpapi.cashierPageHandler (2 handlers)
+[GIN-debug] GET    /kasir/pesanan/:kode/cetak --> caffe-podjok-sendja/internal/httpapi.cashierPrintReceiptHandler (2 handlers)
+[GIN-debug] POST   /kasir/pesanan/:kode/status --> caffe-podjok-sendja/internal/httpapi.cashierUpdateOrderStatusHandler (2 handlers)
+[GIN-debug] GET    /admin                    --> caffe-podjok-sendja/internal/httpapi.adminDashboardHandler (2 handlers)
+[GIN-debug] GET    /admin/laporan/ekspor     --> caffe-podjok-sendja/internal/httpapi.adminExportSalesReportCSVHandler (2 handlers)
+[GIN-debug] POST   /admin/menu/tambah        --> caffe-podjok-sendja/internal/httpapi.adminAddProductHandler (2 handlers)
+[GIN-debug] POST   /admin/menu/harga         --> caffe-podjok-sendja/internal/httpapi.adminUpdatePriceHandler (2 handlers)
+[GIN-debug] POST   /admin/stok/sesuaikan     --> caffe-podjok-sendja/internal/httpapi.adminAdjustStockHandler (2 handlers)
+[GIN-debug] POST   /admin/pengaturan         --> caffe-podjok-sendja/internal/httpapi.adminUpdateSettingsHandler (2 handlers)
+[GIN-debug] GET    /admin/pesanan            --> caffe-podjok-sendja/internal/httpapi.adminOrdersPageHandler (2 handlers)
+[GIN-debug] POST   /admin/pesanan/:kode/status --> caffe-podjok-sendja/internal/httpapi.adminUpdateOrderStatusHandler (2 handlers)
+--- PASS: TestStaffLoginPageLoads (0.00s)
+=== RUN   TestCashierRoleAccessAndForbiddenAdmin
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /static/*filepath         --> github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1 (2 handlers)
+[GIN-debug] HEAD   /static/*filepath         --> github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1 (2 handlers)
+[GIN-debug] GET    /                         --> caffe-podjok-sendja/internal/httpapi.homeHandler (2 handlers)
+[GIN-debug] GET    /menu                     --> caffe-podjok-sendja/internal/httpapi.menuPageHandler (2 handlers)
+[GIN-debug] GET    /api/menu                 --> caffe-podjok-sendja/internal/httpapi.menuHandler (2 handlers)
+[GIN-debug] POST   /cart/add                 --> caffe-podjok-sendja/internal/httpapi.cartAddHandler (2 handlers)
+[GIN-debug] POST   /cart/update              --> caffe-podjok-sendja/internal/httpapi.cartUpdateHandler (2 handlers)
+[GIN-debug] POST   /cart/remove              --> caffe-podjok-sendja/internal/httpapi.cartRemoveHandler (2 handlers)
+[GIN-debug] GET    /keranjang                --> caffe-podjok-sendja/internal/httpapi.cartPageHandler (2 handlers)
+[GIN-debug] POST   /checkout                 --> caffe-podjok-sendja/internal/httpapi.checkoutHandler (2 handlers)
+[GIN-debug] GET    /pesanan/:kode            --> caffe-podjok-sendja/internal/httpapi.orderPageHandler (2 handlers)
+[GIN-debug] GET    /pesanan/:kode/cetak      --> caffe-podjok-sendja/internal/httpapi.publicPrintReceiptHandler (2 handlers)
+[GIN-debug] POST   /pesanan/:kode/batal      --> caffe-podjok-sendja/internal/httpapi.orderCancelHandler (2 handlers)
+[GIN-debug] POST   /pesanan/:kode/simulasi-bayar --> caffe-podjok-sendja/internal/httpapi.simulateQRISPaymentHandler (2 handlers)
+[GIN-debug] GET    /api/pesanan/:kode/status --> caffe-podjok-sendja/internal/httpapi.orderStatusAPIHandler (2 handlers)
+[GIN-debug] POST   /webhook/midtrans         --> caffe-podjok-sendja/internal/httpapi.midtransWebhookHandler (2 handlers)
+[GIN-debug] GET    /api/status               --> caffe-podjok-sendja/internal/httpapi.NewRouter.func1 (2 handlers)
+[GIN-debug] GET    /lacak                    --> caffe-podjok-sendja/internal/httpapi.trackPageHandler (2 handlers)
+[GIN-debug] POST   /lacak                    --> caffe-podjok-sendja/internal/httpapi.trackSearchHandler (2 handlers)
+[GIN-debug] GET    /masuk                    --> caffe-podjok-sendja/internal/httpapi.loginPageHandler (2 handlers)
+[GIN-debug] POST   /masuk                    --> caffe-podjok-sendja/internal/httpapi.loginPostHandler (2 handlers)
+[GIN-debug] GET    /daftar                   --> caffe-podjok-sendja/internal/httpapi.registerPageHandler (2 handlers)
+[GIN-debug] POST   /daftar                   --> caffe-podjok-sendja/internal/httpapi.registerPostHandler (2 handlers)
+[GIN-debug] GET    /keluar                   --> caffe-podjok-sendja/internal/httpapi.logoutHandler (2 handlers)
+[GIN-debug] POST   /keluar                   --> caffe-podjok-sendja/internal/httpapi.logoutHandler (2 handlers)
+[GIN-debug] GET    /akun                     --> caffe-podjok-sendja/internal/httpapi.accountPageHandler (2 handlers)
+[GIN-debug] GET    /pegawai/masuk            --> caffe-podjok-sendja/internal/httpapi.staffLoginPageHandler (2 handlers)
+[GIN-debug] POST   /pegawai/masuk            --> caffe-podjok-sendja/internal/httpapi.staffLoginPostHandler (2 handlers)
+[GIN-debug] GET    /pegawai/keluar           --> caffe-podjok-sendja/internal/httpapi.staffLogoutHandler (2 handlers)
+[GIN-debug] POST   /pegawai/keluar           --> caffe-podjok-sendja/internal/httpapi.staffLogoutHandler (2 handlers)
+[GIN-debug] GET    /kasir                    --> caffe-podjok-sendja/internal/httpapi.cashierPageHandler (2 handlers)
+[GIN-debug] GET    /kasir/pesanan/:kode/cetak --> caffe-podjok-sendja/internal/httpapi.cashierPrintReceiptHandler (2 handlers)
+[GIN-debug] POST   /kasir/pesanan/:kode/status --> caffe-podjok-sendja/internal/httpapi.cashierUpdateOrderStatusHandler (2 handlers)
+[GIN-debug] GET    /admin                    --> caffe-podjok-sendja/internal/httpapi.adminDashboardHandler (2 handlers)
+[GIN-debug] GET    /admin/laporan/ekspor     --> caffe-podjok-sendja/internal/httpapi.adminExportSalesReportCSVHandler (2 handlers)
+[GIN-debug] POST   /admin/menu/tambah        --> caffe-podjok-sendja/internal/httpapi.adminAddProductHandler (2 handlers)
+[GIN-debug] POST   /admin/menu/harga         --> caffe-podjok-sendja/internal/httpapi.adminUpdatePriceHandler (2 handlers)
+[GIN-debug] POST   /admin/stok/sesuaikan     --> caffe-podjok-sendja/internal/httpapi.adminAdjustStockHandler (2 handlers)
+[GIN-debug] POST   /admin/pengaturan         --> caffe-podjok-sendja/internal/httpapi.adminUpdateSettingsHandler (2 handlers)
+[GIN-debug] GET    /admin/pesanan            --> caffe-podjok-sendja/internal/httpapi.adminOrdersPageHandler (2 handlers)
+[GIN-debug] POST   /admin/pesanan/:kode/status --> caffe-podjok-sendja/internal/httpapi.adminUpdateOrderStatusHandler (2 handlers)
+--- PASS: TestCashierRoleAccessAndForbiddenAdmin (0.07s)
+=== RUN   TestAdminRoleFullAccess
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /static/*filepath         --> github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1 (2 handlers)
+[GIN-debug] HEAD   /static/*filepath         --> github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1 (2 handlers)
+[GIN-debug] GET    /                         --> caffe-podjok-sendja/internal/httpapi.homeHandler (2 handlers)
+[GIN-debug] GET    /menu                     --> caffe-podjok-sendja/internal/httpapi.menuPageHandler (2 handlers)
+[GIN-debug] GET    /api/menu                 --> caffe-podjok-sendja/internal/httpapi.menuHandler (2 handlers)
+[GIN-debug] POST   /cart/add                 --> caffe-podjok-sendja/internal/httpapi.cartAddHandler (2 handlers)
+[GIN-debug] POST   /cart/update              --> caffe-podjok-sendja/internal/httpapi.cartUpdateHandler (2 handlers)
+[GIN-debug] POST   /cart/remove              --> caffe-podjok-sendja/internal/httpapi.cartRemoveHandler (2 handlers)
+[GIN-debug] GET    /keranjang                --> caffe-podjok-sendja/internal/httpapi.cartPageHandler (2 handlers)
+[GIN-debug] POST   /checkout                 --> caffe-podjok-sendja/internal/httpapi.checkoutHandler (2 handlers)
+[GIN-debug] GET    /pesanan/:kode            --> caffe-podjok-sendja/internal/httpapi.orderPageHandler (2 handlers)
+[GIN-debug] GET    /pesanan/:kode/cetak      --> caffe-podjok-sendja/internal/httpapi.publicPrintReceiptHandler (2 handlers)
+[GIN-debug] POST   /pesanan/:kode/batal      --> caffe-podjok-sendja/internal/httpapi.orderCancelHandler (2 handlers)
+[GIN-debug] POST   /pesanan/:kode/simulasi-bayar --> caffe-podjok-sendja/internal/httpapi.simulateQRISPaymentHandler (2 handlers)
+[GIN-debug] GET    /api/pesanan/:kode/status --> caffe-podjok-sendja/internal/httpapi.orderStatusAPIHandler (2 handlers)
+[GIN-debug] POST   /webhook/midtrans         --> caffe-podjok-sendja/internal/httpapi.midtransWebhookHandler (2 handlers)
+[GIN-debug] GET    /api/status               --> caffe-podjok-sendja/internal/httpapi.NewRouter.func1 (2 handlers)
+[GIN-debug] GET    /lacak                    --> caffe-podjok-sendja/internal/httpapi.trackPageHandler (2 handlers)
+[GIN-debug] POST   /lacak                    --> caffe-podjok-sendja/internal/httpapi.trackSearchHandler (2 handlers)
+[GIN-debug] GET    /masuk                    --> caffe-podjok-sendja/internal/httpapi.loginPageHandler (2 handlers)
+[GIN-debug] POST   /masuk                    --> caffe-podjok-sendja/internal/httpapi.loginPostHandler (2 handlers)
+[GIN-debug] GET    /daftar                   --> caffe-podjok-sendja/internal/httpapi.registerPageHandler (2 handlers)
+[GIN-debug] POST   /daftar                   --> caffe-podjok-sendja/internal/httpapi.registerPostHandler (2 handlers)
+[GIN-debug] GET    /keluar                   --> caffe-podjok-sendja/internal/httpapi.logoutHandler (2 handlers)
+[GIN-debug] POST   /keluar                   --> caffe-podjok-sendja/internal/httpapi.logoutHandler (2 handlers)
+[GIN-debug] GET    /akun                     --> caffe-podjok-sendja/internal/httpapi.accountPageHandler (2 handlers)
+[GIN-debug] GET    /pegawai/masuk            --> caffe-podjok-sendja/internal/httpapi.staffLoginPageHandler (2 handlers)
+[GIN-debug] POST   /pegawai/masuk            --> caffe-podjok-sendja/internal/httpapi.staffLoginPostHandler (2 handlers)
+[GIN-debug] GET    /pegawai/keluar           --> caffe-podjok-sendja/internal/httpapi.staffLogoutHandler (2 handlers)
+[GIN-debug] POST   /pegawai/keluar           --> caffe-podjok-sendja/internal/httpapi.staffLogoutHandler (2 handlers)
+[GIN-debug] GET    /kasir                    --> caffe-podjok-sendja/internal/httpapi.cashierPageHandler (2 handlers)
+[GIN-debug] GET    /kasir/pesanan/:kode/cetak --> caffe-podjok-sendja/internal/httpapi.cashierPrintReceiptHandler (2 handlers)
+[GIN-debug] POST   /kasir/pesanan/:kode/status --> caffe-podjok-sendja/internal/httpapi.cashierUpdateOrderStatusHandler (2 handlers)
+[GIN-debug] GET    /admin                    --> caffe-podjok-sendja/internal/httpapi.adminDashboardHandler (2 handlers)
+[GIN-debug] GET    /admin/laporan/ekspor     --> caffe-podjok-sendja/internal/httpapi.adminExportSalesReportCSVHandler (2 handlers)
+[GIN-debug] POST   /admin/menu/tambah        --> caffe-podjok-sendja/internal/httpapi.adminAddProductHandler (2 handlers)
+[GIN-debug] POST   /admin/menu/harga         --> caffe-podjok-sendja/internal/httpapi.adminUpdatePriceHandler (2 handlers)
+[GIN-debug] POST   /admin/stok/sesuaikan     --> caffe-podjok-sendja/internal/httpapi.adminAdjustStockHandler (2 handlers)
+[GIN-debug] POST   /admin/pengaturan         --> caffe-podjok-sendja/internal/httpapi.adminUpdateSettingsHandler (2 handlers)
+[GIN-debug] GET    /admin/pesanan            --> caffe-podjok-sendja/internal/httpapi.adminOrdersPageHandler (2 handlers)
+[GIN-debug] POST   /admin/pesanan/:kode/status --> caffe-podjok-sendja/internal/httpapi.adminUpdateOrderStatusHandler (2 handlers)
+--- PASS: TestAdminRoleFullAccess (0.07s)
+=== RUN   TestCashierOrderLifecycleWithAuth
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /static/*filepath         --> github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1 (2 handlers)
+[GIN-debug] HEAD   /static/*filepath         --> github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1 (2 handlers)
+[GIN-debug] GET    /                         --> caffe-podjok-sendja/internal/httpapi.homeHandler (2 handlers)
+[GIN-debug] GET    /menu                     --> caffe-podjok-sendja/internal/httpapi.menuPageHandler (2 handlers)
+[GIN-debug] GET    /api/menu                 --> caffe-podjok-sendja/internal/httpapi.menuHandler (2 handlers)
+[GIN-debug] POST   /cart/add                 --> caffe-podjok-sendja/internal/httpapi.cartAddHandler (2 handlers)
+[GIN-debug] POST   /cart/update              --> caffe-podjok-sendja/internal/httpapi.cartUpdateHandler (2 handlers)
+[GIN-debug] POST   /cart/remove              --> caffe-podjok-sendja/internal/httpapi.cartRemoveHandler (2 handlers)
+[GIN-debug] GET    /keranjang                --> caffe-podjok-sendja/internal/httpapi.cartPageHandler (2 handlers)
+[GIN-debug] POST   /checkout                 --> caffe-podjok-sendja/internal/httpapi.checkoutHandler (2 handlers)
+[GIN-debug] GET    /pesanan/:kode            --> caffe-podjok-sendja/internal/httpapi.orderPageHandler (2 handlers)
+[GIN-debug] GET    /pesanan/:kode/cetak      --> caffe-podjok-sendja/internal/httpapi.publicPrintReceiptHandler (2 handlers)
+[GIN-debug] POST   /pesanan/:kode/batal      --> caffe-podjok-sendja/internal/httpapi.orderCancelHandler (2 handlers)
+[GIN-debug] POST   /pesanan/:kode/simulasi-bayar --> caffe-podjok-sendja/internal/httpapi.simulateQRISPaymentHandler (2 handlers)
+[GIN-debug] GET    /api/pesanan/:kode/status --> caffe-podjok-sendja/internal/httpapi.orderStatusAPIHandler (2 handlers)
+[GIN-debug] POST   /webhook/midtrans         --> caffe-podjok-sendja/internal/httpapi.midtransWebhookHandler (2 handlers)
+[GIN-debug] GET    /api/status               --> caffe-podjok-sendja/internal/httpapi.NewRouter.func1 (2 handlers)
+[GIN-debug] GET    /lacak                    --> caffe-podjok-sendja/internal/httpapi.trackPageHandler (2 handlers)
+[GIN-debug] POST   /lacak                    --> caffe-podjok-sendja/internal/httpapi.trackSearchHandler (2 handlers)
+[GIN-debug] GET    /masuk                    --> caffe-podjok-sendja/internal/httpapi.loginPageHandler (2 handlers)
+[GIN-debug] POST   /masuk                    --> caffe-podjok-sendja/internal/httpapi.loginPostHandler (2 handlers)
+[GIN-debug] GET    /daftar                   --> caffe-podjok-sendja/internal/httpapi.registerPageHandler (2 handlers)
+[GIN-debug] POST   /daftar                   --> caffe-podjok-sendja/internal/httpapi.registerPostHandler (2 handlers)
+[GIN-debug] GET    /keluar                   --> caffe-podjok-sendja/internal/httpapi.logoutHandler (2 handlers)
+[GIN-debug] POST   /keluar                   --> caffe-podjok-sendja/internal/httpapi.logoutHandler (2 handlers)
+[GIN-debug] GET    /akun                     --> caffe-podjok-sendja/internal/httpapi.accountPageHandler (2 handlers)
+[GIN-debug] GET    /pegawai/masuk            --> caffe-podjok-sendja/internal/httpapi.staffLoginPageHandler (2 handlers)
+[GIN-debug] POST   /pegawai/masuk            --> caffe-podjok-sendja/internal/httpapi.staffLoginPostHandler (2 handlers)
+[GIN-debug] GET    /pegawai/keluar           --> caffe-podjok-sendja/internal/httpapi.staffLogoutHandler (2 handlers)
+[GIN-debug] POST   /pegawai/keluar           --> caffe-podjok-sendja/internal/httpapi.staffLogoutHandler (2 handlers)
+[GIN-debug] GET    /kasir                    --> caffe-podjok-sendja/internal/httpapi.cashierPageHandler (2 handlers)
+[GIN-debug] GET    /kasir/pesanan/:kode/cetak --> caffe-podjok-sendja/internal/httpapi.cashierPrintReceiptHandler (2 handlers)
+[GIN-debug] POST   /kasir/pesanan/:kode/status --> caffe-podjok-sendja/internal/httpapi.cashierUpdateOrderStatusHandler (2 handlers)
+[GIN-debug] GET    /admin                    --> caffe-podjok-sendja/internal/httpapi.adminDashboardHandler (2 handlers)
+[GIN-debug] GET    /admin/laporan/ekspor     --> caffe-podjok-sendja/internal/httpapi.adminExportSalesReportCSVHandler (2 handlers)
+[GIN-debug] POST   /admin/menu/tambah        --> caffe-podjok-sendja/internal/httpapi.adminAddProductHandler (2 handlers)
+[GIN-debug] POST   /admin/menu/harga         --> caffe-podjok-sendja/internal/httpapi.adminUpdatePriceHandler (2 handlers)
+[GIN-debug] POST   /admin/stok/sesuaikan     --> caffe-podjok-sendja/internal/httpapi.adminAdjustStockHandler (2 handlers)
+[GIN-debug] POST   /admin/pengaturan         --> caffe-podjok-sendja/internal/httpapi.adminUpdateSettingsHandler (2 handlers)
+[GIN-debug] GET    /admin/pesanan            --> caffe-podjok-sendja/internal/httpapi.adminOrdersPageHandler (2 handlers)
+[GIN-debug] POST   /admin/pesanan/:kode/status --> caffe-podjok-sendja/internal/httpapi.adminUpdateOrderStatusHandler (2 handlers)
+--- PASS: TestCashierOrderLifecycleWithAuth (0.10s)
+=== RUN   TestAdminManagementActionsFlow
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /static/*filepath         --> github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1 (2 handlers)
+[GIN-debug] HEAD   /static/*filepath         --> github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1 (2 handlers)
+[GIN-debug] GET    /                         --> caffe-podjok-sendja/internal/httpapi.homeHandler (2 handlers)
+[GIN-debug] GET    /menu                     --> caffe-podjok-sendja/internal/httpapi.menuPageHandler (2 handlers)
+[GIN-debug] GET    /api/menu                 --> caffe-podjok-sendja/internal/httpapi.menuHandler (2 handlers)
+[GIN-debug] POST   /cart/add                 --> caffe-podjok-sendja/internal/httpapi.cartAddHandler (2 handlers)
+[GIN-debug] POST   /cart/update              --> caffe-podjok-sendja/internal/httpapi.cartUpdateHandler (2 handlers)
+[GIN-debug] POST   /cart/remove              --> caffe-podjok-sendja/internal/httpapi.cartRemoveHandler (2 handlers)
+[GIN-debug] GET    /keranjang                --> caffe-podjok-sendja/internal/httpapi.cartPageHandler (2 handlers)
+[GIN-debug] POST   /checkout                 --> caffe-podjok-sendja/internal/httpapi.checkoutHandler (2 handlers)
+[GIN-debug] GET    /pesanan/:kode            --> caffe-podjok-sendja/internal/httpapi.orderPageHandler (2 handlers)
+[GIN-debug] GET    /pesanan/:kode/cetak      --> caffe-podjok-sendja/internal/httpapi.publicPrintReceiptHandler (2 handlers)
+[GIN-debug] POST   /pesanan/:kode/batal      --> caffe-podjok-sendja/internal/httpapi.orderCancelHandler (2 handlers)
+[GIN-debug] POST   /pesanan/:kode/simulasi-bayar --> caffe-podjok-sendja/internal/httpapi.simulateQRISPaymentHandler (2 handlers)
+[GIN-debug] GET    /api/pesanan/:kode/status --> caffe-podjok-sendja/internal/httpapi.orderStatusAPIHandler (2 handlers)
+[GIN-debug] POST   /webhook/midtrans         --> caffe-podjok-sendja/internal/httpapi.midtransWebhookHandler (2 handlers)
+[GIN-debug] GET    /api/status               --> caffe-podjok-sendja/internal/httpapi.NewRouter.func1 (2 handlers)
+[GIN-debug] GET    /lacak                    --> caffe-podjok-sendja/internal/httpapi.trackPageHandler (2 handlers)
+[GIN-debug] POST   /lacak                    --> caffe-podjok-sendja/internal/httpapi.trackSearchHandler (2 handlers)
+[GIN-debug] GET    /masuk                    --> caffe-podjok-sendja/internal/httpapi.loginPageHandler (2 handlers)
+[GIN-debug] POST   /masuk                    --> caffe-podjok-sendja/internal/httpapi.loginPostHandler (2 handlers)
+[GIN-debug] GET    /daftar                   --> caffe-podjok-sendja/internal/httpapi.registerPageHandler (2 handlers)
+[GIN-debug] POST   /daftar                   --> caffe-podjok-sendja/internal/httpapi.registerPostHandler (2 handlers)
+[GIN-debug] GET    /keluar                   --> caffe-podjok-sendja/internal/httpapi.logoutHandler (2 handlers)
+[GIN-debug] POST   /keluar                   --> caffe-podjok-sendja/internal/httpapi.logoutHandler (2 handlers)
+[GIN-debug] GET    /akun                     --> caffe-podjok-sendja/internal/httpapi.accountPageHandler (2 handlers)
+[GIN-debug] GET    /pegawai/masuk            --> caffe-podjok-sendja/internal/httpapi.staffLoginPageHandler (2 handlers)
+[GIN-debug] POST   /pegawai/masuk            --> caffe-podjok-sendja/internal/httpapi.staffLoginPostHandler (2 handlers)
+[GIN-debug] GET    /pegawai/keluar           --> caffe-podjok-sendja/internal/httpapi.staffLogoutHandler (2 handlers)
+[GIN-debug] POST   /pegawai/keluar           --> caffe-podjok-sendja/internal/httpapi.staffLogoutHandler (2 handlers)
+[GIN-debug] GET    /kasir                    --> caffe-podjok-sendja/internal/httpapi.cashierPageHandler (2 handlers)
+[GIN-debug] GET    /kasir/pesanan/:kode/cetak --> caffe-podjok-sendja/internal/httpapi.cashierPrintReceiptHandler (2 handlers)
+[GIN-debug] POST   /kasir/pesanan/:kode/status --> caffe-podjok-sendja/internal/httpapi.cashierUpdateOrderStatusHandler (2 handlers)
+[GIN-debug] GET    /admin                    --> caffe-podjok-sendja/internal/httpapi.adminDashboardHandler (2 handlers)
+[GIN-debug] GET    /admin/laporan/ekspor     --> caffe-podjok-sendja/internal/httpapi.adminExportSalesReportCSVHandler (2 handlers)
+[GIN-debug] POST   /admin/menu/tambah        --> caffe-podjok-sendja/internal/httpapi.adminAddProductHandler (2 handlers)
+[GIN-debug] POST   /admin/menu/harga         --> caffe-podjok-sendja/internal/httpapi.adminUpdatePriceHandler (2 handlers)
+[GIN-debug] POST   /admin/stok/sesuaikan     --> caffe-podjok-sendja/internal/httpapi.adminAdjustStockHandler (2 handlers)
+[GIN-debug] POST   /admin/pengaturan         --> caffe-podjok-sendja/internal/httpapi.adminUpdateSettingsHandler (2 handlers)
+[GIN-debug] GET    /admin/pesanan            --> caffe-podjok-sendja/internal/httpapi.adminOrdersPageHandler (2 handlers)
+[GIN-debug] POST   /admin/pesanan/:kode/status --> caffe-podjok-sendja/internal/httpapi.adminUpdateOrderStatusHandler (2 handlers)
+--- PASS: TestAdminManagementActionsFlow (0.07s)
+=== RUN   TestStaffStoreAuthenticationErrors
+--- PASS: TestStaffStoreAuthenticationErrors (0.06s)
+=== RUN   TestCustomerAuthAndStudentDiscountFlow
+--- PASS: TestCustomerAuthAndStudentDiscountFlow (0.06s)
+=== RUN   TestMaxPurchaseDiscountCap
+--- PASS: TestMaxPurchaseDiscountCap (0.06s)
+=== RUN   TestPelangganUmumLoginAndOrderFlow
+--- PASS: TestPelangganUmumLoginAndOrderFlow (0.11s)
+=== RUN   TestAdminExportSalesReportCSV
+--- PASS: TestAdminExportSalesReportCSV (0.11s)
+=== RUN   TestCashierPrintReceipt
+--- PASS: TestCashierPrintReceipt (0.05s)
+=== RUN   TestPublicPrintReceipt
+--- PASS: TestPublicPrintReceipt (0.00s)
+=== RUN   TestMenuEndpointReturnsFourCategories
+--- PASS: TestMenuEndpointReturnsFourCategories (0.00s)
+=== RUN   TestMenuEndpointReturnsVariantPrices
+--- PASS: TestMenuEndpointReturnsVariantPrices (0.00s)
+=== RUN   TestMenuEndpointReturnsSinglePriceProducts
+--- PASS: TestMenuEndpointReturnsSinglePriceProducts (0.00s)
+=== RUN   TestFormatRupiah
+--- PASS: TestFormatRupiah (0.00s)
+=== RUN   TestMenuPageRendersCatalog
+--- PASS: TestMenuPageRendersCatalog (0.00s)
+=== RUN   TestMenuPageHasOnlyWorkingNavigation
+--- PASS: TestMenuPageHasOnlyWorkingNavigation (0.00s)
+=== RUN   TestMenuPageUsesSenjaShell
+--- PASS: TestMenuPageUsesSenjaShell (0.00s)
+=== RUN   TestMenuPageNumbersCategories
+--- PASS: TestMenuPageNumbersCategories (0.00s)
+=== RUN   TestMenuPageAssetsLoad
+--- PASS: TestMenuPageAssetsLoad (0.03s)
+=== RUN   TestRootRedirectsToMenu
+--- PASS: TestRootRedirectsToMenu (0.00s)
+=== RUN   TestCartAddUpdateRemoveFlow
+--- PASS: TestCartAddUpdateRemoveFlow (0.00s)
+=== RUN   TestCheckoutValidationAndSuccess
+--- PASS: TestCheckoutValidationAndSuccess (0.00s)
+=== RUN   TestQRISPaymentAndWebhookFlow
+--- PASS: TestQRISPaymentAndWebhookFlow (0.00s)
+PASS
+ok  	caffe-podjok-sendja/internal/httpapi	1.143s
+=== RUN   TestBuildCartValidatesAgainstAuthoritativeCatalog
+--- PASS: TestBuildCartValidatesAgainstAuthoritativeCatalog (0.00s)
+=== RUN   TestStoreCreateOrderValidation
+--- PASS: TestStoreCreateOrderValidation (0.04s)
+=== RUN   TestStoreStockLockAndRelease
+--- PASS: TestStoreStockLockAndRelease (0.00s)
+PASS
+ok  	caffe-podjok-sendja/internal/order	(cached)
+=== RUN   TestGenerateQRISSimulated
+--- PASS: TestGenerateQRISSimulated (0.00s)
+=== RUN   TestVerifySignature
+--- PASS: TestVerifySignature (0.00s)
+=== RUN   TestParseNotification
+--- PASS: TestParseNotification (0.00s)
+PASS
+ok  	caffe-podjok-sendja/internal/payment	(cached)
+=== RUN   TestCustomerPasswordHashPersistedAndLoginWorksAfterReload
+2026/11/10 18:58:28 [persistence] direktori penyimpanan aktif di: C:\Users\user\AppData\Local\Temp\TestCustomerPasswordHashPersistedAndLoginWorksAfterReload717931170\001
+2026/11/10 18:58:28 [persistence] direktori penyimpanan aktif di: C:\Users\user\AppData\Local\Temp\TestCustomerPasswordHashPersistedAndLoginWorksAfterReload717931170\001
+--- PASS: TestCustomerPasswordHashPersistedAndLoginWorksAfterReload (0.28s)
+=== RUN   TestPersistenceSaveAndLoad
+2026/11/10 18:58:28 [persistence] direktori penyimpanan aktif di: C:\Users\user\AppData\Local\Temp\pds_data_test_2905829827
+2026/11/10 18:58:28 [persistence] direktori penyimpanan aktif di: C:\Users\user\AppData\Local\Temp\pds_data_test_2905829827
+--- PASS: TestPersistenceSaveAndLoad (0.00s)
+PASS
+ok  	caffe-podjok-sendja/internal/persistence	0.456s
+?   	caffe-podjok-sendja/internal/staff	[no test files]
+?   	caffe-podjok-sendja/internal/storeconfig	[no test files]
+=== RUN   TestAccountPageRendersEmailWithFadeClasses
+--- PASS: TestAccountPageRendersEmailWithFadeClasses (0.00s)
+=== RUN   TestFormatCategoryIndex
+--- PASS: TestFormatCategoryIndex (0.00s)
+=== RUN   TestMenuPageShowsEmptyState
+--- PASS: TestMenuPageShowsEmptyState (0.00s)
+=== RUN   TestMenuPageEmptyStateStaysInPaperSheet
+--- PASS: TestMenuPageEmptyStateStaysInPaperSheet (0.00s)
+PASS
+ok  	caffe-podjok-sendja/internal/view	0.344s
+
+================================================================================
+AKHIR DOKUMEN HASIL UJI
+================================================================================

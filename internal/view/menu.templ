@@ -22,13 +22,13 @@ templ menuContent(categories []catalog.Category, cart order.Cart, cust *customer
 				if cust != nil && cust.Type == customer.CustomerTypeMahasiswa && !cust.FirstDiscountUsed {
 					<div class="hero-promo-badge">
 						<span class="badge-promo-tag">Diskon 25% Mahasiswa Aktif</span>
-						<span>Potongan harga 25% (maksimal pembelian Rp 30.000) otomatis diterapkan pada pesanan pertama NIM: { cust.NIM }.</span>
+						<span>Potongan harga 25% otomatis diterapkan pada pesanan pertama NIM: { cust.NIM } (total pembelian di atas Rp 20.000).</span>
 					</div>
 				} else if cust == nil {
 					<div class="hero-promo-banner">
 						<span>Mahasiswa Universitas Sari Mulia?</span>
 						<a href="/daftar" class="promo-banner-link">Daftar Akun Mahasiswa</a>
-						<span>untuk menikmati diskon 25% pada pembelian pertama (maksimal pembelian Rp 30.000).</span>
+						<span>untuk menikmati diskon 25% pada pembelian pertama (total pembelian di atas Rp 20.000).</span>
 					</div>
 				}
 			</div>

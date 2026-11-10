@@ -65,21 +65,15 @@ func (c *Customer) ShortName() string {
 	return c.Name
 }
 
-// CalculateFirstDiscount menghitung potongan 25% bagi mahasiswa pada pembelian pertama dengan batas maksimal pembelian Rp 30.000.
-// Jika subtotal <= 30.000, diskon = 25% dari subtotal.
-// Jika subtotal > 30.000, diskon = 25% dari Rp 30.000 (yaitu Rp 7.500).
+// CalculateFirstDiscount menghitung potongan 25% bagi mahasiswa pada pembelian pertama dengan total harga di atas Rp 20.000.
+// Jika subtotal <= 20.000, diskon = 0.
+// Jika subtotal > 20.000, diskon = 25% dari total harga pembelian.
 func (c *Customer) CalculateFirstDiscount(subtotal int64) (int64, string) {
-	if c == nil || c.Type != CustomerTypeMahasiswa || c.FirstDiscountUsed || subtotal <= 0 {
+	if c == nil || c.Type != CustomerTypeMahasiswa || c.FirstDiscountUsed || subtotal <= 20000 {
 		return 0, ""
 	}
 
-	const maxEligiblePurchase int64 = 30000
-	eligible := subtotal
-	if eligible > maxEligiblePurchase {
-		eligible = maxEligiblePurchase
-	}
-
-	discount := (eligible * 25) / 100
+	discount := (subtotal * 25) / 100
 	note := fmt.Sprintf("Diskon Mahasiswa Baru 25%% (NIM: %s)", c.NIM)
 	return discount, note
 }

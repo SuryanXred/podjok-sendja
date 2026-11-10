@@ -119,7 +119,7 @@ templ cartContent(cart order.Cart, cust *customer.Customer, errorMessage string)
 						<div class="cart-promo-callout">
 							<div class="callout-title">Mahasiswa Universitas Sari Mulia?</div>
 							<p class="callout-text">
-								Dapatkan <strong>diskon 25%</strong> untuk pembelian pertama (maksimal pembelian Rp 30.000) dengan mendaftar atau masuk menggunakan akun mahasiswa dan NIM Anda.
+								Dapatkan <strong>diskon 25%</strong> untuk pembelian pertama (total pembelian di atas Rp 20.000) dengan mendaftar atau masuk menggunakan akun mahasiswa dan NIM Anda.
 							</p>
 							<div class="callout-actions">
 								<a href="/masuk" class="btn-paper-link">Masuk ke Akun</a>
@@ -144,7 +144,11 @@ templ cartContent(cart order.Cart, cust *customer.Customer, errorMessage string)
 									<span class="tag-pill tag-mhs">Mahasiswa</span>
 									<span class="tag-pill tag-nim">NIM: { cust.NIM }</span>
 									if !cust.FirstDiscountUsed {
-										<span class="tag-pill tag-promo-on">Diskon 25% Pembelian Pertama Aktif</span>
+										if cart.Subtotal > 20000 {
+											<span class="tag-pill tag-promo-on">Diskon 25% Pembelian Pertama Aktif</span>
+										} else {
+											<span class="tag-pill tag-promo-off">Diskon 25% Aktif Jika Total &gt; Rp 20.000</span>
+										}
 									} else {
 										<span class="tag-pill tag-promo-off">Promo Pembelian Pertama Sudah Dipakai</span>
 									}

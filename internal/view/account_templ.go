@@ -190,7 +190,7 @@ func accountContent(cust *customer.Customer, orders []*order.Order) templ.Compon
 				return templ_7745c5c3_Err
 			}
 			if !cust.FirstDiscountUsed {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<div class=\"promo-available-alert\"><strong>Diskon 25% Pembelian Pertama Aktif</strong><p>Anda berhak mendapatkan potongan harga 25% (maksimal pembelian Rp 30.000) pada transaksi pertama Anda. Diskon ini otomatis dihitung dan diterapkan saat Anda memilih menu dan membuka keranjang belanja.</p></div>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<div class=\"promo-available-alert\"><strong>Diskon 25% Pembelian Pertama Aktif</strong><p>Anda berhak mendapatkan potongan harga 25% (total pembelian di atas Rp 20.000) pada transaksi pertama Anda. Diskon ini otomatis dihitung dan diterapkan saat Anda memilih menu dan membuka keranjang belanja.</p></div>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

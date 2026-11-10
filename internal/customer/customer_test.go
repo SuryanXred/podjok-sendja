@@ -139,22 +139,34 @@ func TestCalculateFirstDiscount(t *testing.T) {
 		FirstDiscountUsed: false,
 	}
 
-	// Kasus 1: Subtotal Rp 20.000 (< 30.000) -> Diskon 25% = Rp 5.000
-	disc, _ := mhs.CalculateFirstDiscount(20000)
-	if disc != 5000 {
-		t.Errorf("subtotal 20000: diskon diharapkan 5000, dapat %d", disc)
+	// Kasus 1: Subtotal Rp 15.000 (<= 20.000) -> Diskon 0 (belum di atas Rp 20.000)
+	disc, _ := mhs.CalculateFirstDiscount(15000)
+	if disc != 0 {
+		t.Errorf("subtotal 15000: diskon diharapkan 0, dapat %d", disc)
 	}
 
-	// Kasus 2: Subtotal Rp 30.000 (tepat 30.000) -> Diskon 25% = Rp 7.500
+	// Kasus 2: Subtotal Rp 20.000 (tepat 20.000, belum di atas 20.000) -> Diskon 0
+	disc, _ = mhs.CalculateFirstDiscount(20000)
+	if disc != 0 {
+		t.Errorf("subtotal 20000: diskon diharapkan 0, dapat %d", disc)
+	}
+
+	// Kasus 3: Subtotal Rp 24.000 (> 20.000) -> Diskon 25% dari 24.000 = Rp 6.000
+	disc, _ = mhs.CalculateFirstDiscount(24000)
+	if disc != 6000 {
+		t.Errorf("subtotal 24000: diskon diharapkan 6000, dapat %d", disc)
+	}
+
+	// Kasus 4: Subtotal Rp 30.000 (> 20.000) -> Diskon 25% dari 30.000 = Rp 7.500
 	disc, _ = mhs.CalculateFirstDiscount(30000)
 	if disc != 7500 {
 		t.Errorf("subtotal 30000: diskon diharapkan 7500, dapat %d", disc)
 	}
 
-	// Kasus 3: Subtotal Rp 60.000 (> 30.000) -> Maksimal pembelian 30.000, diskon 25% dari 30.000 = Rp 7.500
+	// Kasus 5: Subtotal Rp 60.000 (> 20.000) -> Diskon 25% dari 60.000 = Rp 15.000
 	disc, _ = mhs.CalculateFirstDiscount(60000)
-	if disc != 7500 {
-		t.Errorf("subtotal 60000: diskon diharapkan 7500 (max cap), dapat %d", disc)
+	if disc != 15000 {
+		t.Errorf("subtotal 60000: diskon diharapkan 15000, dapat %d", disc)
 	}
 
 	// Kasus 4: Mahasiswa yang sudah pernah pakai diskon

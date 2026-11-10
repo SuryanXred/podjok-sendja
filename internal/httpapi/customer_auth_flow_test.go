@@ -62,7 +62,7 @@ func TestCustomerAuthAndStudentDiscountFlow(t *testing.T) {
 	}
 
 	// ----------------------------------------------------
-	// 3. Tambahkan Americano Ice (Rp 15.000) ke Keranjang
+	// 3. Tambahkan 2 porsi Americano Ice (Rp 15.000 x 2 = Rp 30.000 > Rp 20.000) ke Keranjang
 	// ----------------------------------------------------
 	cartForm := url.Values{}
 	cartForm.Set("product_slug", "americano")
@@ -75,6 +75,17 @@ func TestCustomerAuthAndStudentDiscountFlow(t *testing.T) {
 
 	cartCookie := respCartAdd.Header().Get("Set-Cookie")
 	rawCartCookie := strings.Split(strings.Split(cartCookie, ";")[0], "=")[1]
+
+	// Tambah 1 porsi lagi agar subtotal menjadi Rp 30.000 (di atas syarat Rp 20.000)
+	upForm := url.Values{}
+	upForm.Set("index", "0")
+	upForm.Set("delta", "1")
+	reqUp := httptest.NewRequest(http.MethodPost, "/cart/update", strings.NewReader(upForm.Encode()))
+	reqUp.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	reqUp.AddCookie(&http.Cookie{Name: "pds_cart", Value: rawCartCookie})
+	respUp := httptest.NewRecorder()
+	router.ServeHTTP(respUp, reqUp)
+	rawCartCookie = strings.Split(strings.Split(respUp.Header().Get("Set-Cookie"), ";")[0], "=")[1]
 
 	// ----------------------------------------------------
 	// 4. Buka Keranjang saat login sebagai mahasiswa
@@ -89,9 +100,9 @@ func TestCustomerAuthAndStudentDiscountFlow(t *testing.T) {
 		t.Fatalf("GET /keranjang status = %d, want %d", respCartView.Code, http.StatusOK)
 	}
 	bodyCartView := respCartView.Body.String()
-	// Subtotal Rp 15.000 -> Diskon 25% = Rp 3.750 -> Total Rp 11.250
-	if !strings.Contains(bodyCartView, "Diskon 25%") || !strings.Contains(bodyCartView, "11.250") {
-		t.Errorf("keranjang mahasiswa baru harus menampilkan diskon 25%% (total Rp 11.250): %s", bodyCartView)
+	// Subtotal Rp 30.000 -> Diskon 25% = Rp 7.500 -> Total Rp 22.500
+	if !strings.Contains(bodyCartView, "Diskon 25%") || !strings.Contains(bodyCartView, "22.500") {
+		t.Errorf("keranjang mahasiswa baru harus menampilkan diskon 25%% (total Rp 22.500): %s", bodyCartView)
 	}
 
 	// ----------------------------------------------------
@@ -129,14 +140,14 @@ func TestCustomerAuthAndStudentDiscountFlow(t *testing.T) {
 	if savedOrder.CustomerType != "mahasiswa" || savedOrder.CustomerNIM != "231001050" {
 		t.Errorf("tipe atau NIM pesanan tidak tersimpan dengan benar: %+v", savedOrder)
 	}
-	if savedOrder.Subtotal != 15000 {
-		t.Errorf("subtotal = %d, want 15000", savedOrder.Subtotal)
+	if savedOrder.Subtotal != 30000 {
+		t.Errorf("subtotal = %d, want 30000", savedOrder.Subtotal)
 	}
-	if savedOrder.Discount != 3750 { // 25% of 15000
-		t.Errorf("diskon = %d, want 3750", savedOrder.Discount)
+	if savedOrder.Discount != 7500 { // 25% of 30000
+		t.Errorf("diskon = %d, want 7500", savedOrder.Discount)
 	}
-	if savedOrder.Total != 11250 {
-		t.Errorf("total bayar = %d, want 11250", savedOrder.Total)
+	if savedOrder.Total != 22500 {
+		t.Errorf("total bayar = %d, want 22500", savedOrder.Total)
 	}
 
 	// ----------------------------------------------------
@@ -151,7 +162,7 @@ func TestCustomerAuthAndStudentDiscountFlow(t *testing.T) {
 		t.Fatalf("GET /pesanan/%s status = %d, want %d", orderCode, respReceipt.Code, http.StatusOK)
 	}
 	bodyReceipt := respReceipt.Body.String()
-	if !strings.Contains(bodyReceipt, "231001050") || !strings.Contains(bodyReceipt, "3.750") {
+	if !strings.Contains(bodyReceipt, "231001050") || !strings.Contains(bodyReceipt, "7.500") {
 		t.Errorf("nota pesanan tidak menampilkan NIM atau nominal diskon: %s", bodyReceipt)
 	}
 
@@ -256,13 +267,13 @@ func TestMaxPurchaseDiscountCap(t *testing.T) {
 	if savedOrder.Subtotal != 40000 {
 		t.Errorf("subtotal = %d, want 40000", savedOrder.Subtotal)
 	}
-	// Pembelian maksimal 30.000 yang dihitung diskon 25% -> diskon maksimal = 25% x 30.000 = Rp 7.500
-	if savedOrder.Discount != 7500 {
-		t.Errorf("diskon cap = %d, want 7500 (25%% dari max 30.000)", savedOrder.Discount)
+	// Pembelian di atas Rp 20.000 mendapatkan diskon 25% dari total harga -> 25% x 40.000 = Rp 10.000
+	if savedOrder.Discount != 10000 {
+		t.Errorf("diskon = %d, want 10000 (25%% dari 40.000)", savedOrder.Discount)
 	}
-	// Total = 40.000 - 7.500 = 32.500
-	if savedOrder.Total != 32500 {
-		t.Errorf("total bayar = %d, want 32500", savedOrder.Total)
+	// Total = 40.000 - 10.000 = 30.000
+	if savedOrder.Total != 30000 {
+		t.Errorf("total bayar = %d, want 30000", savedOrder.Total)
 	}
 }
 

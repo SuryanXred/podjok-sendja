@@ -261,3 +261,121 @@ func TestPublicPrintReceipt(t *testing.T) {
 		t.Errorf("expected 404 Not Found for non-existent order, got %d", w404.Code)
 	}
 }
+
+func TestAdminExportStockMovementsCSV(t *testing.T) {
+	router := NewRouter()
+
+	// 1. Tanpa autentikasi, redirect ke login pegawai
+	reqUnauth, _ := http.NewRequest(http.MethodGet, "/admin/stok/ekspor", nil)
+	wUnauth := httptest.NewRecorder()
+	router.ServeHTTP(wUnauth, reqUnauth)
+
+	if wUnauth.Code != http.StatusSeeOther {
+		t.Fatalf("expected 303 redirect for unauthenticated stock export, got %d", wUnauth.Code)
+	}
+
+	// 2. Kasir biasa tidak boleh mengakses ekspor stok admin
+	cashierCookie := loginStaffHelper(t, router, "kasir", "kasir123")
+	reqCashier, _ := http.NewRequest(http.MethodGet, "/admin/stok/ekspor", nil)
+	reqCashier.AddCookie(cashierCookie)
+	wCashier := httptest.NewRecorder()
+	router.ServeHTTP(wCashier, reqCashier)
+
+	if wCashier.Code != http.StatusSeeOther {
+		t.Fatalf("expected 303 redirect for cashier accessing admin stock export, got %d", wCashier.Code)
+	}
+
+	// 3. Login sebagai Admin dan unduh berkas CSV mutasi stok
+	adminCookie := loginStaffHelper(t, router, "admin", "admin123")
+	reqAdmin, _ := http.NewRequest(http.MethodGet, "/admin/stok/ekspor", nil)
+	reqAdmin.AddCookie(adminCookie)
+	wAdmin := httptest.NewRecorder()
+	router.ServeHTTP(wAdmin, reqAdmin)
+
+	if wAdmin.Code != http.StatusOK {
+		t.Fatalf("expected 200 OK for admin stock export, got %d", wAdmin.Code)
+	}
+
+	contentType := wAdmin.Header().Get("Content-Type")
+	if !strings.Contains(contentType, "text/csv") {
+		t.Errorf("expected Content-Type to contain text/csv, got %q", contentType)
+	}
+
+	disposition := wAdmin.Header().Get("Content-Disposition")
+	if !strings.Contains(disposition, "riwayat-mutasi-stok") {
+		t.Errorf("expected Content-Disposition attachment with riwayat-mutasi-stok, got %q", disposition)
+	}
+
+	bodyBytes := wAdmin.Body.Bytes()
+	// Verifikasi UTF-8 BOM
+	if !bytes.HasPrefix(bodyBytes, []byte("\xef\xbb\xbf")) {
+		t.Errorf("expected UTF-8 BOM prefix in CSV")
+	}
+
+	bodyStr := string(bodyBytes)
+	if !strings.Contains(bodyStr, "ID Mutasi,Waktu Mutasi (WITA),Kode Menu (Slug),Nama Menu Produk,Perubahan Stok (Porsi),Jenis Mutasi,Alasan / Keterangan Mutasi") {
+		t.Errorf("expected CSV header to match Indonesian schema, got: %s", bodyStr[:min(100, len(bodyStr))])
+	}
+}
+
+func TestAdminLiveMonitoringAPI(t *testing.T) {
+	router := NewRouter()
+
+	// 1. Tanpa autentikasi -> 401 Unauthorized JSON
+	reqUnauth, _ := http.NewRequest(http.MethodGet, "/api/admin/live-monitoring", nil)
+	wUnauth := httptest.NewRecorder()
+	router.ServeHTTP(wUnauth, reqUnauth)
+
+	if wUnauth.Code != http.StatusUnauthorized {
+		t.Fatalf("expected 401 Unauthorized for unauthenticated live monitoring, got %d", wUnauth.Code)
+	}
+
+	// 2. Kasir biasa -> 403 Forbidden
+	cashierCookie := loginStaffHelper(t, router, "kasir", "kasir123")
+	reqCashier, _ := http.NewRequest(http.MethodGet, "/api/admin/live-monitoring", nil)
+	reqCashier.AddCookie(cashierCookie)
+	wCashier := httptest.NewRecorder()
+	router.ServeHTTP(wCashier, reqCashier)
+
+	if wCashier.Code != http.StatusForbidden {
+		t.Fatalf("expected 403 Forbidden for cashier accessing live monitoring, got %d", wCashier.Code)
+	}
+
+	// 3. Admin -> 200 OK dengan JSON lengkap
+	adminCookie := loginStaffHelper(t, router, "admin", "admin123")
+	reqAdmin, _ := http.NewRequest(http.MethodGet, "/api/admin/live-monitoring", nil)
+	reqAdmin.AddCookie(adminCookie)
+	wAdmin := httptest.NewRecorder()
+	router.ServeHTTP(wAdmin, reqAdmin)
+
+	if wAdmin.Code != http.StatusOK {
+		t.Fatalf("expected 200 OK for admin live monitoring, got %d", wAdmin.Code)
+	}
+
+	contentType := wAdmin.Header().Get("Content-Type")
+	if !strings.Contains(contentType, "application/json") {
+		t.Errorf("expected Content-Type application/json, got %q", contentType)
+	}
+
+	body := wAdmin.Body.String()
+	requiredFields := []string{
+		"\"timestamp\":",
+		"\"metrics\":",
+		"\"confirmed_sales\":",
+		"\"total_orders\":",
+		"\"recent_orders\":",
+		"\"top_products\":",
+		"\"stock_summary\":",
+		"\"safe_count\":",
+		"\"low_count\":",
+		"\"empty_count\":",
+		"\"stock_items\":",
+		"\"stock_movements\":",
+	}
+
+	for _, field := range requiredFields {
+		if !strings.Contains(body, field) {
+			t.Errorf("expected live monitoring JSON to contain field %q", field)
+		}
+	}
+}

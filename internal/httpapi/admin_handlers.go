@@ -323,3 +323,210 @@ func generateOrdersCSV(w io.Writer, orders []*order.Order) error {
 
 	return nil
 }
+
+// adminExportStockMovementsCSVHandler mengekspor riwayat mutasi pergerakan stok ke berkas CSV (UTF-8 BOM).
+func adminExportStockMovementsCSVHandler(c *gin.Context) {
+	staffUser := getLoggedInStaff(c)
+	if staffUser == nil || !staffUser.IsAdmin() {
+		c.Redirect(http.StatusSeeOther, "/pegawai/masuk?redirect=/admin")
+		return
+	}
+
+	movements := catalog.DefaultStore.GetStockMovements(0)
+	timestamp := time.Now().Format("20060102-1504")
+	filename := fmt.Sprintf("riwayat-mutasi-stok-caffe-podjok-sendja-%s.csv", timestamp)
+
+	c.Header("Content-Type", "text/csv; charset=utf-8")
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", filename))
+	c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
+
+	if _, err := c.Writer.Write([]byte("\xef\xbb\xbf")); err != nil {
+		c.String(http.StatusInternalServerError, "Gagal menulis BOM CSV: "+err.Error())
+		return
+	}
+
+	writer := csv.NewWriter(c.Writer)
+	defer writer.Flush()
+
+	headers := []string{
+		"ID Mutasi",
+		"Waktu Mutasi (WITA)",
+		"Kode Menu (Slug)",
+		"Nama Menu Produk",
+		"Perubahan Stok (Porsi)",
+		"Jenis Mutasi",
+		"Alasan / Keterangan Mutasi",
+	}
+
+	if err := writer.Write(headers); err != nil {
+		c.String(http.StatusInternalServerError, "Gagal membuat header CSV: "+err.Error())
+		return
+	}
+
+	for _, m := range movements {
+		signChange := fmt.Sprintf("%d", m.Change)
+		changeType := "Keluar / Pengurangan (-)"
+		if m.Change > 0 {
+			signChange = "+" + signChange
+			changeType = "Masuk / Penambahan (+)"
+		}
+
+		record := []string{
+			fmt.Sprintf("%d", m.ID),
+			m.CreatedAt.Format("02/01/2006 15:04:05"),
+			m.ProductSlug,
+			m.ProductName,
+			signChange,
+			changeType,
+			m.Reason,
+		}
+
+		if err := writer.Write(record); err != nil {
+			return
+		}
+	}
+}
+
+// adminLiveMonitoringAPIHandler menyediakan data real-time JSON untuk pemantauan penjualan dan stok.
+func adminLiveMonitoringAPIHandler(c *gin.Context) {
+	staffUser := getLoggedInStaff(c)
+	if staffUser == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Staff session expired or unauthorized"})
+		return
+	}
+	if !staffUser.IsAdmin() {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Hanya Administrator yang memiliki akses ke pemantauan real-time"})
+		return
+	}
+
+	report := order.DefaultStore.GetAdminReport()
+	stockList := catalog.DefaultStore.GetStockList()
+	movements := catalog.DefaultStore.GetStockMovements(30)
+
+	type jsonOrder struct {
+		Code           string `json:"code"`
+		CustomerName   string `json:"customer_name"`
+		CustomerType   string `json:"customer_type"`
+		TableNumber    string `json:"table_number"`
+		StatusLabel    string `json:"status_label"`
+		StatusCode     string `json:"status_code"`
+		TotalFormatted string `json:"total_formatted"`
+		Total          int64  `json:"total"`
+		TimeFormatted  string `json:"time_formatted"`
+		ItemsSummary   string `json:"items_summary"`
+	}
+
+	recentOrdersJSON := make([]jsonOrder, 0, len(report.RecentOrders))
+	for _, o := range report.RecentOrders {
+		items := make([]string, 0, len(o.Items))
+		for _, it := range o.Items {
+			name := it.ProductName
+			if it.Variant != "" {
+				name += " (" + it.Variant + ")"
+			}
+			items = append(items, fmt.Sprintf("%s x%d", name, it.Quantity))
+		}
+		recentOrdersJSON = append(recentOrdersJSON, jsonOrder{
+			Code:           o.Code,
+			CustomerName:   o.CustomerName,
+			CustomerType:   o.CustomerType,
+			TableNumber:    o.TableNumber,
+			StatusLabel:    o.StatusLabel(),
+			StatusCode:     string(o.OrderStatus),
+			TotalFormatted: view.FormatRupiah(o.Total),
+			Total:          o.Total,
+			TimeFormatted:  o.CreatedAt.Format("15:04"),
+			ItemsSummary:   strings.Join(items, ", "),
+		})
+	}
+
+	type jsonTopProduct struct {
+		Name           string `json:"name"`
+		Quantity       int    `json:"quantity"`
+		SalesFormatted string `json:"sales_formatted"`
+	}
+
+	topProductsJSON := make([]jsonTopProduct, 0, len(report.TopProducts))
+	for _, p := range report.TopProducts {
+		topProductsJSON = append(topProductsJSON, jsonTopProduct{
+			Name:           p.ProductName,
+			Quantity:       p.Quantity,
+			SalesFormatted: view.FormatRupiah(p.TotalSales),
+		})
+	}
+
+	type jsonStockItem struct {
+		Slug        string `json:"slug"`
+		Name        string `json:"name"`
+		Category    string `json:"category"`
+		Qty         int    `json:"qty"`
+		StatusLabel string `json:"status_label"`
+		StatusCode  string `json:"status_code"`
+	}
+
+	stockJSON := make([]jsonStockItem, 0, len(stockList))
+	safeCount, lowCount, emptyCount := 0, 0, 0
+	for _, it := range stockList {
+		switch it.StatusCode() {
+		case "safe":
+			safeCount++
+		case "low":
+			lowCount++
+		case "empty":
+			emptyCount++
+		}
+		stockJSON = append(stockJSON, jsonStockItem{
+			Slug:        it.ProductSlug,
+			Name:        it.ProductName,
+			Category:    it.CategoryName,
+			Qty:         it.Qty,
+			StatusLabel: it.StatusLabel(),
+			StatusCode:  it.StatusCode(),
+		})
+	}
+
+	type jsonMovement struct {
+		ID            int    `json:"id"`
+		TimeFormatted string `json:"time_formatted"`
+		ProductName   string `json:"product_name"`
+		Change        int    `json:"change"`
+		Reason        string `json:"reason"`
+	}
+
+	movementsJSON := make([]jsonMovement, 0, len(movements))
+	for _, m := range movements {
+		movementsJSON = append(movementsJSON, jsonMovement{
+			ID:            m.ID,
+			TimeFormatted: m.CreatedAt.Format("02/01/2006, 15:04 WIB"),
+			ProductName:   m.ProductName,
+			Change:        m.Change,
+			Reason:        m.Reason,
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"timestamp": time.Now().Format("02/01/2006 15:04:05 WITA"),
+		"metrics": gin.H{
+			"confirmed_sales":     view.FormatRupiah(report.Metrics.ConfirmedSales),
+			"confirmed_sales_raw": report.Metrics.ConfirmedSales,
+			"total_orders":        report.Metrics.TotalOrders,
+			"completed_orders":    report.Metrics.Completed,
+			"pending_orders":      report.Metrics.PendingPayment,
+			"average_order_value": view.FormatRupiah(report.AverageOrderValue),
+			"mahasiswa_orders":    report.MahasiswaOrders,
+			"umum_orders":         report.UmumOrders,
+			"cash_orders":         report.CashOrders,
+			"qris_orders":         report.QRISOrders,
+		},
+		"recent_orders": recentOrdersJSON,
+		"top_products":  topProductsJSON,
+		"stock_summary": gin.H{
+			"safe_count":  safeCount,
+			"low_count":   lowCount,
+			"empty_count": emptyCount,
+			"total_items": len(stockList),
+		},
+		"stock_items":     stockJSON,
+		"stock_movements": movementsJSON,
+	})
+}

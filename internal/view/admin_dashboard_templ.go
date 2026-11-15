@@ -125,7 +125,7 @@ func adminDashboardContent(activeTab string, report order.AdminReport, categorie
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<div class=\"menu-sheet admin-dashboard-sheet\"><nav class=\"admin-tabs-nav\" aria-label=\"Navigasi bagian admin\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<div class=\"menu-sheet admin-dashboard-sheet\"><div class=\"admin-live-monitor-bar\" id=\"adminLiveBar\"><div class=\"live-status-group\"><span class=\"live-pulse-indicator\" aria-hidden=\"true\"><span class=\"live-pulse-ring\"></span> <span class=\"live-pulse-core\"></span></span><div class=\"live-status-text\"><strong class=\"live-status-title\">Pemantauan Real-Time Aktif</strong> <span class=\"live-last-sync\" id=\"liveLastSync\">Menghubungkan pembaruan langsung...</span></div></div><div class=\"live-controls-group\"><div class=\"live-interval-wrap\"><label for=\"liveIntervalSelect\" class=\"live-control-label\">Interval:</label> <select id=\"liveIntervalSelect\" class=\"live-interval-select\" aria-label=\"Interval Pembaruan Otomatis\"><option value=\"5000\" selected>Tiap 5 Detik</option> <option value=\"10000\">Tiap 10 Detik</option> <option value=\"30000\">Tiap 30 Detik</option> <option value=\"0\">Manual (Nonaktif)</option></select></div><button type=\"button\" id=\"btnLiveRefresh\" class=\"btn-live-refresh\" title=\"Segarkan data sekarang\"><span class=\"refresh-icon\" aria-hidden=\"true\">🔄</span> <span>Segarkan</span></button></div></div><nav class=\"admin-tabs-nav\" aria-label=\"Navigasi bagian admin\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -238,7 +238,7 @@ func adminDashboardContent(activeTab string, report order.AdminReport, categorie
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "</div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "<script>\n\t\t(function() {\n\t\t\tvar pollTimer = null;\n\t\t\tvar select = document.getElementById(\"liveIntervalSelect\");\n\t\t\tvar refreshBtn = document.getElementById(\"btnLiveRefresh\");\n\t\t\tvar syncLabel = document.getElementById(\"liveLastSync\");\n\n\t\t\tfunction escapeHtml(str) {\n\t\t\t\tif (!str) return \"\";\n\t\t\t\treturn String(str)\n\t\t\t\t\t.replace(/&/g, \"&amp;\")\n\t\t\t\t\t.replace(/</g, \"&lt;\")\n\t\t\t\t\t.replace(/>/g, \"&gt;\")\n\t\t\t\t\t.replace(/\"/g, \"&quot;\")\n\t\t\t\t\t.replace(/'/g, \"&#039;\");\n\t\t\t}\n\n\t\t\tfunction updateDashboard(data) {\n\t\t\t\tif (!data) return;\n\n\t\t\t\tif (syncLabel && data.timestamp) {\n\t\t\t\t\tsyncLabel.textContent = \"Sinkronisasi terakhir: \" + data.timestamp;\n\t\t\t\t}\n\n\t\t\t\tif (data.metrics) {\n\t\t\t\t\tvar elSales = document.getElementById(\"kpiConfirmedSales\");\n\t\t\t\t\tif (elSales) elSales.textContent = data.metrics.confirmed_sales;\n\n\t\t\t\t\tvar elTotal = document.getElementById(\"kpiTotalOrders\");\n\t\t\t\t\tif (elTotal) elTotal.textContent = String(data.metrics.total_orders);\n\n\t\t\t\t\tvar elSub = document.getElementById(\"kpiTotalSub\");\n\t\t\t\t\tif (elSub) elSub.textContent = data.metrics.completed_orders + \" selesai, \" + data.metrics.pending_orders + \" menunggu\";\n\n\t\t\t\t\tvar elAvg = document.getElementById(\"kpiAvgOrderValue\");\n\t\t\t\t\tif (elAvg) elAvg.textContent = data.metrics.average_order_value;\n\n\t\t\t\t\tvar elMhs = document.getElementById(\"kpiMahasiswaCount\");\n\t\t\t\t\tif (elMhs) elMhs.textContent = String(data.metrics.mahasiswa_orders);\n\n\t\t\t\t\tvar elUmum = document.getElementById(\"kpiUmumCount\");\n\t\t\t\t\tif (elUmum) elUmum.textContent = String(data.metrics.umum_orders);\n\n\t\t\t\t\tvar elCash = document.getElementById(\"kpiCashCount\");\n\t\t\t\t\tif (elCash) elCash.textContent = String(data.metrics.cash_orders);\n\n\t\t\t\t\tvar elQris = document.getElementById(\"kpiQRISCount\");\n\t\t\t\t\tif (elQris) elQris.textContent = String(data.metrics.qris_orders);\n\t\t\t\t}\n\n\t\t\t\tvar tbodyTop = document.getElementById(\"tableTopProductsBody\");\n\t\t\t\tif (tbodyTop && data.top_products) {\n\t\t\t\t\tif (data.top_products.length === 0) {\n\t\t\t\t\t\ttbodyTop.innerHTML = '<tr><td colspan=\"3\" class=\"text-center text-muted\">Belum ada data penjualan tercatat.</td></tr>';\n\t\t\t\t\t} else {\n\t\t\t\t\t\tvar htmlTop = \"\";\n\t\t\t\t\t\tfor (var i = 0; i < data.top_products.length; i++) {\n\t\t\t\t\t\t\tvar p = data.top_products[i];\n\t\t\t\t\t\t\thtmlTop += \"<tr>\" +\n\t\t\t\t\t\t\t\t\"<td><strong>\" + escapeHtml(p.name) + \"</strong></td>\" +\n\t\t\t\t\t\t\t\t\"<td class=\\\"text-right tabular-nums\\\">\" + p.quantity + \" porsi</td>\" +\n\t\t\t\t\t\t\t\t\"<td class=\\\"text-right tabular-nums\\\">\" + escapeHtml(p.sales_formatted) + \"</td>\" +\n\t\t\t\t\t\t\t\t\"</tr>\";\n\t\t\t\t\t\t}\n\t\t\t\t\t\ttbodyTop.innerHTML = htmlTop;\n\t\t\t\t\t}\n\t\t\t\t}\n\n\t\t\t\tvar tbodyOrders = document.getElementById(\"tableRecentOrdersBody\");\n\t\t\t\tif (tbodyOrders && data.recent_orders) {\n\t\t\t\t\tif (data.recent_orders.length === 0) {\n\t\t\t\t\t\ttbodyOrders.innerHTML = '<tr><td colspan=\"6\" class=\"text-center text-muted\">Belum ada pesanan terbaru.</td></tr>';\n\t\t\t\t\t} else {\n\t\t\t\t\t\tvar htmlOrders = \"\";\n\t\t\t\t\t\tfor (var j = 0; j < data.recent_orders.length; j++) {\n\t\t\t\t\t\t\tvar o = data.recent_orders[j];\n\t\t\t\t\t\t\tvar badgeClass = \"badge-\" + escapeHtml(o.status_code);\n\t\t\t\t\t\t\tvar custBadge = o.customer_type === \"mahasiswa\" ? '<span class=\"cust-badge badge-mhs\">Mhs</span>' : '<span class=\"cust-badge badge-umum\">Umum</span>';\n\t\t\t\t\t\t\tvar tableText = o.table_number ? 'Meja ' + escapeHtml(o.table_number) : 'Bawa Pulang';\n\n\t\t\t\t\t\t\thtmlOrders += \"<tr>\" +\n\t\t\t\t\t\t\t\t\"<td>\" +\n\t\t\t\t\t\t\t\t\t'<div class=\"ord-code\"><strong>' + escapeHtml(o.code) + '</strong></div>' +\n\t\t\t\t\t\t\t\t\t'<div class=\"ord-time\"><time>' + escapeHtml(o.time_formatted) + ' WITA</time></div>' +\n\t\t\t\t\t\t\t\t\"</td>\" +\n\t\t\t\t\t\t\t\t\"<td>\" +\n\t\t\t\t\t\t\t\t\t'<div class=\"ord-customer\"><strong>' + escapeHtml(o.customer_name) + '</strong> ' + custBadge + '</div>' +\n\t\t\t\t\t\t\t\t\t'<div class=\"ord-table\">' + tableText + '</div>' +\n\t\t\t\t\t\t\t\t\"</td>\" +\n\t\t\t\t\t\t\t\t\"<td>\" +\n\t\t\t\t\t\t\t\t\t'<span class=\"order-status-badge ' + badgeClass + '\">' + escapeHtml(o.status_label) + '</span>' +\n\t\t\t\t\t\t\t\t\"</td>\" +\n\t\t\t\t\t\t\t\t\"<td>\" +\n\t\t\t\t\t\t\t\t\t'<div class=\"ord-items-summary\">' + escapeHtml(o.items_summary) + '</div>' +\n\t\t\t\t\t\t\t\t\"</td>\" +\n\t\t\t\t\t\t\t\t'<td class=\"text-right tabular-nums\"><strong>' + escapeHtml(o.total_formatted) + '</strong></td>' +\n\t\t\t\t\t\t\t\t'<td class=\"text-center\">' +\n\t\t\t\t\t\t\t\t\t'<a href=\"/pesanan/' + encodeURIComponent(o.code) + '\" class=\"btn-receipt-link\" target=\"_blank\" rel=\"noopener\">Lihat</a>' +\n\t\t\t\t\t\t\t\t\"</td>\" +\n\t\t\t\t\t\t\t\t\"</tr>\";\n\t\t\t\t\t\t}\n\t\t\t\t\t\ttbodyOrders.innerHTML = htmlOrders;\n\t\t\t\t\t}\n\t\t\t\t}\n\n\t\t\t\tif (data.stock_summary) {\n\t\t\t\t\tvar elSafe = document.getElementById(\"stockStatSafe\");\n\t\t\t\t\tif (elSafe) elSafe.textContent = String(data.stock_summary.safe_count);\n\n\t\t\t\t\tvar elLow = document.getElementById(\"stockStatLow\");\n\t\t\t\t\tif (elLow) elLow.textContent = String(data.stock_summary.low_count);\n\n\t\t\t\t\tvar elEmpty = document.getElementById(\"stockStatEmpty\");\n\t\t\t\t\tif (elEmpty) elEmpty.textContent = String(data.stock_summary.empty_count);\n\t\t\t\t}\n\n\t\t\t\tvar tbodyStock = document.getElementById(\"tableStockListBody\");\n\t\t\t\tif (tbodyStock && data.stock_items) {\n\t\t\t\t\tvar htmlStock = \"\";\n\t\t\t\t\tfor (var k = 0; k < data.stock_items.length; k++) {\n\t\t\t\t\t\tvar s = data.stock_items[k];\n\t\t\t\t\t\thtmlStock += \"<tr>\" +\n\t\t\t\t\t\t\t\"<td><strong>\" + escapeHtml(s.name) + \"</strong></td>\" +\n\t\t\t\t\t\t\t\"<td>\" + escapeHtml(s.category) + \"</td>\" +\n\t\t\t\t\t\t\t\"<td class=\\\"text-right tabular-nums\\\"><strong>\" + s.qty + \" porsi</strong></td>\" +\n\t\t\t\t\t\t\t\"<td class=\\\"text-center\\\"><span class=\\\"stock-badge badge-\" + escapeHtml(s.status_code) + \"\\\">\" + escapeHtml(s.status_label) + \"</span></td>\" +\n\t\t\t\t\t\t\t\"</tr>\";\n\t\t\t\t\t}\n\t\t\t\t\ttbodyStock.innerHTML = htmlStock;\n\t\t\t\t}\n\n\t\t\t\tvar tbodyMovements = document.getElementById(\"tableStockMovementsBody\");\n\t\t\t\tif (tbodyMovements && data.stock_movements) {\n\t\t\t\t\tif (data.stock_movements.length === 0) {\n\t\t\t\t\t\ttbodyMovements.innerHTML = '<tr><td colspan=\"4\" class=\"text-center text-muted\">Belum ada catatan mutasi stok.</td></tr>';\n\t\t\t\t\t} else {\n\t\t\t\t\t\tvar htmlMovements = \"\";\n\t\t\t\t\t\tfor (var m = 0; m < data.stock_movements.length; m++) {\n\t\t\t\t\t\t\tvar mv = data.stock_movements[m];\n\t\t\t\t\t\t\tvar changeHtml = mv.change > 0 ?\n\t\t\t\t\t\t\t\t'<span class=\"change-pos\">+' + mv.change + '</span>' :\n\t\t\t\t\t\t\t\t'<span class=\"change-neg\">' + mv.change + '</span>';\n\t\t\t\t\t\t\thtmlMovements += \"<tr>\" +\n\t\t\t\t\t\t\t\t\"<td><time>\" + escapeHtml(mv.time_formatted) + \"</time></td>\" +\n\t\t\t\t\t\t\t\t\"<td><strong>\" + escapeHtml(mv.product_name) + \"</strong></td>\" +\n\t\t\t\t\t\t\t\t'<td class=\"text-right tabular-nums\">' + changeHtml + '</td>' +\n\t\t\t\t\t\t\t\t\"<td>\" + escapeHtml(mv.reason) + \"</td>\" +\n\t\t\t\t\t\t\t\t\"</tr>\";\n\t\t\t\t\t\t}\n\t\t\t\t\t\ttbodyMovements.innerHTML = htmlMovements;\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\n\t\t\tfunction fetchMonitoringData() {\n\t\t\t\tif (refreshBtn) refreshBtn.classList.add(\"is-loading\");\n\t\t\t\tfetch(\"/api/admin/live-monitoring\", {\n\t\t\t\t\theaders: { \"Accept\": \"application/json\" }\n\t\t\t\t})\n\t\t\t\t.then(function(res) {\n\t\t\t\t\tif (!res.ok) throw new Error(\"HTTP error \" + res.status);\n\t\t\t\t\treturn res.json();\n\t\t\t\t})\n\t\t\t\t.then(function(data) {\n\t\t\t\t\tupdateDashboard(data);\n\t\t\t\t})\n\t\t\t\t.catch(function(err) {\n\t\t\t\t\tconsole.warn(\"Live monitoring sync error:\", err);\n\t\t\t\t\tif (syncLabel) syncLabel.textContent = \"Koneksi terputus (\" + new Date().toLocaleTimeString() + \")\";\n\t\t\t\t})\n\t\t\t\t.finally(function() {\n\t\t\t\t\tif (refreshBtn) refreshBtn.classList.remove(\"is-loading\");\n\t\t\t\t});\n\t\t\t}\n\n\t\t\tfunction setupInterval() {\n\t\t\t\tif (pollTimer) {\n\t\t\t\t\tclearInterval(pollTimer);\n\t\t\t\t\tpollTimer = null;\n\t\t\t\t}\n\t\t\t\tif (!select) return;\n\t\t\t\tvar val = parseInt(select.value, 10);\n\t\t\t\tif (val > 0) {\n\t\t\t\t\tpollTimer = setInterval(fetchMonitoringData, val);\n\t\t\t\t}\n\t\t\t}\n\n\t\t\tif (select) {\n\t\t\t\tselect.addEventListener(\"change\", function() {\n\t\t\t\t\tsetupInterval();\n\t\t\t\t\tif (parseInt(select.value, 10) > 0) {\n\t\t\t\t\t\tfetchMonitoringData();\n\t\t\t\t\t}\n\t\t\t\t});\n\t\t\t}\n\n\t\t\tif (refreshBtn) {\n\t\t\t\trefreshBtn.addEventListener(\"click\", function() {\n\t\t\t\t\tfetchMonitoringData();\n\t\t\t\t});\n\t\t\t}\n\n\t\t\tsetupInterval();\n\t\t\tsetTimeout(fetchMonitoringData, 800);\n\t\t})();\n\t\t</script></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -267,105 +267,105 @@ func adminTabReport(report order.AdminReport) templ.Component {
 			templ_7745c5c3_Var14 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "<div class=\"admin-tab-pane\"><div class=\"tab-pane-header\"><div><h2 class=\"tab-pane-title\">Ringkasan Keuangan &amp; Operasional</h2><p class=\"tab-pane-desc\">Performa akumulasi transaksi, rata-rata belanja, dan distribusi pelanggan kafe.</p></div><a href=\"/kasir\" class=\"btn-paper-link\">Buka Antrean Kasir</a></div><div class=\"admin-kpi-grid\"><div class=\"kpi-card kpi-highlight\"><span class=\"kpi-label\">Omzet Terverifikasi</span> <strong class=\"kpi-val\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "<div class=\"admin-tab-pane\"><div class=\"tab-pane-header\"><div><h2 class=\"tab-pane-title\">Ringkasan Keuangan &amp; Operasional</h2><p class=\"tab-pane-desc\">Performa akumulasi transaksi, rata-rata belanja, dan distribusi pelanggan kafe.</p></div><a href=\"/kasir\" class=\"btn-paper-link\">Buka Antrean Kasir</a></div><div class=\"admin-kpi-grid\"><div class=\"kpi-card kpi-highlight\"><span class=\"kpi-label\">Omzet Terverifikasi</span> <strong class=\"kpi-val\" id=\"kpiConfirmedSales\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var15 string
 		templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(FormatRupiah(report.Metrics.ConfirmedSales))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 94, Col: 73}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 329, Col: 96}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "</strong> <span class=\"kpi-sub\">total pesanan berstatus lunas</span></div><div class=\"kpi-card\"><span class=\"kpi-label\">Total Transaksi</span> <strong class=\"kpi-val\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "</strong> <span class=\"kpi-sub\">total pesanan berstatus lunas</span></div><div class=\"kpi-card\"><span class=\"kpi-label\">Total Transaksi</span> <strong class=\"kpi-val\" id=\"kpiTotalOrders\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var16 string
 		templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", report.Metrics.TotalOrders))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 99, Col: 75}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 334, Col: 95}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "</strong> <span class=\"kpi-sub\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "</strong> <span class=\"kpi-sub\" id=\"kpiTotalSub\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var17 string
 		templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d selesai, %d menunggu", report.Metrics.Completed, report.Metrics.PendingPayment))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 100, Col: 123}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 335, Col: 140}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "</span></div><div class=\"kpi-card\"><span class=\"kpi-label\">Rata-rata Nilai Pesanan</span> <strong class=\"kpi-val\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "</span></div><div class=\"kpi-card\"><span class=\"kpi-label\">Rata-rata Nilai Pesanan</span> <strong class=\"kpi-val\" id=\"kpiAvgOrderValue\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var18 string
 		templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(FormatRupiah(report.AverageOrderValue))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 104, Col: 68}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 339, Col: 90}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "</strong> <span class=\"kpi-sub\">average order value</span></div><div class=\"kpi-card\"><span class=\"kpi-label\">Segmen Pelanggan</span><div class=\"kpi-split\"><span><strong>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "</strong> <span class=\"kpi-sub\">average order value</span></div><div class=\"kpi-card\"><span class=\"kpi-label\">Segmen Pelanggan</span><div class=\"kpi-split\"><span><strong id=\"kpiMahasiswaCount\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var19 string
 		templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", report.MahasiswaOrders))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 110, Col: 62}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 345, Col: 85}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "</strong> Mahasiswa</span> <span>•</span> <span><strong>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "</strong> Mahasiswa</span> <span>•</span> <span><strong id=\"kpiUmumCount\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var20 string
 		templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", report.UmumOrders))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 112, Col: 57}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 347, Col: 75}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "</strong> Umum</span></div><span class=\"kpi-sub\">berdasarkan akun dan tipe tamu</span></div><div class=\"kpi-card\"><span class=\"kpi-label\">Metode Pembayaran</span><div class=\"kpi-split\"><span><strong>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "</strong> Umum</span></div><span class=\"kpi-sub\">berdasarkan akun dan tipe tamu</span></div><div class=\"kpi-card\"><span class=\"kpi-label\">Metode Pembayaran</span><div class=\"kpi-split\"><span><strong id=\"kpiCashCount\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var21 string
 		templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", report.CashOrders))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 119, Col: 57}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 354, Col: 75}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "</strong> Tunai</span> <span>•</span> <span><strong>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "</strong> Tunai</span> <span>•</span> <span><strong id=\"kpiQRISCount\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var22 string
 		templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", report.QRISOrders))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 121, Col: 57}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 356, Col: 75}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 		if templ_7745c5c3_Err != nil {
@@ -381,7 +381,7 @@ func adminTabReport(report order.AdminReport) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "<div class=\"table-frame\"><table class=\"report-table\"><thead><tr><th>Menu</th><th class=\"text-right\">Terjual</th><th class=\"text-right\">Kontribusi Omzet</th></tr></thead> <tbody>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "<div class=\"table-frame\"><table class=\"report-table\"><thead><tr><th>Menu</th><th class=\"text-right\">Terjual</th><th class=\"text-right\">Kontribusi Omzet</th></tr></thead> <tbody id=\"tableTopProductsBody\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -393,7 +393,7 @@ func adminTabReport(report order.AdminReport) templ.Component {
 				var templ_7745c5c3_Var23 string
 				templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(p.ProductName)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 171, Col: 37}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 406, Col: 37}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 				if templ_7745c5c3_Err != nil {
@@ -406,7 +406,7 @@ func adminTabReport(report order.AdminReport) templ.Component {
 				var templ_7745c5c3_Var24 string
 				templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d porsi", p.Quantity))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 172, Col: 70}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 407, Col: 70}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
 				if templ_7745c5c3_Err != nil {
@@ -419,7 +419,7 @@ func adminTabReport(report order.AdminReport) templ.Component {
 				var templ_7745c5c3_Var25 string
 				templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(FormatRupiah(p.TotalSales))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 173, Col: 74}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 408, Col: 74}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
 				if templ_7745c5c3_Err != nil {
@@ -445,7 +445,7 @@ func adminTabReport(report order.AdminReport) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "<div class=\"table-frame\"><table class=\"report-table\"><thead><tr><th>Kode</th><th>Pemesan</th><th>Status</th><th class=\"text-right\">Total</th><th class=\"text-center\">Struk</th></tr></thead> <tbody>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "<div class=\"table-frame\"><table class=\"report-table\"><thead><tr><th>Kode</th><th>Pemesan</th><th>Status</th><th class=\"text-right\">Total</th><th class=\"text-center\">Struk</th></tr></thead> <tbody id=\"tableRecentOrdersBody\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -457,7 +457,7 @@ func adminTabReport(report order.AdminReport) templ.Component {
 				var templ_7745c5c3_Var26 templ.SafeURL
 				templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL("/pesanan/" + ord.Code))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 207, Col: 54}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 442, Col: 54}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var26))
 				if templ_7745c5c3_Err != nil {
@@ -470,7 +470,7 @@ func adminTabReport(report order.AdminReport) templ.Component {
 				var templ_7745c5c3_Var27 string
 				templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(ord.Code)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 208, Col: 22}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 443, Col: 22}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
 				if templ_7745c5c3_Err != nil {
@@ -483,7 +483,7 @@ func adminTabReport(report order.AdminReport) templ.Component {
 				var templ_7745c5c3_Var28 string
 				templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinStringErrs(ord.CustomerName)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 212, Col: 35}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 447, Col: 35}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var28))
 				if templ_7745c5c3_Err != nil {
@@ -528,7 +528,7 @@ func adminTabReport(report order.AdminReport) templ.Component {
 				var templ_7745c5c3_Var31 string
 				templ_7745c5c3_Var31, templ_7745c5c3_Err = templ.JoinStringErrs(ord.StatusLabel())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 218, Col: 103}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 453, Col: 103}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var31))
 				if templ_7745c5c3_Err != nil {
@@ -541,7 +541,7 @@ func adminTabReport(report order.AdminReport) templ.Component {
 				var templ_7745c5c3_Var32 string
 				templ_7745c5c3_Var32, templ_7745c5c3_Err = templ.JoinStringErrs(FormatRupiah(ord.Total))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 220, Col: 79}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 455, Col: 79}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var32))
 				if templ_7745c5c3_Err != nil {
@@ -554,7 +554,7 @@ func adminTabReport(report order.AdminReport) templ.Component {
 				var templ_7745c5c3_Var33 templ.SafeURL
 				templ_7745c5c3_Var33, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL("/kasir/pesanan/" + ord.Code + "/cetak"))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 222, Col: 71}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 457, Col: 71}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var33))
 				if templ_7745c5c3_Err != nil {
@@ -611,7 +611,7 @@ func adminTabMenu(categories []catalog.Category) templ.Component {
 			var templ_7745c5c3_Var35 string
 			templ_7745c5c3_Var35, templ_7745c5c3_Err = templ.ResolveAttributeValue(c.Slug)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 256, Col: 30}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 491, Col: 30}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var35)
 			if templ_7745c5c3_Err != nil {
@@ -624,7 +624,7 @@ func adminTabMenu(categories []catalog.Category) templ.Component {
 			var templ_7745c5c3_Var36 string
 			templ_7745c5c3_Var36, templ_7745c5c3_Err = templ.JoinStringErrs(c.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 256, Col: 41}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 491, Col: 41}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var36))
 			if templ_7745c5c3_Err != nil {
@@ -647,7 +647,7 @@ func adminTabMenu(categories []catalog.Category) templ.Component {
 			var templ_7745c5c3_Var37 string
 			templ_7745c5c3_Var37, templ_7745c5c3_Err = templ.ResolveAttributeValue(c.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 290, Col: 32}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 525, Col: 32}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var37)
 			if templ_7745c5c3_Err != nil {
@@ -665,7 +665,7 @@ func adminTabMenu(categories []catalog.Category) templ.Component {
 				var templ_7745c5c3_Var38 string
 				templ_7745c5c3_Var38, templ_7745c5c3_Err = templ.ResolveAttributeValue(p.Slug)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 292, Col: 32}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 527, Col: 32}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var38)
 				if templ_7745c5c3_Err != nil {
@@ -678,7 +678,7 @@ func adminTabMenu(categories []catalog.Category) templ.Component {
 				var templ_7745c5c3_Var39 string
 				templ_7745c5c3_Var39, templ_7745c5c3_Err = templ.JoinStringErrs(p.Name)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 292, Col: 43}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 527, Col: 43}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var39))
 				if templ_7745c5c3_Err != nil {
@@ -691,7 +691,7 @@ func adminTabMenu(categories []catalog.Category) templ.Component {
 				var templ_7745c5c3_Var40 string
 				templ_7745c5c3_Var40, templ_7745c5c3_Err = templ.JoinStringErrs(FormatRupiah(p.BasePrice))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 292, Col: 74}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 527, Col: 74}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var40))
 				if templ_7745c5c3_Err != nil {
@@ -719,7 +719,7 @@ func adminTabMenu(categories []catalog.Category) templ.Component {
 			var templ_7745c5c3_Var41 string
 			templ_7745c5c3_Var41, templ_7745c5c3_Err = templ.JoinStringErrs(cat.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 319, Col: 45}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 554, Col: 45}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var41))
 			if templ_7745c5c3_Err != nil {
@@ -732,7 +732,7 @@ func adminTabMenu(categories []catalog.Category) templ.Component {
 			var templ_7745c5c3_Var42 string
 			templ_7745c5c3_Var42, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d menu", len(cat.Products)))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 320, Col: 80}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 555, Col: 80}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var42))
 			if templ_7745c5c3_Err != nil {
@@ -750,7 +750,7 @@ func adminTabMenu(categories []catalog.Category) templ.Component {
 				var templ_7745c5c3_Var43 string
 				templ_7745c5c3_Var43, templ_7745c5c3_Err = templ.JoinStringErrs(p.Name)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 335, Col: 28}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 570, Col: 28}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var43))
 				if templ_7745c5c3_Err != nil {
@@ -763,7 +763,7 @@ func adminTabMenu(categories []catalog.Category) templ.Component {
 				var templ_7745c5c3_Var44 string
 				templ_7745c5c3_Var44, templ_7745c5c3_Err = templ.JoinStringErrs(p.Slug)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 336, Col: 53}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 571, Col: 53}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var44))
 				if templ_7745c5c3_Err != nil {
@@ -786,7 +786,7 @@ func adminTabMenu(categories []catalog.Category) templ.Component {
 						var templ_7745c5c3_Var45 string
 						templ_7745c5c3_Var45, templ_7745c5c3_Err = templ.JoinStringErrs(v.Name)
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 343, Col: 24}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 578, Col: 24}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var45))
 						if templ_7745c5c3_Err != nil {
@@ -804,7 +804,7 @@ func adminTabMenu(categories []catalog.Category) templ.Component {
 							var templ_7745c5c3_Var46 string
 							templ_7745c5c3_Var46, templ_7745c5c3_Err = templ.JoinStringErrs(FormatRupiah(v.PriceDelta))
 							if templ_7745c5c3_Err != nil {
-								return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 345, Col: 74}
+								return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 580, Col: 74}
 							}
 							_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var46))
 							if templ_7745c5c3_Err != nil {
@@ -837,7 +837,7 @@ func adminTabMenu(categories []catalog.Category) templ.Component {
 				var templ_7745c5c3_Var47 string
 				templ_7745c5c3_Var47, templ_7745c5c3_Err = templ.JoinStringErrs(FormatRupiah(p.BasePrice))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 355, Col: 47}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 590, Col: 47}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var47))
 				if templ_7745c5c3_Err != nil {
@@ -894,7 +894,7 @@ func adminTabStock(stockList []catalog.StockItem, movements []catalog.StockMovem
 			var templ_7745c5c3_Var49 string
 			templ_7745c5c3_Var49, templ_7745c5c3_Err = templ.ResolveAttributeValue(it.ProductSlug)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 388, Col: 38}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 623, Col: 38}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var49)
 			if templ_7745c5c3_Err != nil {
@@ -907,7 +907,7 @@ func adminTabStock(stockList []catalog.StockItem, movements []catalog.StockMovem
 			var templ_7745c5c3_Var50 string
 			templ_7745c5c3_Var50, templ_7745c5c3_Err = templ.JoinStringErrs(it.ProductName)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 389, Col: 25}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 624, Col: 25}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var50))
 			if templ_7745c5c3_Err != nil {
@@ -920,7 +920,7 @@ func adminTabStock(stockList []catalog.StockItem, movements []catalog.StockMovem
 			var templ_7745c5c3_Var51 string
 			templ_7745c5c3_Var51, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", it.Qty))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 389, Col: 62}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 624, Col: 62}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var51))
 			if templ_7745c5c3_Err != nil {
@@ -931,40 +931,40 @@ func adminTabStock(stockList []catalog.StockItem, movements []catalog.StockMovem
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 86, "</select></div><div class=\"form-group\"><label for=\"stock_action_type\">Jenis Penyesuaian</label> <select id=\"stock_action_type\" name=\"action_type\" required class=\"styled-select\"><option value=\"add\">Tambah Stok Masuk (Restock / Barang Datang)</option> <option value=\"sub\">Kurangi Stok (Koreksi / Rusak / Terbuang)</option></select></div><div class=\"form-group\"><label for=\"stock_change_qty\">Jumlah Porsi</label> <input type=\"number\" id=\"stock_change_qty\" name=\"quantity\" min=\"1\" step=\"1\" placeholder=\"Contoh: 15\" required class=\"styled-input\"></div><div class=\"form-group\"><label for=\"stock_reason\">Catatan Alasan</label> <input type=\"text\" id=\"stock_reason\" name=\"reason\" placeholder=\"Contoh: Pembelian bahan susu pagi hari\" required class=\"styled-input\"></div><button type=\"submit\" class=\"btn-admin-submit\">Simpan Penyesuaian Stok</button></form></section><section class=\"admin-form-panel\" aria-labelledby=\"stock-summary-title\"><h3 id=\"stock-summary-title\" class=\"form-panel-title\">Status Inventaris Kafe</h3><p class=\"form-panel-desc\">Ringkasan kondisi stok menu saat ini.</p><div class=\"stock-status-summary-cards\"><div class=\"summary-stat-box stat-safe\"><span class=\"stat-number\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 86, "</select></div><div class=\"form-group\"><label for=\"stock_action_type\">Jenis Penyesuaian</label> <select id=\"stock_action_type\" name=\"action_type\" required class=\"styled-select\"><option value=\"add\">Tambah Stok Masuk (Restock / Barang Datang)</option> <option value=\"sub\">Kurangi Stok (Koreksi / Rusak / Terbuang)</option></select></div><div class=\"form-group\"><label for=\"stock_change_qty\">Jumlah Porsi</label> <input type=\"number\" id=\"stock_change_qty\" name=\"quantity\" min=\"1\" step=\"1\" placeholder=\"Contoh: 15\" required class=\"styled-input\"></div><div class=\"form-group\"><label for=\"stock_reason\">Catatan Alasan</label> <input type=\"text\" id=\"stock_reason\" name=\"reason\" placeholder=\"Contoh: Pembelian bahan susu pagi hari\" required class=\"styled-input\"></div><button type=\"submit\" class=\"btn-admin-submit\">Simpan Penyesuaian Stok</button></form></section><section class=\"admin-form-panel\" aria-labelledby=\"stock-summary-title\"><h3 id=\"stock-summary-title\" class=\"form-panel-title\">Status Inventaris Kafe</h3><p class=\"form-panel-desc\">Ringkasan kondisi stok menu saat ini.</p><div class=\"stock-status-summary-cards\"><div class=\"summary-stat-box stat-safe\"><span class=\"stat-number\" id=\"stockStatSafe\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var52 string
 		templ_7745c5c3_Var52, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", countStockByStatus(stockList, "safe")))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 423, Col: 90}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 658, Col: 109}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var52))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 87, "</span> <span class=\"stat-text\">Menu Stok Aman</span></div><div class=\"summary-stat-box stat-low\"><span class=\"stat-number\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 87, "</span> <span class=\"stat-text\">Menu Stok Aman</span></div><div class=\"summary-stat-box stat-low\"><span class=\"stat-number\" id=\"stockStatLow\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var53 string
 		templ_7745c5c3_Var53, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", countStockByStatus(stockList, "low")))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 427, Col: 89}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 662, Col: 107}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var53))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 88, "</span> <span class=\"stat-text\">Menu Stok Menipis (≤ 5)</span></div><div class=\"summary-stat-box stat-empty\"><span class=\"stat-number\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 88, "</span> <span class=\"stat-text\">Menu Stok Menipis (≤ 5)</span></div><div class=\"summary-stat-box stat-empty\"><span class=\"stat-number\" id=\"stockStatEmpty\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var54 string
 		templ_7745c5c3_Var54, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", countStockByStatus(stockList, "empty")))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 431, Col: 91}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 666, Col: 111}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var54))
 		if templ_7745c5c3_Err != nil {
@@ -977,13 +977,13 @@ func adminTabStock(stockList []catalog.StockItem, movements []catalog.StockMovem
 		var templ_7745c5c3_Var55 string
 		templ_7745c5c3_Var55, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d item terdata", len(stockList)))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 445, Col: 79}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 680, Col: 79}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var55))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 90, "</span></div><div class=\"table-frame\"><table class=\"report-table\"><thead><tr><th>Nama Menu</th><th>Kategori</th><th class=\"text-right\">Sisa Stok</th><th class=\"text-center\">Status</th></tr></thead> <tbody>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 90, "</span></div><div class=\"table-frame\"><table class=\"report-table\"><thead><tr><th>Nama Menu</th><th>Kategori</th><th class=\"text-right\">Sisa Stok</th><th class=\"text-center\">Status</th></tr></thead> <tbody id=\"tableStockListBody\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -995,7 +995,7 @@ func adminTabStock(stockList []catalog.StockItem, movements []catalog.StockMovem
 			var templ_7745c5c3_Var56 string
 			templ_7745c5c3_Var56, templ_7745c5c3_Err = templ.JoinStringErrs(it.ProductName)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 461, Col: 36}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 696, Col: 36}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var56))
 			if templ_7745c5c3_Err != nil {
@@ -1008,7 +1008,7 @@ func adminTabStock(stockList []catalog.StockItem, movements []catalog.StockMovem
 			var templ_7745c5c3_Var57 string
 			templ_7745c5c3_Var57, templ_7745c5c3_Err = templ.JoinStringErrs(it.CategoryName)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 462, Col: 29}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 697, Col: 29}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var57))
 			if templ_7745c5c3_Err != nil {
@@ -1021,7 +1021,7 @@ func adminTabStock(stockList []catalog.StockItem, movements []catalog.StockMovem
 			var templ_7745c5c3_Var58 string
 			templ_7745c5c3_Var58, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d porsi", it.Qty))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 463, Col: 85}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 698, Col: 85}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var58))
 			if templ_7745c5c3_Err != nil {
@@ -1056,7 +1056,7 @@ func adminTabStock(stockList []catalog.StockItem, movements []catalog.StockMovem
 			var templ_7745c5c3_Var61 string
 			templ_7745c5c3_Var61, templ_7745c5c3_Err = templ.JoinStringErrs(it.StatusLabel())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 466, Col: 28}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 701, Col: 28}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var61))
 			if templ_7745c5c3_Err != nil {
@@ -1067,15 +1067,16 @@ func adminTabStock(stockList []catalog.StockItem, movements []catalog.StockMovem
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 98, "</tbody></table></div></section>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 98, "</tbody></table></div></section><div class=\"admin-export-card\" style=\"margin-top: 1.5rem; margin-bottom: 2rem;\"><div class=\"export-card-text\"><h3 class=\"export-card-title\">Ekspor Riwayat Mutasi Stok (CSV / Excel)</h3><p class=\"export-card-desc\">Unduh seluruh riwayat pergerakan stok barang, restock harian, dan pengurangan pesanan ke format CSV UTF-8.</p></div><div class=\"export-card-actions\"><a href=\"/admin/stok/ekspor\" class=\"btn-export-act btn-export-primary\" download title=\"Unduh berkas CSV mutasi stok\"><span class=\"export-icon\">📦</span> <span>Unduh Mutasi Stok (.CSV)</span></a></div></div><section class=\"stock-movements-section\" aria-labelledby=\"movements-table-title\"><div class=\"section-title-wrap\"><h3 id=\"movements-table-title\" class=\"sub-section-title\">Catatan Riwayat Pergerakan Stok</h3><span class=\"section-note\">Pencatatan penyesuaian terbaru (Real-Time)</span></div><div class=\"table-frame\"><table class=\"report-table\"><thead><tr><th>Waktu</th><th>Menu</th><th class=\"text-right\">Perubahan</th><th>Catatan / Alasan</th></tr></thead> <tbody id=\"tableStockMovementsBody\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if len(movements) > 0 {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 99, "<section class=\"stock-movements-section\" aria-labelledby=\"movements-table-title\"><div class=\"section-title-wrap\"><h3 id=\"movements-table-title\" class=\"sub-section-title\">Catatan Riwayat Pergerakan Stok</h3><span class=\"section-note\">Pencatatan penyesuaian terbaru</span></div><div class=\"table-frame\"><table class=\"report-table\"><thead><tr><th>Waktu</th><th>Menu</th><th class=\"text-right\">Perubahan</th><th>Catatan / Alasan</th></tr></thead> <tbody>")
+		if len(movements) == 0 {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 99, "<tr><td colspan=\"4\" class=\"text-center text-muted\">Belum ada catatan mutasi stok.</td></tr>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
+		} else {
 			for _, m := range movements {
 				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 100, "<tr><td><time>")
 				if templ_7745c5c3_Err != nil {
@@ -1084,7 +1085,7 @@ func adminTabStock(stockList []catalog.StockItem, movements []catalog.StockMovem
 				var templ_7745c5c3_Var62 string
 				templ_7745c5c3_Var62, templ_7745c5c3_Err = templ.JoinStringErrs(m.CreatedAt.Format("02/01/2006, 15:04 WIB"))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 496, Col: 64}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 748, Col: 64}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var62))
 				if templ_7745c5c3_Err != nil {
@@ -1097,7 +1098,7 @@ func adminTabStock(stockList []catalog.StockItem, movements []catalog.StockMovem
 				var templ_7745c5c3_Var63 string
 				templ_7745c5c3_Var63, templ_7745c5c3_Err = templ.JoinStringErrs(m.ProductName)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 497, Col: 36}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 749, Col: 36}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var63))
 				if templ_7745c5c3_Err != nil {
@@ -1115,7 +1116,7 @@ func adminTabStock(stockList []catalog.StockItem, movements []catalog.StockMovem
 					var templ_7745c5c3_Var64 string
 					templ_7745c5c3_Var64, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", m.Change))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 500, Col: 66}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 752, Col: 66}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var64))
 					if templ_7745c5c3_Err != nil {
@@ -1133,7 +1134,7 @@ func adminTabStock(stockList []catalog.StockItem, movements []catalog.StockMovem
 					var templ_7745c5c3_Var65 string
 					templ_7745c5c3_Var65, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", m.Change))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 502, Col: 65}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 754, Col: 65}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var65))
 					if templ_7745c5c3_Err != nil {
@@ -1151,7 +1152,7 @@ func adminTabStock(stockList []catalog.StockItem, movements []catalog.StockMovem
 				var templ_7745c5c3_Var66 string
 				templ_7745c5c3_Var66, templ_7745c5c3_Err = templ.JoinStringErrs(m.Reason)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 505, Col: 23}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 757, Col: 23}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var66))
 				if templ_7745c5c3_Err != nil {
@@ -1162,12 +1163,8 @@ func adminTabStock(stockList []catalog.StockItem, movements []catalog.StockMovem
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 109, "</tbody></table></div></section>")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 110, "</div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 109, "</tbody></table></div></section></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -1196,172 +1193,172 @@ func adminTabSettings(cfg storeconfig.Config) templ.Component {
 			templ_7745c5c3_Var67 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 111, "<div class=\"admin-tab-pane\"><div class=\"tab-pane-header\"><div><h2 class=\"tab-pane-title\">Pengaturan Kafe &amp; Operasional</h2><p class=\"tab-pane-desc\">Atur ketersediaan penerimaan pesanan, jam buka toko, dan informasi kontak kafe.</p></div></div><div class=\"admin-form-split\"><section class=\"admin-form-panel\" aria-labelledby=\"form-settings-title\" style=\"flex: 1.2;\"><h3 id=\"form-settings-title\" class=\"form-panel-title\">Parameter Operasional Kafe</h3><p class=\"form-panel-desc\">Perubahan akan langsung berdampak pada halaman pemesanan pelanggan.</p><form action=\"/admin/pengaturan\" method=\"POST\" class=\"styled-admin-form\"><div class=\"form-group\"><label>Status Buka Toko</label><div class=\"radio-selector-group\"><label class=\"radio-label\"><input type=\"radio\" name=\"is_open\" value=\"true\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 110, "<div class=\"admin-tab-pane\"><div class=\"tab-pane-header\"><div><h2 class=\"tab-pane-title\">Pengaturan Kafe &amp; Operasional</h2><p class=\"tab-pane-desc\">Atur ketersediaan penerimaan pesanan, jam buka toko, dan informasi kontak kafe.</p></div></div><div class=\"admin-form-split\"><section class=\"admin-form-panel\" aria-labelledby=\"form-settings-title\" style=\"flex: 1.2;\"><h3 id=\"form-settings-title\" class=\"form-panel-title\">Parameter Operasional Kafe</h3><p class=\"form-panel-desc\">Perubahan akan langsung berdampak pada halaman pemesanan pelanggan.</p><form action=\"/admin/pengaturan\" method=\"POST\" class=\"styled-admin-form\"><div class=\"form-group\"><label>Status Buka Toko</label><div class=\"radio-selector-group\"><label class=\"radio-label\"><input type=\"radio\" name=\"is_open\" value=\"true\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if cfg.IsOpen {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 112, " checked")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 111, " checked")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 113, "> <span><strong>Kafe Buka</strong> (menerima pesanan meja dan bawa pulang)</span></label> <label class=\"radio-label\"><input type=\"radio\" name=\"is_open\" value=\"false\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 112, "> <span><strong>Kafe Buka</strong> (menerima pesanan meja dan bawa pulang)</span></label> <label class=\"radio-label\"><input type=\"radio\" name=\"is_open\" value=\"false\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if !cfg.IsOpen {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 114, " checked")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 113, " checked")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 115, "> <span><strong>Kafe Tutup Sementara</strong> (halaman checkout dihentikan sementara)</span></label></div></div><div class=\"form-group\"><label for=\"set_opening_hours\">Jam Operasional Kafe</label> <input type=\"text\" id=\"set_opening_hours\" name=\"opening_hours\" value=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 114, "> <span><strong>Kafe Tutup Sementara</strong> (halaman checkout dihentikan sementara)</span></label></div></div><div class=\"form-group\"><label for=\"set_opening_hours\">Jam Operasional Kafe</label> <input type=\"text\" id=\"set_opening_hours\" name=\"opening_hours\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var68 string
 		templ_7745c5c3_Var68, templ_7745c5c3_Err = templ.ResolveAttributeValue(cfg.OpeningHours)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 547, Col: 93}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 799, Col: 93}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var68)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 116, "\" required class=\"styled-input\"> <small class=\"form-help\">Contoh: 09.00 - 22.00 WITA (Senin sampai Sabtu)</small></div><div class=\"form-group\"><label for=\"set_table_count\">Jumlah Meja Aktif</label> <input type=\"number\" id=\"set_table_count\" name=\"table_count\" min=\"1\" max=\"100\" value=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 115, "\" required class=\"styled-input\"> <small class=\"form-help\">Contoh: 09.00 - 22.00 WITA (Senin sampai Sabtu)</small></div><div class=\"form-group\"><label for=\"set_table_count\">Jumlah Meja Aktif</label> <input type=\"number\" id=\"set_table_count\" name=\"table_count\" min=\"1\" max=\"100\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var69 string
 		templ_7745c5c3_Var69, templ_7745c5c3_Err = templ.ResolveAttributeValue(fmt.Sprintf("%d", cfg.TableCount))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 553, Col: 126}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 805, Col: 126}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var69)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 117, "\" required class=\"styled-input\"> <small class=\"form-help\">Kapasitas meja untuk pilihan pesanan Makan di Tempat.</small></div><div class=\"form-group\"><label for=\"set_contact_phone\">Nomor Telepon / WhatsApp Kafe</label> <input type=\"text\" id=\"set_contact_phone\" name=\"contact_phone\" value=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 116, "\" required class=\"styled-input\"> <small class=\"form-help\">Kapasitas meja untuk pilihan pesanan Makan di Tempat.</small></div><div class=\"form-group\"><label for=\"set_contact_phone\">Nomor Telepon / WhatsApp Kafe</label> <input type=\"text\" id=\"set_contact_phone\" name=\"contact_phone\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var70 string
 		templ_7745c5c3_Var70, templ_7745c5c3_Err = templ.ResolveAttributeValue(cfg.ContactPhone)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 559, Col: 93}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 811, Col: 93}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var70)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 118, "\" required class=\"styled-input\"> <small class=\"form-help\">Untuk bantuan pelanggan saat konfirmasi pesanan.</small></div><div class=\"form-group\"><label for=\"set_address\">Alamat Lengkap Kafe</label> <input type=\"text\" id=\"set_address\" name=\"address\" value=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 117, "\" required class=\"styled-input\"> <small class=\"form-help\">Untuk bantuan pelanggan saat konfirmasi pesanan.</small></div><div class=\"form-group\"><label for=\"set_address\">Alamat Lengkap Kafe</label> <input type=\"text\" id=\"set_address\" name=\"address\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var71 string
 		templ_7745c5c3_Var71, templ_7745c5c3_Err = templ.ResolveAttributeValue(cfg.Address)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 565, Col: 76}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 817, Col: 76}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var71)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 119, "\" required class=\"styled-input\"> <small class=\"form-help\">Lokasi fisik kafe di lingkungan kampus.</small></div><div class=\"form-group\"><label for=\"set_announcement\">Teks Pengumuman Kafe</label> <textarea id=\"set_announcement\" name=\"announcement\" rows=\"3\" class=\"styled-textarea\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 118, "\" required class=\"styled-input\"> <small class=\"form-help\">Lokasi fisik kafe di lingkungan kampus.</small></div><div class=\"form-group\"><label for=\"set_announcement\">Teks Pengumuman Kafe</label> <textarea id=\"set_announcement\" name=\"announcement\" rows=\"3\" class=\"styled-textarea\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var72 string
 		templ_7745c5c3_Var72, templ_7745c5c3_Err = templ.JoinStringErrs(cfg.Announcement)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 571, Col: 109}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 823, Col: 109}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var72))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 120, "</textarea> <small class=\"form-help\">Pemberitahuan khusus promo atau informasi penting bagi pelanggan.</small></div><button type=\"submit\" class=\"btn-admin-submit\">Simpan Pengaturan Kafe</button></form></section><section class=\"admin-form-panel\" aria-labelledby=\"settings-preview-title\" style=\"flex: 0.8;\"><h3 id=\"settings-preview-title\" class=\"form-panel-title\">Pratinjau Status Kafe</h3><p class=\"form-panel-desc\">Status aktif yang terbaca oleh sistem saat ini.</p><div class=\"settings-preview-box\"><div class=\"preview-item\"><span class=\"preview-label\">Kondisi Toko:</span> ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 119, "</textarea> <small class=\"form-help\">Pemberitahuan khusus promo atau informasi penting bagi pelanggan.</small></div><button type=\"submit\" class=\"btn-admin-submit\">Simpan Pengaturan Kafe</button></form></section><section class=\"admin-form-panel\" aria-labelledby=\"settings-preview-title\" style=\"flex: 0.8;\"><h3 id=\"settings-preview-title\" class=\"form-panel-title\">Pratinjau Status Kafe</h3><p class=\"form-panel-desc\">Status aktif yang terbaca oleh sistem saat ini.</p><div class=\"settings-preview-box\"><div class=\"preview-item\"><span class=\"preview-label\">Kondisi Toko:</span> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if cfg.IsOpen {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 121, "<span class=\"preview-tag tag-open\">Buka Melayani</span>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 120, "<span class=\"preview-tag tag-open\">Buka Melayani</span>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 122, "<span class=\"preview-tag tag-closed\">Tutup Sementara</span>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 121, "<span class=\"preview-tag tag-closed\">Tutup Sementara</span>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 123, "</div><div class=\"preview-item\"><span class=\"preview-label\">Jam Layanan:</span> <strong>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 122, "</div><div class=\"preview-item\"><span class=\"preview-label\">Jam Layanan:</span> <strong>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var73 string
 		templ_7745c5c3_Var73, templ_7745c5c3_Err = templ.JoinStringErrs(cfg.OpeningHours)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 594, Col: 32}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 846, Col: 32}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var73))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 124, "</strong></div><div class=\"preview-item\"><span class=\"preview-label\">Kapasitas Meja:</span> <strong>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 123, "</strong></div><div class=\"preview-item\"><span class=\"preview-label\">Kapasitas Meja:</span> <strong>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var74 string
 		templ_7745c5c3_Var74, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d meja", cfg.TableCount))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 598, Col: 54}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 850, Col: 54}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var74))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 125, "</strong></div><div class=\"preview-item\"><span class=\"preview-label\">Kontak Meja Kasir:</span> <strong>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 124, "</strong></div><div class=\"preview-item\"><span class=\"preview-label\">Kontak Meja Kasir:</span> <strong>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var75 string
 		templ_7745c5c3_Var75, templ_7745c5c3_Err = templ.JoinStringErrs(cfg.ContactPhone)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 602, Col: 32}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 854, Col: 32}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var75))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 126, "</strong></div><div class=\"preview-item\"><span class=\"preview-label\">Alamat Kafe:</span> <strong>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 125, "</strong></div><div class=\"preview-item\"><span class=\"preview-label\">Alamat Kafe:</span> <strong>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var76 string
 		templ_7745c5c3_Var76, templ_7745c5c3_Err = templ.JoinStringErrs(cfg.Address)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 606, Col: 27}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 858, Col: 27}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var76))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 127, "</strong></div><div class=\"preview-item\"><span class=\"preview-label\">Pengumuman:</span><p class=\"preview-announcement\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 126, "</strong></div><div class=\"preview-item\"><span class=\"preview-label\">Pengumuman:</span><p class=\"preview-announcement\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var77 string
 		templ_7745c5c3_Var77, templ_7745c5c3_Err = templ.JoinStringErrs(cfg.Announcement)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 610, Col: 56}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/view/admin_dashboard.templ`, Line: 862, Col: 56}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var77))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 128, "</p></div></div></section></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 127, "</p></div></div></section></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

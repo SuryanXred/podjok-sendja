@@ -51,6 +51,34 @@ templ adminDashboardContent(activeTab string, report order.AdminReport, categori
 	}
 
 	<div class="menu-sheet admin-dashboard-sheet">
+		<div class="admin-live-monitor-bar" id="adminLiveBar">
+			<div class="live-status-group">
+				<span class="live-pulse-indicator" aria-hidden="true">
+					<span class="live-pulse-ring"></span>
+					<span class="live-pulse-core"></span>
+				</span>
+				<div class="live-status-text">
+					<strong class="live-status-title">Pemantauan Real-Time Aktif</strong>
+					<span class="live-last-sync" id="liveLastSync">Menghubungkan pembaruan langsung...</span>
+				</div>
+			</div>
+			<div class="live-controls-group">
+				<div class="live-interval-wrap">
+					<label for="liveIntervalSelect" class="live-control-label">Interval:</label>
+					<select id="liveIntervalSelect" class="live-interval-select" aria-label="Interval Pembaruan Otomatis">
+						<option value="5000" selected>Tiap 5 Detik</option>
+						<option value="10000">Tiap 10 Detik</option>
+						<option value="30000">Tiap 30 Detik</option>
+						<option value="0">Manual (Nonaktif)</option>
+					</select>
+				</div>
+				<button type="button" id="btnLiveRefresh" class="btn-live-refresh" title="Segarkan data sekarang">
+					<span class="refresh-icon" aria-hidden="true">🔄</span>
+					<span>Segarkan</span>
+				</button>
+			</div>
+		</div>
+
 		<nav class="admin-tabs-nav" aria-label="Navigasi bagian admin">
 			<a href="/admin" class={ "admin-tab-btn", templ.KV("is-active", activeTab == "" || activeTab == "laporan") }>
 				Ringkasan &amp; Laporan
@@ -75,6 +103,213 @@ templ adminDashboardContent(activeTab string, report order.AdminReport, categori
 		} else if activeTab == "pengaturan" {
 			@adminTabSettings(cfg)
 		}
+
+		<script>
+		(function() {
+			var pollTimer = null;
+			var select = document.getElementById("liveIntervalSelect");
+			var refreshBtn = document.getElementById("btnLiveRefresh");
+			var syncLabel = document.getElementById("liveLastSync");
+
+			function escapeHtml(str) {
+				if (!str) return "";
+				return String(str)
+					.replace(/&/g, "&amp;")
+					.replace(/</g, "&lt;")
+					.replace(/>/g, "&gt;")
+					.replace(/"/g, "&quot;")
+					.replace(/'/g, "&#039;");
+			}
+
+			function updateDashboard(data) {
+				if (!data) return;
+
+				if (syncLabel && data.timestamp) {
+					syncLabel.textContent = "Sinkronisasi terakhir: " + data.timestamp;
+				}
+
+				if (data.metrics) {
+					var elSales = document.getElementById("kpiConfirmedSales");
+					if (elSales) elSales.textContent = data.metrics.confirmed_sales;
+
+					var elTotal = document.getElementById("kpiTotalOrders");
+					if (elTotal) elTotal.textContent = String(data.metrics.total_orders);
+
+					var elSub = document.getElementById("kpiTotalSub");
+					if (elSub) elSub.textContent = data.metrics.completed_orders + " selesai, " + data.metrics.pending_orders + " menunggu";
+
+					var elAvg = document.getElementById("kpiAvgOrderValue");
+					if (elAvg) elAvg.textContent = data.metrics.average_order_value;
+
+					var elMhs = document.getElementById("kpiMahasiswaCount");
+					if (elMhs) elMhs.textContent = String(data.metrics.mahasiswa_orders);
+
+					var elUmum = document.getElementById("kpiUmumCount");
+					if (elUmum) elUmum.textContent = String(data.metrics.umum_orders);
+
+					var elCash = document.getElementById("kpiCashCount");
+					if (elCash) elCash.textContent = String(data.metrics.cash_orders);
+
+					var elQris = document.getElementById("kpiQRISCount");
+					if (elQris) elQris.textContent = String(data.metrics.qris_orders);
+				}
+
+				var tbodyTop = document.getElementById("tableTopProductsBody");
+				if (tbodyTop && data.top_products) {
+					if (data.top_products.length === 0) {
+						tbodyTop.innerHTML = '<tr><td colspan="3" class="text-center text-muted">Belum ada data penjualan tercatat.</td></tr>';
+					} else {
+						var htmlTop = "";
+						for (var i = 0; i < data.top_products.length; i++) {
+							var p = data.top_products[i];
+							htmlTop += "<tr>" +
+								"<td><strong>" + escapeHtml(p.name) + "</strong></td>" +
+								"<td class=\"text-right tabular-nums\">" + p.quantity + " porsi</td>" +
+								"<td class=\"text-right tabular-nums\">" + escapeHtml(p.sales_formatted) + "</td>" +
+								"</tr>";
+						}
+						tbodyTop.innerHTML = htmlTop;
+					}
+				}
+
+				var tbodyOrders = document.getElementById("tableRecentOrdersBody");
+				if (tbodyOrders && data.recent_orders) {
+					if (data.recent_orders.length === 0) {
+						tbodyOrders.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Belum ada pesanan terbaru.</td></tr>';
+					} else {
+						var htmlOrders = "";
+						for (var j = 0; j < data.recent_orders.length; j++) {
+							var o = data.recent_orders[j];
+							var badgeClass = "badge-" + escapeHtml(o.status_code);
+							var custBadge = o.customer_type === "mahasiswa" ? '<span class="cust-badge badge-mhs">Mhs</span>' : '<span class="cust-badge badge-umum">Umum</span>';
+							var tableText = o.table_number ? 'Meja ' + escapeHtml(o.table_number) : 'Bawa Pulang';
+
+							htmlOrders += "<tr>" +
+								"<td>" +
+									'<div class="ord-code"><strong>' + escapeHtml(o.code) + '</strong></div>' +
+									'<div class="ord-time"><time>' + escapeHtml(o.time_formatted) + ' WITA</time></div>' +
+								"</td>" +
+								"<td>" +
+									'<div class="ord-customer"><strong>' + escapeHtml(o.customer_name) + '</strong> ' + custBadge + '</div>' +
+									'<div class="ord-table">' + tableText + '</div>' +
+								"</td>" +
+								"<td>" +
+									'<span class="order-status-badge ' + badgeClass + '">' + escapeHtml(o.status_label) + '</span>' +
+								"</td>" +
+								"<td>" +
+									'<div class="ord-items-summary">' + escapeHtml(o.items_summary) + '</div>' +
+								"</td>" +
+								'<td class="text-right tabular-nums"><strong>' + escapeHtml(o.total_formatted) + '</strong></td>' +
+								'<td class="text-center">' +
+									'<a href="/pesanan/' + encodeURIComponent(o.code) + '" class="btn-receipt-link" target="_blank" rel="noopener">Lihat</a>' +
+								"</td>" +
+								"</tr>";
+						}
+						tbodyOrders.innerHTML = htmlOrders;
+					}
+				}
+
+				if (data.stock_summary) {
+					var elSafe = document.getElementById("stockStatSafe");
+					if (elSafe) elSafe.textContent = String(data.stock_summary.safe_count);
+
+					var elLow = document.getElementById("stockStatLow");
+					if (elLow) elLow.textContent = String(data.stock_summary.low_count);
+
+					var elEmpty = document.getElementById("stockStatEmpty");
+					if (elEmpty) elEmpty.textContent = String(data.stock_summary.empty_count);
+				}
+
+				var tbodyStock = document.getElementById("tableStockListBody");
+				if (tbodyStock && data.stock_items) {
+					var htmlStock = "";
+					for (var k = 0; k < data.stock_items.length; k++) {
+						var s = data.stock_items[k];
+						htmlStock += "<tr>" +
+							"<td><strong>" + escapeHtml(s.name) + "</strong></td>" +
+							"<td>" + escapeHtml(s.category) + "</td>" +
+							"<td class=\"text-right tabular-nums\"><strong>" + s.qty + " porsi</strong></td>" +
+							"<td class=\"text-center\"><span class=\"stock-badge badge-" + escapeHtml(s.status_code) + "\">" + escapeHtml(s.status_label) + "</span></td>" +
+							"</tr>";
+					}
+					tbodyStock.innerHTML = htmlStock;
+				}
+
+				var tbodyMovements = document.getElementById("tableStockMovementsBody");
+				if (tbodyMovements && data.stock_movements) {
+					if (data.stock_movements.length === 0) {
+						tbodyMovements.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Belum ada catatan mutasi stok.</td></tr>';
+					} else {
+						var htmlMovements = "";
+						for (var m = 0; m < data.stock_movements.length; m++) {
+							var mv = data.stock_movements[m];
+							var changeHtml = mv.change > 0 ?
+								'<span class="change-pos">+' + mv.change + '</span>' :
+								'<span class="change-neg">' + mv.change + '</span>';
+							htmlMovements += "<tr>" +
+								"<td><time>" + escapeHtml(mv.time_formatted) + "</time></td>" +
+								"<td><strong>" + escapeHtml(mv.product_name) + "</strong></td>" +
+								'<td class="text-right tabular-nums">' + changeHtml + '</td>' +
+								"<td>" + escapeHtml(mv.reason) + "</td>" +
+								"</tr>";
+						}
+						tbodyMovements.innerHTML = htmlMovements;
+					}
+				}
+			}
+
+			function fetchMonitoringData() {
+				if (refreshBtn) refreshBtn.classList.add("is-loading");
+				fetch("/api/admin/live-monitoring", {
+					headers: { "Accept": "application/json" }
+				})
+				.then(function(res) {
+					if (!res.ok) throw new Error("HTTP error " + res.status);
+					return res.json();
+				})
+				.then(function(data) {
+					updateDashboard(data);
+				})
+				.catch(function(err) {
+					console.warn("Live monitoring sync error:", err);
+					if (syncLabel) syncLabel.textContent = "Koneksi terputus (" + new Date().toLocaleTimeString() + ")";
+				})
+				.finally(function() {
+					if (refreshBtn) refreshBtn.classList.remove("is-loading");
+				});
+			}
+
+			function setupInterval() {
+				if (pollTimer) {
+					clearInterval(pollTimer);
+					pollTimer = null;
+				}
+				if (!select) return;
+				var val = parseInt(select.value, 10);
+				if (val > 0) {
+					pollTimer = setInterval(fetchMonitoringData, val);
+				}
+			}
+
+			if (select) {
+				select.addEventListener("change", function() {
+					setupInterval();
+					if (parseInt(select.value, 10) > 0) {
+						fetchMonitoringData();
+					}
+				});
+			}
+
+			if (refreshBtn) {
+				refreshBtn.addEventListener("click", function() {
+					fetchMonitoringData();
+				});
+			}
+
+			setupInterval();
+			setTimeout(fetchMonitoringData, 800);
+		})();
+		</script>
 	</div>
 }
 
@@ -91,34 +326,34 @@ templ adminTabReport(report order.AdminReport) {
 		<div class="admin-kpi-grid">
 			<div class="kpi-card kpi-highlight">
 				<span class="kpi-label">Omzet Terverifikasi</span>
-				<strong class="kpi-val">{ FormatRupiah(report.Metrics.ConfirmedSales) }</strong>
+				<strong class="kpi-val" id="kpiConfirmedSales">{ FormatRupiah(report.Metrics.ConfirmedSales) }</strong>
 				<span class="kpi-sub">total pesanan berstatus lunas</span>
 			</div>
 			<div class="kpi-card">
 				<span class="kpi-label">Total Transaksi</span>
-				<strong class="kpi-val">{ fmt.Sprintf("%d", report.Metrics.TotalOrders) }</strong>
-				<span class="kpi-sub">{ fmt.Sprintf("%d selesai, %d menunggu", report.Metrics.Completed, report.Metrics.PendingPayment) }</span>
+				<strong class="kpi-val" id="kpiTotalOrders">{ fmt.Sprintf("%d", report.Metrics.TotalOrders) }</strong>
+				<span class="kpi-sub" id="kpiTotalSub">{ fmt.Sprintf("%d selesai, %d menunggu", report.Metrics.Completed, report.Metrics.PendingPayment) }</span>
 			</div>
 			<div class="kpi-card">
 				<span class="kpi-label">Rata-rata Nilai Pesanan</span>
-				<strong class="kpi-val">{ FormatRupiah(report.AverageOrderValue) }</strong>
+				<strong class="kpi-val" id="kpiAvgOrderValue">{ FormatRupiah(report.AverageOrderValue) }</strong>
 				<span class="kpi-sub">average order value</span>
 			</div>
 			<div class="kpi-card">
 				<span class="kpi-label">Segmen Pelanggan</span>
 				<div class="kpi-split">
-					<span><strong>{ fmt.Sprintf("%d", report.MahasiswaOrders) }</strong> Mahasiswa</span>
+					<span><strong id="kpiMahasiswaCount">{ fmt.Sprintf("%d", report.MahasiswaOrders) }</strong> Mahasiswa</span>
 					<span>•</span>
-					<span><strong>{ fmt.Sprintf("%d", report.UmumOrders) }</strong> Umum</span>
+					<span><strong id="kpiUmumCount">{ fmt.Sprintf("%d", report.UmumOrders) }</strong> Umum</span>
 				</div>
 				<span class="kpi-sub">berdasarkan akun dan tipe tamu</span>
 			</div>
 			<div class="kpi-card">
 				<span class="kpi-label">Metode Pembayaran</span>
 				<div class="kpi-split">
-					<span><strong>{ fmt.Sprintf("%d", report.CashOrders) }</strong> Tunai</span>
+					<span><strong id="kpiCashCount">{ fmt.Sprintf("%d", report.CashOrders) }</strong> Tunai</span>
 					<span>•</span>
-					<span><strong>{ fmt.Sprintf("%d", report.QRISOrders) }</strong> QRIS</span>
+					<span><strong id="kpiQRISCount">{ fmt.Sprintf("%d", report.QRISOrders) }</strong> QRIS</span>
 				</div>
 				<span class="kpi-sub">pilihan transaksi pelanggan</span>
 			</div>
@@ -165,7 +400,7 @@ templ adminTabReport(report order.AdminReport) {
 									<th class="text-right">Kontribusi Omzet</th>
 								</tr>
 							</thead>
-							<tbody>
+							<tbody id="tableTopProductsBody">
 								for _, p := range report.TopProducts {
 									<tr>
 										<td><strong>{ p.ProductName }</strong></td>
@@ -200,7 +435,7 @@ templ adminTabReport(report order.AdminReport) {
 									<th class="text-center">Struk</th>
 								</tr>
 							</thead>
-							<tbody>
+							<tbody id="tableRecentOrdersBody">
 								for _, ord := range report.RecentOrders {
 									<tr>
 										<td>
@@ -420,15 +655,15 @@ templ adminTabStock(stockList []catalog.StockItem, movements []catalog.StockMove
 
 				<div class="stock-status-summary-cards">
 					<div class="summary-stat-box stat-safe">
-						<span class="stat-number">{ fmt.Sprintf("%d", countStockByStatus(stockList, "safe")) }</span>
+						<span class="stat-number" id="stockStatSafe">{ fmt.Sprintf("%d", countStockByStatus(stockList, "safe")) }</span>
 						<span class="stat-text">Menu Stok Aman</span>
 					</div>
 					<div class="summary-stat-box stat-low">
-						<span class="stat-number">{ fmt.Sprintf("%d", countStockByStatus(stockList, "low")) }</span>
+						<span class="stat-number" id="stockStatLow">{ fmt.Sprintf("%d", countStockByStatus(stockList, "low")) }</span>
 						<span class="stat-text">Menu Stok Menipis (≤ 5)</span>
 					</div>
 					<div class="summary-stat-box stat-empty">
-						<span class="stat-number">{ fmt.Sprintf("%d", countStockByStatus(stockList, "empty")) }</span>
+						<span class="stat-number" id="stockStatEmpty">{ fmt.Sprintf("%d", countStockByStatus(stockList, "empty")) }</span>
 						<span class="stat-text">Menu Stok Habis</span>
 					</div>
 				</div>
@@ -455,7 +690,7 @@ templ adminTabStock(stockList []catalog.StockItem, movements []catalog.StockMove
 							<th class="text-center">Status</th>
 						</tr>
 					</thead>
-					<tbody>
+					<tbody id="tableStockListBody">
 						for _, it := range stockList {
 							<tr>
 								<td><strong>{ it.ProductName }</strong></td>
@@ -473,24 +708,41 @@ templ adminTabStock(stockList []catalog.StockItem, movements []catalog.StockMove
 			</div>
 		</section>
 
-		if len(movements) > 0 {
-			<section class="stock-movements-section" aria-labelledby="movements-table-title">
-				<div class="section-title-wrap">
-					<h3 id="movements-table-title" class="sub-section-title">Catatan Riwayat Pergerakan Stok</h3>
-					<span class="section-note">Pencatatan penyesuaian terbaru</span>
-				</div>
+		<div class="admin-export-card" style="margin-top: 1.5rem; margin-bottom: 2rem;">
+			<div class="export-card-text">
+				<h3 class="export-card-title">Ekspor Riwayat Mutasi Stok (CSV / Excel)</h3>
+				<p class="export-card-desc">Unduh seluruh riwayat pergerakan stok barang, restock harian, dan pengurangan pesanan ke format CSV UTF-8.</p>
+			</div>
+			<div class="export-card-actions">
+				<a href="/admin/stok/ekspor" class="btn-export-act btn-export-primary" download title="Unduh berkas CSV mutasi stok">
+					<span class="export-icon">📦</span>
+					<span>Unduh Mutasi Stok (.CSV)</span>
+				</a>
+			</div>
+		</div>
 
-				<div class="table-frame">
-					<table class="report-table">
-						<thead>
+		<section class="stock-movements-section" aria-labelledby="movements-table-title">
+			<div class="section-title-wrap">
+				<h3 id="movements-table-title" class="sub-section-title">Catatan Riwayat Pergerakan Stok</h3>
+				<span class="section-note">Pencatatan penyesuaian terbaru (Real-Time)</span>
+			</div>
+
+			<div class="table-frame">
+				<table class="report-table">
+					<thead>
+						<tr>
+							<th>Waktu</th>
+							<th>Menu</th>
+							<th class="text-right">Perubahan</th>
+							<th>Catatan / Alasan</th>
+						</tr>
+					</thead>
+					<tbody id="tableStockMovementsBody">
+						if len(movements) == 0 {
 							<tr>
-								<th>Waktu</th>
-								<th>Menu</th>
-								<th class="text-right">Perubahan</th>
-								<th>Catatan / Alasan</th>
+								<td colspan="4" class="text-center text-muted">Belum ada catatan mutasi stok.</td>
 							</tr>
-						</thead>
-						<tbody>
+						} else {
 							for _, m := range movements {
 								<tr>
 									<td><time>{ m.CreatedAt.Format("02/01/2006, 15:04 WIB") }</time></td>
@@ -505,11 +757,11 @@ templ adminTabStock(stockList []catalog.StockItem, movements []catalog.StockMove
 									<td>{ m.Reason }</td>
 								</tr>
 							}
-						</tbody>
-					</table>
-				</div>
-			</section>
-		}
+						}
+					</tbody>
+				</table>
+			</div>
+		</section>
 	</div>
 }
 

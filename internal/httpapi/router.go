@@ -79,6 +79,8 @@ func NewRouter() *gin.Engine {
 	// Dashboard Admin Lengkap (Dedicated Store Management Page - Admin Only)
 	router.GET("/admin", adminDashboardHandler)
 	router.GET("/admin/laporan/ekspor", adminExportSalesReportCSVHandler)
+	router.GET("/admin/stok/ekspor", adminExportStockMovementsCSVHandler)
+	router.GET("/api/admin/live-monitoring", adminLiveMonitoringAPIHandler)
 	router.POST("/admin/menu/tambah", adminAddProductHandler)
 	router.POST("/admin/menu/harga", adminUpdatePriceHandler)
 	router.POST("/admin/stok/sesuaikan", adminAdjustStockHandler)

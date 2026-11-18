@@ -817,6 +817,16 @@ func loadAllFromDB(db *sql.DB) error {
 		}
 		if len(ordersMap) > 0 {
 			order.DefaultStore.ImportState(ordersMap, maxSeq)
+
+			// Rekonsiliasi: pastikan pelanggan yang sudah memiliki pesanan berdiskon ditandai first_discount_used = true
+			for _, ord := range ordersMap {
+				if ord.CustomerID != "" && ord.Discount > 0 {
+					_ = customer.DefaultStore.MarkFirstDiscountUsed(ord.CustomerID)
+					if c, err := customer.DefaultStore.GetByID(ord.CustomerID); err == nil {
+						_ = SaveCustomer(c)
+					}
+				}
+			}
 		}
 	}
 

@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -105,7 +106,13 @@ func GenerateQRIS(orderID string, grossAmount int64) (*QRISResult, error) {
 
 		client := &http.Client{Timeout: 10 * time.Second}
 		resp, err := client.Do(req)
-		if err == nil && resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		if err != nil {
+			log.Printf("[payment/midtrans] Gagal request ke Midtrans Core API: %v", err)
+		} else if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+			bodyBytes, _ := io.ReadAll(resp.Body)
+			resp.Body.Close()
+			log.Printf("[payment/midtrans] Midtrans API menolak transaksi (HTTP %d): %s", resp.StatusCode, string(bodyBytes))
+		} else {
 			defer resp.Body.Close()
 			var mResp midtransChargeResponse
 			if err := json.NewDecoder(resp.Body).Decode(&mResp); err == nil {
@@ -127,6 +134,8 @@ func GenerateQRIS(orderID string, grossAmount int64) (*QRISResult, error) {
 					QRString:    mResp.QRString,
 					IsSimulated: false,
 				}, nil
+			} else {
+				log.Printf("[payment/midtrans] Gagal parse respon JSON Midtrans: %v", err)
 			}
 		}
 	}

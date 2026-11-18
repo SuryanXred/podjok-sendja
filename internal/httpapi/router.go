@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"caffe-podjok-sendja/internal/database"
+	"caffe-podjok-sendja/internal/payment"
 )
 
 //go:embed static/*
@@ -45,11 +46,25 @@ func NewRouter() *gin.Engine {
 		if connected {
 			storageMode = "MySQL / TiDB Cloud (Permanen)"
 		}
+
+		mCfg := payment.GetConfig()
+		midtransStatus := "Mode Simulasi (MIDTRANS_SERVER_KEY belum dipasang di environment server)"
+		if mCfg.ServerKey != "" {
+			if mCfg.IsProduction {
+				midtransStatus = "Production Mode Aktif"
+			} else {
+				midtransStatus = "Sandbox Mode Aktif"
+			}
+		}
+
 		c.JSON(http.StatusOK, gin.H{
-			"database_terhubung": connected,
-			"sumber_dsn":         src,
-			"mode_penyimpanan":   storageMode,
-			"pesan_error":        lastErr,
+			"database_terhubung":              connected,
+			"sumber_dsn":                      src,
+			"mode_penyimpanan":                storageMode,
+			"pesan_error":                     lastErr,
+			"midtrans_server_key_terpasang":   mCfg.ServerKey != "",
+			"midtrans_mode":                   midtransStatus,
+			"midtrans_is_production":          mCfg.IsProduction,
 		})
 	})
 

@@ -124,6 +124,9 @@ func checkoutHandler(c *gin.Context) {
 
 	if cust != nil && discount > 0 {
 		_ = customer.DefaultStore.MarkFirstDiscountUsed(cust.ID)
+		if updatedCust, err := customer.DefaultStore.GetByID(cust.ID); err == nil {
+			_ = database.SaveCustomer(updatedCust)
+		}
 		persistence.SaveCustomers()
 	}
 

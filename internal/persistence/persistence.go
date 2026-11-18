@@ -75,7 +75,28 @@ func Init(dir string) {
 	// 4. Load orders jika berkas ada
 	loadOrders()
 
+	// 5. Rekonsiliasi diskon mahasiswa dari riwayat transaksi yang tersimpan
+	reconcileCustomerDiscounts()
+
 	log.Printf("[persistence] direktori penyimpanan aktif di: %s", dir)
+}
+
+func reconcileCustomerDiscounts() {
+	orders := order.DefaultStore.ListOrders()
+	hasChanges := false
+	for _, o := range orders {
+		if o.CustomerID != "" && o.Discount > 0 {
+			if cust, err := customer.DefaultStore.GetByID(o.CustomerID); err == nil {
+				if !cust.FirstDiscountUsed {
+					_ = customer.DefaultStore.MarkFirstDiscountUsed(o.CustomerID)
+					hasChanges = true
+				}
+			}
+		}
+	}
+	if hasChanges {
+		SaveCustomers()
+	}
 }
 
 func loadConfig() {

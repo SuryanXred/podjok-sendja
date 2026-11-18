@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"caffe-podjok-sendja/internal/customer"
+	"caffe-podjok-sendja/internal/order"
 )
 
 // Regression test: kata sandi pelanggan harus ikut tersimpan saat data
@@ -67,5 +68,46 @@ func TestCustomerPasswordHashPersistedAndLoginWorksAfterReload(t *testing.T) {
 	Init(dir)
 	if _, err := customer.DefaultStore.Authenticate(phone, password); err != nil {
 		t.Fatalf("login setelah server dimulai ulang gagal: %v", err)
+	}
+}
+
+func TestReconcileCustomerDiscountsFromExistingOrders(t *testing.T) {
+	dir := t.TempDir()
+	Init(dir)
+
+	// Registrasi mahasiswa baru
+	cust, err := customer.DefaultStore.Register(customer.RegisterInput{
+		Type:     customer.CustomerTypeMahasiswa,
+		Name:     "Mahasiswa Uji Diskon",
+		Phone:    "081999111222",
+		Email:    "ujidiskon@example.com",
+		NIM:      "11203462410999",
+		Password: "password123",
+	})
+	if err != nil {
+		t.Fatalf("registrasi gagal: %v", err)
+	}
+
+	// Buat pesanan dengan diskon untuk customer ini
+	testOrder := &order.Order{
+		Code:         "PDS-TEST-RECON-01",
+		CustomerID:   cust.ID,
+		CustomerType: "mahasiswa",
+		Subtotal:     30000,
+		Discount:     7500,
+		Total:        22500,
+	}
+	order.DefaultStore.ImportState(map[string]*order.Order{testOrder.Code: testOrder}, 1)
+
+	// Pastikan sebelum rekonsiliasi jika FirstDiscountUsed false, setelah reconcile menjadi true
+	cust.FirstDiscountUsed = false
+	reconcileCustomerDiscounts()
+
+	reloadedCust, err := customer.DefaultStore.GetByID(cust.ID)
+	if err != nil {
+		t.Fatalf("pelanggan tidak ditemukan: %v", err)
+	}
+	if !reloadedCust.FirstDiscountUsed {
+		t.Errorf("expected FirstDiscountUsed to be true after reconciliation with discounted order")
 	}
 }

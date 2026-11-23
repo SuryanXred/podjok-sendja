@@ -17,3 +17,12 @@
 Thumbs.db
 .vscode/
 .idea/
+
+# Research & Academic documents (private / local draft)
+draft_artikel_jurnal_sinta_3.md
+dokumentasi_alur_dan_diagram_sistem.md
+kerangka_penelitian_dan_pengembangan_sistem.md
+
+# Local test & audit outputs
+*.csv
+hasil_make_test_*.txt

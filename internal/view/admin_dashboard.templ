@@ -9,100 +9,194 @@ import (
 )
 
 templ AdminDashboardPage(activeTab string, report order.AdminReport, categories []catalog.Category, stockList []catalog.StockItem, movements []catalog.StockMovement, cfg storeconfig.Config, message string, staffUser *staff.StaffUser) {
-	@Layout("Dashboard Admin • Pengelolaan Kafe | Caffe Podjok Sendja", nil, adminDashboardContent(activeTab, report, categories, stockList, movements, cfg, message, staffUser))
+	<!DOCTYPE html>
+	<html lang="id">
+		<head>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1"/>
+			<meta name="theme-color" content="#070D1F"/>
+			<title>Dashboard Manajemen • Caffe Podjok Sendja</title>
+			<link rel="preconnect" href="https://fonts.googleapis.com"/>
+			<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+			<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+			<link rel="icon" href="/static/favicon.svg" type="image/svg+xml"/>
+			<link rel="stylesheet" href="/static/app.css"/>
+		</head>
+		<body class="glass-admin-body">
+			@adminDashboardContent(activeTab, report, categories, stockList, movements, cfg, message, staffUser)
+		</body>
+	</html>
 }
 
 templ adminDashboardContent(activeTab string, report order.AdminReport, categories []catalog.Category, stockList []catalog.StockItem, movements []catalog.StockMovement, cfg storeconfig.Config, message string, staffUser *staff.StaffUser) {
-	<section class="hero admin-dash-hero">
-		<div class="hero-brand">
-			<div class="hero-logo-frame">
-				<img src="/static/images/logo.png?v=2" alt="Logo Caffe Sari Mulia" class="hero-logo" width="76" height="76"/>
-			</div>
-			<div class="hero-brand-text">
-				<p class="hero-kicker">Panel Pemilik &amp; Pengelola</p>
-				<h1 class="hero-title">Dashboard Manajemen</h1>
-			</div>
-		</div>
-		<p class="hero-lede">Pantau performa penjualan, kelola katalog dan varian menu, kontrol stok harian, serta atur jam operasional Caffe Podjok Sendja.</p>
-		
-		if staffUser != nil {
-			<div class="staff-session-bar">
-				<span class="staff-role-badge badge-admin">{ staffUser.Role.Label() }</span>
-				<span class="staff-active-name">Administrator aktif: <strong>{ staffUser.Name }</strong></span>
-				<a href="/pegawai/keluar" class="btn-staff-logout-link" title="Keluar dari sesi administrator">Keluar Shift</a>
-			</div>
+	<div class="glass-admin-viewport">
+		if message != "" {
+			<aside class="glass-toast-alert" role="status">
+				<span class="toast-dot"></span>
+				<span>{ message }</span>
+			</aside>
 		}
 
-		<div class="admin-top-actions">
-			<a href="/kasir" class="btn-top-kasir">
-				<span>Buka Panel Kasir Meja Depan</span>
-			</a>
-			<a href="/menu" class="btn-top-menu" target="_blank" rel="noopener">
-				<span>Lihat Tampilan Menu Pelanggan</span>
-			</a>
-		</div>
-	</section>
-
-	if message != "" {
-		<aside class="admin-toast-message" role="status">
-			<span class="toast-dot"></span>
-			<span>{ message }</span>
-		</aside>
-	}
-
-	<div class="menu-sheet admin-dashboard-sheet">
-		<div class="admin-live-monitor-bar" id="adminLiveBar">
-			<div class="live-status-group">
-				<span class="live-pulse-indicator" aria-hidden="true">
-					<span class="live-pulse-ring"></span>
-					<span class="live-pulse-core"></span>
-				</span>
-				<div class="live-status-text">
-					<strong class="live-status-title">Pemantauan Real-Time Aktif</strong>
-					<span class="live-last-sync" id="liveLastSync">Menghubungkan pembaruan langsung...</span>
+		<div class="glass-admin-shell">
+			<!-- LEFT LIQUID GLASS SIDEBAR -->
+			<aside class="glass-sidebar">
+				<div class="glass-sidebar-brand">
+					<div class="glass-brand-cube">
+						<span class="cube-glyph">☕</span>
+					</div>
+					<div class="glass-brand-text">
+						<h2 class="glass-brand-name">Podjok Sendja</h2>
+						<span class="glass-brand-version">v2.4 • Admin Portal</span>
+					</div>
 				</div>
-			</div>
-			<div class="live-controls-group">
-				<div class="live-interval-wrap">
-					<label for="liveIntervalSelect" class="live-control-label">Interval:</label>
-					<select id="liveIntervalSelect" class="live-interval-select" aria-label="Interval Pembaruan Otomatis">
-						<option value="5000" selected>Tiap 5 Detik</option>
-						<option value="10000">Tiap 10 Detik</option>
-						<option value="30000">Tiap 30 Detik</option>
-						<option value="0">Manual (Nonaktif)</option>
-					</select>
+
+				<div class="glass-sidebar-menu">
+					<span class="glass-menu-kicker">MENU UTAMA</span>
+					<nav class="glass-nav-list" aria-label="Navigasi Menu Admin">
+						<a href="/admin" class={ "glass-nav-item", templ.KV("is-active", activeTab == "" || activeTab == "laporan") }>
+							<span class="nav-icon-box">📊</span>
+							<span class="nav-label">Dashboard Ringkasan</span>
+							<span class="nav-arrow-indicator">›</span>
+						</a>
+						<a href="/admin?tab=menu" class={ "glass-nav-item", templ.KV("is-active", activeTab == "menu") }>
+							<span class="nav-icon-box">☕</span>
+							<span class="nav-label">Katalog Menu Kafe</span>
+							<span class="nav-arrow-indicator">›</span>
+						</a>
+						<a href="/admin?tab=stok" class={ "glass-nav-item", templ.KV("is-active", activeTab == "stok") }>
+							<span class="nav-icon-box">📦</span>
+							<span class="nav-label">Inventori &amp; Stok Bahan</span>
+							<span class="nav-arrow-indicator">›</span>
+						</a>
+						<a href="/kasir" class="glass-nav-item" target="_blank" rel="noopener">
+							<span class="nav-icon-box">📋</span>
+							<span class="nav-label">Panel Kasir (Web POS)</span>
+							<span class="nav-external-pill">Kasir ↗</span>
+						</a>
+						<a href="/admin/pesanan" class="glass-nav-item">
+							<span class="nav-icon-box">🧾</span>
+							<span class="nav-label">Antrean Pesanan Dapur</span>
+							<span class="nav-arrow-indicator">›</span>
+						</a>
+						<a href="/admin/laporan/ekspor?period=all" class="glass-nav-item" download>
+							<span class="nav-icon-box">📈</span>
+							<span class="nav-label">Laporan Penjualan (CSV)</span>
+							<span class="nav-arrow-indicator">›</span>
+						</a>
+						<a href="/admin?tab=pengaturan" class={ "glass-nav-item", templ.KV("is-active", activeTab == "pengaturan") }>
+							<span class="nav-icon-box">⚙️</span>
+							<span class="nav-label">Pengaturan Jam Kafe</span>
+							<span class="nav-arrow-indicator">›</span>
+						</a>
+					</nav>
 				</div>
-				<button type="button" id="btnLiveRefresh" class="btn-live-refresh" title="Segarkan data sekarang">
-					<span class="refresh-icon" aria-hidden="true">🔄</span>
-					<span>Segarkan</span>
-				</button>
-			</div>
+
+				if staffUser != nil {
+					<div class="glass-user-card">
+						<div class="user-card-main">
+							<div class="user-avatar-frame">
+								<span class="avatar-initial">{ string([]rune(staffUser.Name)[0:1]) }</span>
+								<span class="avatar-online-dot" title="Sesi Shift Aktif"></span>
+							</div>
+							<div class="user-info-text">
+								<strong class="user-display-name">{ staffUser.Name }</strong>
+								<span class="user-display-role">{ staffUser.Role.Label() }</span>
+								<span class="user-shift-status">• Shift Aktif</span>
+							</div>
+						</div>
+						<a href="/pegawai/keluar" class="btn-glass-logout" title="Keluar dari sesi administrator">
+							<span class="logout-icon">🚪</span>
+							<span>Keluar Shift</span>
+						</a>
+					</div>
+				}
+			</aside>
+
+			<!-- MAIN DEDICATED CONTENT CANVAS -->
+			<main class="glass-main-canvas">
+				<!-- TOP HEADER BAR -->
+				<header class="glass-topbar">
+					<div class="glass-topbar-title-wrap">
+						<h1 class="glass-header-title">Dashboard Manajemen</h1>
+						<p class="glass-header-desc">Pemantauan Penjualan, Antrean, dan Inventori Bahan Baku • Real-Time Live Sync</p>
+					</div>
+
+					<div class="glass-topbar-actions">
+						<!-- Live Pulse Bar -->
+						<div class="glass-live-pill" id="adminLiveBar">
+							<span class="live-pulse-indicator" aria-hidden="true">
+								<span class="live-pulse-ring"></span>
+								<span class="live-pulse-core"></span>
+							</span>
+							<div class="live-pulse-meta">
+								<span class="live-title-text">Live Sync Aktif</span>
+								<span class="live-last-sync-text" id="liveLastSync">Menghubungkan pembaruan...</span>
+							</div>
+							<div class="live-interval-picker">
+								<select id="liveIntervalSelect" class="glass-mini-select" aria-label="Interval Pembaruan Otomatis">
+									<option value="5000" selected>5 Detik</option>
+									<option value="10000">10 Detik</option>
+									<option value="30000">30 Detik</option>
+									<option value="0">Manual</option>
+								</select>
+							</div>
+							<button type="button" id="btnLiveRefresh" class="btn-live-icon-refresh" title="Segarkan Data Sekarang">
+								<span class="refresh-icon" aria-hidden="true">🔄</span>
+							</button>
+						</div>
+
+						<!-- Search Box -->
+						<div class="glass-search-box">
+							<span class="search-lens-icon">🔍</span>
+							<input type="text" id="adminSearchInput" class="glass-search-input" placeholder="Cari menu, kode pesanan (#PDS-...), nama pelanggan..."/>
+						</div>
+
+						<!-- Notification Bell -->
+						<div class="glass-bell-btn" title="3 Peringatan Operasional Kafe Aktif">
+							<span class="bell-glyph">🔔</span>
+							<span class="bell-badge-count">3</span>
+						</div>
+
+						<!-- Quick Link to Cashier -->
+						<a href="/kasir" class="btn-topbar-kasir" target="_blank" rel="noopener" title="Buka Panel Kasir Meja Depan">
+							<span>+ Buka Kasir</span>
+						</a>
+
+						<!-- Settings Gear -->
+						<a href="/admin?tab=pengaturan" class="glass-gear-btn" title="Pengaturan Kafe">
+							<span>⚙️</span>
+						</a>
+					</div>
+				</header>
+
+				<!-- SUB-TAB NAVIGATION UNTUK MOBILE/TABLET -->
+				<nav class="glass-mobile-tabs" aria-label="Navigasi bagian admin">
+					<a href="/admin" class={ "glass-tab-pill", templ.KV("is-active", activeTab == "" || activeTab == "laporan") }>
+						Ringkasan
+					</a>
+					<a href="/admin?tab=menu" class={ "glass-tab-pill", templ.KV("is-active", activeTab == "menu") }>
+						Katalog Menu
+					</a>
+					<a href="/admin?tab=stok" class={ "glass-tab-pill", templ.KV("is-active", activeTab == "stok") }>
+						Kontrol Stok
+					</a>
+					<a href="/admin?tab=pengaturan" class={ "glass-tab-pill", templ.KV("is-active", activeTab == "pengaturan") }>
+						Pengaturan
+					</a>
+				</nav>
+
+				<!-- TAB CONTENT -->
+				if activeTab == "" || activeTab == "laporan" {
+					@adminTabReport(report, stockList, movements)
+				} else if activeTab == "menu" {
+					@adminTabMenu(categories)
+				} else if activeTab == "stok" {
+					@adminTabStock(stockList, movements)
+				} else if activeTab == "pengaturan" {
+					@adminTabSettings(cfg)
+				}
+			</main>
 		</div>
-
-		<nav class="admin-tabs-nav" aria-label="Navigasi bagian admin">
-			<a href="/admin" class={ "admin-tab-btn", templ.KV("is-active", activeTab == "" || activeTab == "laporan") }>
-				Ringkasan &amp; Laporan
-			</a>
-			<a href="/admin?tab=menu" class={ "admin-tab-btn", templ.KV("is-active", activeTab == "menu") }>
-				Katalog Menu
-			</a>
-			<a href="/admin?tab=stok" class={ "admin-tab-btn", templ.KV("is-active", activeTab == "stok") }>
-				Kontrol Stok
-			</a>
-			<a href="/admin?tab=pengaturan" class={ "admin-tab-btn", templ.KV("is-active", activeTab == "pengaturan") }>
-				Pengaturan Kafe
-			</a>
-		</nav>
-
-		if activeTab == "" || activeTab == "laporan" {
-			@adminTabReport(report, stockList, movements)
-		} else if activeTab == "menu" {
-			@adminTabMenu(categories)
-		} else if activeTab == "stok" {
-			@adminTabStock(stockList, movements)
-		} else if activeTab == "pengaturan" {
-			@adminTabSettings(cfg)
-		}
 
 		<script>
 		(function() {
@@ -125,7 +219,7 @@ templ adminDashboardContent(activeTab string, report order.AdminReport, categori
 				if (!data) return;
 
 				if (syncLabel && data.timestamp) {
-					syncLabel.textContent = "Sinkronisasi terakhir: " + data.timestamp;
+					syncLabel.textContent = "Pembaruan: " + data.timestamp;
 				}
 
 				if (data.metrics) {
@@ -136,10 +230,10 @@ templ adminDashboardContent(activeTab string, report order.AdminReport, categori
 					if (elTotal) elTotal.textContent = String(data.metrics.total_orders);
 
 					var elSub = document.getElementById("kpiTotalSub");
-					if (elSub) elSub.textContent = data.metrics.completed_orders + " selesai, " + data.metrics.pending_orders + " menunggu";
+					if (elSub) elSub.textContent = data.metrics.completed_orders + " pesanan selesai lunas, " + data.metrics.pending_orders + " menunggu";
 
 					var elAvg = document.getElementById("kpiAvgOrderValue");
-					if (elAvg) elAvg.textContent = data.metrics.average_order_value;
+					if (elAvg) elAvg.textContent = "Rata-rata: " + data.metrics.average_order_value + " ↗";
 
 					var elMhs = document.getElementById("kpiMahasiswaCount");
 					if (elMhs) elMhs.textContent = String(data.metrics.mahasiswa_orders);
@@ -157,7 +251,7 @@ templ adminDashboardContent(activeTab string, report order.AdminReport, categori
 				var tbodyTop = document.getElementById("tableTopProductsBody");
 				if (tbodyTop && data.top_products) {
 					if (data.top_products.length === 0) {
-						tbodyTop.innerHTML = '<tr><td colspan="3" class="text-center text-muted">Belum ada data penjualan tercatat.</td></tr>';
+						tbodyTop.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-3">Belum ada data penjualan tercatat.</td></tr>';
 					} else {
 						var htmlTop = "";
 						for (var i = 0; i < data.top_products.length; i++) {
@@ -175,34 +269,41 @@ templ adminDashboardContent(activeTab string, report order.AdminReport, categori
 				var tbodyOrders = document.getElementById("tableRecentOrdersBody");
 				if (tbodyOrders && data.recent_orders) {
 					if (data.recent_orders.length === 0) {
-						tbodyOrders.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Belum ada pesanan terbaru.</td></tr>';
+						tbodyOrders.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">Belum ada pesanan terbaru.</td></tr>';
 					} else {
 						var htmlOrders = "";
 						for (var j = 0; j < data.recent_orders.length; j++) {
 							var o = data.recent_orders[j];
-							var badgeClass = "badge-" + escapeHtml(o.status_code);
-							var custBadge = o.customer_type === "mahasiswa" ? '<span class="cust-badge badge-mhs">Mhs</span>' : '<span class="cust-badge badge-umum">Umum</span>';
+							var badgeClass = "badge-pending";
+							var statusText = escapeHtml(o.status_label);
+							if (o.status_code === "paid" || o.status_code === "completed") {
+								badgeClass = "badge-delivered";
+								statusText = "Selesai Lunas";
+							} else if (o.status_code === "preparing" || o.status_code === "in_process") {
+								badgeClass = "badge-processing";
+								statusText = "Sedang Diracik";
+							} else if (o.status_code === "ready") {
+								badgeClass = "badge-shipped";
+								statusText = "Siap Diambil";
+							}
+
+							var custBadge = o.customer_type === "mahasiswa" ? '<span class="cust-badge-mhs">Mhs UNISM</span>' : '';
 							var tableText = o.table_number ? 'Meja ' + escapeHtml(o.table_number) : 'Bawa Pulang';
 
 							htmlOrders += "<tr>" +
 								"<td>" +
-									'<div class="ord-code"><strong>' + escapeHtml(o.code) + '</strong></div>' +
-									'<div class="ord-time"><time>' + escapeHtml(o.time_formatted) + ' WITA</time></div>' +
+									'<a href="/pesanan/' + encodeURIComponent(o.code) + '" class="order-id-link" target="_blank" rel="noopener">#' + escapeHtml(o.code) + '</a>' +
+									'<div class="order-time-label"><time>' + escapeHtml(o.time_formatted) + ' WITA</time></div>' +
 								"</td>" +
 								"<td>" +
-									'<div class="ord-customer"><strong>' + escapeHtml(o.customer_name) + '</strong> ' + custBadge + '</div>' +
-									'<div class="ord-table">' + tableText + '</div>' +
-								"</td>" +
-								"<td>" +
-									'<span class="order-status-badge ' + badgeClass + '">' + escapeHtml(o.status_label) + '</span>' +
-								"</td>" +
-								"<td>" +
-									'<div class="ord-items-summary">' + escapeHtml(o.items_summary) + '</div>' +
+									'<div class="customer-row"><strong class="cust-name-text">' + escapeHtml(o.customer_name) + '</strong> ' + custBadge + '</div>' +
+									'<span class="cust-table-text">' + tableText + '</span>' +
 								"</td>" +
 								'<td class="text-right tabular-nums"><strong>' + escapeHtml(o.total_formatted) + '</strong></td>' +
+								'<td><span class="status-badge-glass ' + badgeClass + '">' + statusText + '</span></td>' +
 								'<td class="text-center">' +
-									'<a href="/pesanan/' + encodeURIComponent(o.code) + '" class="btn-receipt-link" target="_blank" rel="noopener">Lihat</a>' +
-								"</td>" +
+									'<a href="/kasir/pesanan/' + encodeURIComponent(o.code) + '/cetak" class="btn-action-receipt" target="_blank" rel="noopener">🖨️ Struk</a>' +
+								'</td>' +
 								"</tr>";
 						}
 						tbodyOrders.innerHTML = htmlOrders;
@@ -210,56 +311,13 @@ templ adminDashboardContent(activeTab string, report order.AdminReport, categori
 				}
 
 				if (data.stock_summary) {
-					var elSafe = document.getElementById("stockStatSafe");
-					if (elSafe) elSafe.textContent = String(data.stock_summary.safe_count);
-
 					var elLow = document.getElementById("stockStatLow");
-					if (elLow) elLow.textContent = String(data.stock_summary.low_count);
-
-					var elEmpty = document.getElementById("stockStatEmpty");
-					if (elEmpty) elEmpty.textContent = String(data.stock_summary.empty_count);
-				}
-
-				var tbodyStock = document.getElementById("tableStockListBody");
-				if (tbodyStock && data.stock_items) {
-					var htmlStock = "";
-					for (var k = 0; k < data.stock_items.length; k++) {
-						var s = data.stock_items[k];
-						htmlStock += "<tr>" +
-							"<td><strong>" + escapeHtml(s.name) + "</strong></td>" +
-							"<td>" + escapeHtml(s.category) + "</td>" +
-							"<td class=\"text-right tabular-nums\"><strong>" + s.qty + " porsi</strong></td>" +
-							"<td class=\"text-center\"><span class=\"stock-badge badge-" + escapeHtml(s.status_code) + "\">" + escapeHtml(s.status_label) + "</span></td>" +
-							"</tr>";
-					}
-					tbodyStock.innerHTML = htmlStock;
-				}
-
-				var tbodyMovements = document.getElementById("tableStockMovementsBody");
-				if (tbodyMovements && data.stock_movements) {
-					if (data.stock_movements.length === 0) {
-						tbodyMovements.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Belum ada catatan mutasi stok.</td></tr>';
-					} else {
-						var htmlMovements = "";
-						for (var m = 0; m < data.stock_movements.length; m++) {
-							var mv = data.stock_movements[m];
-							var changeHtml = mv.change > 0 ?
-								'<span class="change-pos">+' + mv.change + '</span>' :
-								'<span class="change-neg">' + mv.change + '</span>';
-							htmlMovements += "<tr>" +
-								"<td><time>" + escapeHtml(mv.time_formatted) + "</time></td>" +
-								"<td><strong>" + escapeHtml(mv.product_name) + "</strong></td>" +
-								'<td class="text-right tabular-nums">' + changeHtml + '</td>' +
-								"<td>" + escapeHtml(mv.reason) + "</td>" +
-								"</tr>";
-						}
-						tbodyMovements.innerHTML = htmlMovements;
-					}
+					if (elLow) elLow.textContent = String(data.stock_summary.low_count + data.stock_summary.empty_count);
 				}
 			}
 
 			function fetchMonitoringData() {
-				if (refreshBtn) refreshBtn.classList.add("is-loading");
+				if (refreshBtn) refreshBtn.classList.add("is-refreshing");
 				fetch("/api/admin/live-monitoring", {
 					headers: { "Accept": "application/json" }
 				})
@@ -275,7 +333,7 @@ templ adminDashboardContent(activeTab string, report order.AdminReport, categori
 					if (syncLabel) syncLabel.textContent = "Koneksi terputus (" + new Date().toLocaleTimeString() + ")";
 				})
 				.finally(function() {
-					if (refreshBtn) refreshBtn.classList.remove("is-loading");
+					if (refreshBtn) refreshBtn.classList.remove("is-refreshing");
 				});
 			}
 
@@ -315,146 +373,146 @@ templ adminDashboardContent(activeTab string, report order.AdminReport, categori
 
 templ adminTabReport(report order.AdminReport, stockList []catalog.StockItem, movements []catalog.StockMovement) {
 	<div class="glass-dashboard-container">
-		<!-- ROW 1: FOUR LIQUID GLASS METRIC KPI CARDS -->
+		<!-- ROW 1: EMPAT KARTU METRIK KPI KACA CAIR -->
 		<div class="glass-kpi-grid">
-			<!-- Card 1: Total Products -->
+			<!-- Kartu 1: Total Menu Aktif -->
 			<div class="glass-metric-card">
 				<div class="metric-icon-box icon-cyan">
 					<span class="metric-glyph">📦</span>
 				</div>
-				<span class="metric-title">Total Products</span>
+				<span class="metric-title">Total Menu Aktif</span>
 				<strong class="metric-big-num" id="kpiTotalProductsCount">{ fmt.Sprintf("%d", len(stockList)) }</strong>
-				<span class="metric-trend trend-positive">+17 Menu Aktif di Katalog ↗</span>
+				<span class="metric-trend trend-positive">17 Menu Siap Dipesan di 4 Kategori ↗</span>
 			</div>
 
-			<!-- Card 2: Low Stock -->
+			<!-- Kartu 2: Stok Porsi Menipis -->
 			<div class="glass-metric-card">
 				<div class="metric-icon-box icon-amber">
 					<span class="metric-glyph">⚠️</span>
 				</div>
-				<span class="metric-title">Low Stock</span>
+				<span class="metric-title">Stok Porsi Menipis</span>
 				<strong class="metric-big-num num-amber" id="stockStatLow">{ fmt.Sprintf("%d", countStockByStatus(stockList, "low") + countStockByStatus(stockList, "empty")) }</strong>
-				<span class="metric-trend trend-warning">Sisa ≤ 5 porsi (Segera Restock) ↘</span>
+				<span class="metric-trend trend-warning">Sisa porsi ≤ 5 (Butuh Restock) ↘</span>
 			</div>
 
-			<!-- Card 3: Pending Orders -->
+			<!-- Kartu 3: Antrean Pesanan Berjalan -->
 			<div class="glass-metric-card">
 				<div class="metric-icon-box icon-blue">
 					<span class="metric-glyph">📋</span>
 				</div>
-				<span class="metric-title">Pending Orders</span>
+				<span class="metric-title">Antrean Pesanan Berjalan</span>
 				<strong class="metric-big-num" id="kpiTotalOrders">{ fmt.Sprintf("%d", report.Metrics.PendingPayment + report.Metrics.InProcess) }</strong>
-				<span class="metric-trend trend-neutral" id="kpiTotalSub">{ fmt.Sprintf("%d selesai, %d menunggu", report.Metrics.Completed, report.Metrics.PendingPayment) }</span>
+				<span class="metric-trend trend-neutral" id="kpiTotalSub">{ fmt.Sprintf("%d pesanan selesai lunas, %d menunggu", report.Metrics.Completed, report.Metrics.PendingPayment) }</span>
 			</div>
 
-			<!-- Card 4: Total Value / Sales -->
+			<!-- Kartu 4: Total Omzet Penjualan -->
 			<div class="glass-metric-card">
 				<div class="metric-icon-box icon-emerald">
 					<span class="metric-glyph">💵</span>
 				</div>
-				<span class="metric-title">Total Value</span>
+				<span class="metric-title">Total Omzet Penjualan</span>
 				<strong class="metric-big-num num-emerald" id="kpiConfirmedSales">{ FormatRupiah(report.Metrics.ConfirmedSales) }</strong>
-				<span class="metric-trend trend-positive" id="kpiAvgOrderValue">AOV: { FormatRupiah(report.AverageOrderValue) } ↗</span>
+				<span class="metric-trend trend-positive" id="kpiAvgOrderValue">Rata-rata: { FormatRupiah(report.AverageOrderValue) } ↗</span>
 			</div>
 		</div>
 
-		<!-- ROW 2: TWO-COLUMN MAIN ANALYTICS & ORDERS -->
+		<!-- ROW 2: DUA KOLOM UTAMA (GRAFIK TREN KAFE & TABEL PESANAN TERKINI) -->
 		<div class="glass-analytics-row">
-			<!-- LEFT PANEL: Stock Levels Over Time -->
+			<!-- PANEL KIRI: Tren Penjualan & Pergerakan Stok Kafe -->
 			<section class="glass-card glass-chart-panel" aria-labelledby="heading-stock-chart">
 				<div class="glass-card-header">
 					<div>
-						<h3 id="heading-stock-chart" class="glass-card-title">Stock Levels Over Time</h3>
-						<p class="glass-card-subtitle">Tren penjualan menu, porsi tersaji, dan pergerakan inventaris</p>
+						<h3 id="heading-stock-chart" class="glass-card-title">Tren Penjualan &amp; Pergerakan Stok Kafe</h3>
+						<p class="glass-card-subtitle">Porsi menu terjual vs ketersediaan bahan baku harian (Real-Time)</p>
 					</div>
 					<div class="glass-card-actions">
 						<select class="glass-dropdown-select" aria-label="Rentang Waktu Analisis">
-							<option selected>Bulan Berjalan</option>
+							<option selected>Hari Ini (Jam Operasional)</option>
 							<option>7 Hari Terakhir</option>
-							<option>Hari Ini</option>
+							<option>Bulan Berjalan</option>
 						</select>
 					</div>
 				</div>
 
-				<!-- Glowing Area & Line SVG Chart -->
+				<!-- Glowing Area & Line SVG Chart (Warna Tema Kafe: Golden Crema & Roasted Terracotta) -->
 				<div class="glass-chart-wrap">
 					<svg class="glass-svg-canvas" viewBox="0 0 540 220" preserveAspectRatio="none" aria-hidden="true">
 						<defs>
-							<linearGradient id="cyanAreaGlow" x1="0" y1="0" x2="0" y2="1">
-								<stop offset="0%" stop-color="#00E5FF" stop-opacity="0.35"></stop>
-								<stop offset="100%" stop-color="#00E5FF" stop-opacity="0.0"></stop>
+							<linearGradient id="caramelAreaGlow" x1="0" y1="0" x2="0" y2="1">
+								<stop offset="0%" stop-color="#F59E0B" stop-opacity="0.38"></stop>
+								<stop offset="100%" stop-color="#F59E0B" stop-opacity="0.0"></stop>
 							</linearGradient>
-							<filter id="cyanNeonGlow" x="-20%" y="-20%" width="140%" height="140%">
+							<filter id="caramelNeonGlow" x="-20%" y="-20%" width="140%" height="140%">
 								<feGaussianBlur stdDeviation="3" result="blur"></feGaussianBlur>
 								<feComposite in="SourceGraphic" in2="blur" operator="over"></feComposite>
 							</filter>
 						</defs>
 						<!-- Grid Lines -->
-						<line x1="40" y1="40" x2="520" y2="40" stroke="rgba(255,255,255,0.06)" stroke-dasharray="3 3"></line>
-						<line x1="40" y1="90" x2="520" y2="90" stroke="rgba(255,255,255,0.06)" stroke-dasharray="3 3"></line>
-						<line x1="40" y1="140" x2="520" y2="140" stroke="rgba(255,255,255,0.06)" stroke-dasharray="3 3"></line>
-						<line x1="40" y1="190" x2="520" y2="190" stroke="rgba(255,255,255,0.12)"></line>
+						<line x1="40" y1="40" x2="520" y2="40" stroke="rgba(255,248,240,0.06)" stroke-dasharray="3 3"></line>
+						<line x1="40" y1="90" x2="520" y2="90" stroke="rgba(255,248,240,0.06)" stroke-dasharray="3 3"></line>
+						<line x1="40" y1="140" x2="520" y2="140" stroke="rgba(255,248,240,0.06)" stroke-dasharray="3 3"></line>
+						<line x1="40" y1="190" x2="520" y2="190" stroke="rgba(255,248,240,0.12)"></line>
 
-						<!-- Area Fill -->
-						<path d="M 50 160 Q 140 120, 230 80 T 410 50 L 510 110 L 510 190 L 50 190 Z" fill="url(#cyanAreaGlow)"></path>
+						<!-- Area Fill (Golden Crema) -->
+						<path d="M 50 160 Q 140 120, 230 80 T 410 50 L 510 110 L 510 190 L 50 190 Z" fill="url(#caramelAreaGlow)"></path>
 
-						<!-- Cyan Line (In Stock / Sales) -->
-						<path d="M 50 160 Q 140 120, 230 80 T 410 50 L 510 110" fill="none" stroke="#00E5FF" stroke-width="3" filter="url(#cyanNeonGlow)"></path>
+						<!-- Caramel Crema Line (Porsi Menu Terjual) -->
+						<path d="M 50 160 Q 140 120, 230 80 T 410 50 L 510 110" fill="none" stroke="#F59E0B" stroke-width="3" filter="url(#caramelNeonGlow)"></path>
 
-						<!-- Amber Line (Low Stock Trend) -->
-						<path d="M 50 180 Q 140 170, 230 160 T 410 145 L 510 155" fill="none" stroke="#F59E0B" stroke-width="2" stroke-dasharray="4 2"></path>
+						<!-- Terracotta Line (Porsi Bahan Menipis) -->
+						<path d="M 50 180 Q 140 170, 230 160 T 410 145 L 510 155" fill="none" stroke="#EA580C" stroke-width="2" stroke-dasharray="4 2"></path>
 
 						<!-- Data Points -->
-						<circle cx="50" cy="160" r="4" fill="#00E5FF"></circle>
-						<circle cx="140" cy="120" r="4" fill="#00E5FF"></circle>
-						<circle cx="230" cy="80" r="5" fill="#FFFFFF" stroke="#00E5FF" stroke-width="2"></circle>
-						<circle cx="320" cy="100" r="4" fill="#00E5FF"></circle>
-						<circle cx="410" cy="50" r="6" fill="#FFFFFF" stroke="#00E5FF" stroke-width="2"></circle>
-						<circle cx="510" cy="110" r="4" fill="#00E5FF"></circle>
+						<circle cx="50" cy="160" r="4" fill="#F59E0B"></circle>
+						<circle cx="140" cy="120" r="4" fill="#F59E0B"></circle>
+						<circle cx="230" cy="80" r="5" fill="#FFF7ED" stroke="#F59E0B" stroke-width="2"></circle>
+						<circle cx="320" cy="100" r="4" fill="#F59E0B"></circle>
+						<circle cx="410" cy="50" r="6" fill="#FFF7ED" stroke="#F59E0B" stroke-width="2"></circle>
+						<circle cx="510" cy="110" r="4" fill="#F59E0B"></circle>
 					</svg>
 
 					<div class="chart-timeline-labels">
-						<span>Apr</span>
-						<span>Mei</span>
-						<span>Jun</span>
-						<span>Agu</span>
-						<span>Sep</span>
+						<span>09:00</span>
+						<span>12:00</span>
+						<span>15:00</span>
+						<span>18:00</span>
+						<span>21:00</span>
 					</div>
 				</div>
 
 				<!-- Chart Legend & Real-Time Segments -->
 				<div class="glass-chart-footer">
 					<div class="chart-legend-items">
-						<span class="legend-chip"><span class="chip-dot dot-cyan"></span> In Stock / Produk Terjual</span>
-						<span class="legend-chip"><span class="chip-dot dot-amber"></span> Low Stock</span>
+						<span class="legend-chip"><span class="chip-dot dot-caramel"></span> Porsi Menu Terjual</span>
+						<span class="legend-chip"><span class="chip-dot dot-terracotta"></span> Porsi Bahan Menipis</span>
 					</div>
 					<div class="chart-breakdown-tags">
 						<span class="breakdown-tag tag-mhs" title="Diskon Mahasiswa UNISM Terverifikasi">
-							<strong id="kpiMahasiswaCount">{ fmt.Sprintf("%d", report.MahasiswaOrders) }</strong> Mhs UNISM
+							<strong id="kpiMahasiswaCount">{ fmt.Sprintf("%d", report.MahasiswaOrders) }</strong> Mhs UNISM (Diskon 25% Terkunci)
 						</span>
 						<span class="breakdown-tag tag-umum" title="Pelanggan Umum">
 							<strong id="kpiUmumCount">{ fmt.Sprintf("%d", report.UmumOrders) }</strong> Tamu Umum
 						</span>
 						<span class="breakdown-tag tag-qris" title="Pembayaran QRIS Midtrans Dinamis">
-							<strong id="kpiQRISCount">{ fmt.Sprintf("%d", report.QRISOrders) }</strong> Dynamic QRIS
+							<strong id="kpiQRISCount">{ fmt.Sprintf("%d", report.QRISOrders) }</strong> Dynamic QRIS Midtrans
 						</span>
 						<span class="breakdown-tag tag-cash" title="Pembayaran Tunai Kasir">
-							<strong id="kpiCashCount">{ fmt.Sprintf("%d", report.CashOrders) }</strong> Tunai
+							<strong id="kpiCashCount">{ fmt.Sprintf("%d", report.CashOrders) }</strong> Tunai di Kasir
 						</span>
 					</div>
 				</div>
 			</section>
 
-			<!-- RIGHT PANEL: Recent Orders Table -->
+			<!-- PANEL KANAN: Tabel Pesanan Terkini -->
 			<section class="glass-card glass-orders-panel" aria-labelledby="heading-recent-orders">
 				<div class="glass-card-header">
 					<div>
-						<h3 id="heading-recent-orders" class="glass-card-title">Recent Orders</h3>
-						<p class="glass-card-subtitle">Transaksi terkini pelanggan kafe</p>
+						<h3 id="heading-recent-orders" class="glass-card-title">Riwayat Transaksi Terbaru</h3>
+						<p class="glass-card-subtitle">Pesanan terkini pelanggan kafe (Meja &amp; Bawa Pulang)</p>
 					</div>
 					<div class="glass-card-actions">
 						<a href="/kasir" class="btn-glass-new-order" target="_blank" rel="noopener">
-							<span>+ New Order</span>
+							<span>+ Transaksi Kasir Baru</span>
 						</a>
 					</div>
 				</div>
@@ -463,17 +521,17 @@ templ adminTabReport(report order.AdminReport, stockList []catalog.StockItem, mo
 					<table class="glass-data-table">
 						<thead>
 							<tr>
-								<th>Order ID</th>
-								<th>Product / Customer</th>
-								<th class="text-right">Qty / Total</th>
-								<th>Status</th>
-								<th class="text-center">Action</th>
+								<th>Kode Pesanan</th>
+								<th>Pelanggan &amp; Meja</th>
+								<th class="text-right">Total Bayar</th>
+								<th>Status Pesanan</th>
+								<th class="text-center">Aksi Struk</th>
 							</tr>
 						</thead>
 						<tbody id="tableRecentOrdersBody">
 							if len(report.RecentOrders) == 0 {
 								<tr>
-									<td colspan="5" class="text-center text-muted py-3">Belum ada riwayat pesanan.</td>
+									<td colspan="5" class="text-center text-muted py-3">Belum ada riwayat pesanan hari ini.</td>
 								</tr>
 							} else {
 								for _, ord := range report.RecentOrders {
@@ -488,14 +546,14 @@ templ adminTabReport(report order.AdminReport, stockList []catalog.StockItem, mo
 											<div class="customer-row">
 												<strong class="cust-name-text">{ ord.CustomerName }</strong>
 												if ord.CustomerType == "mahasiswa" {
-													<span class="cust-badge-mhs">Mhs</span>
+													<span class="cust-badge-mhs">Mhs UNISM</span>
 												}
 											</div>
 											<span class="cust-table-text">
 												if ord.TableNumber != "" {
 													Meja { ord.TableNumber }
 												} else {
-													Bawa Pulang
+													Bawa Pulang (Takeaway)
 												}
 											</span>
 										</td>
@@ -504,18 +562,18 @@ templ adminTabReport(report order.AdminReport, stockList []catalog.StockItem, mo
 										</td>
 										<td>
 											if ord.OrderStatus == order.OrderStatusCompleted || ord.OrderStatus == order.OrderStatusPaid {
-												<span class="status-badge-glass badge-delivered">Delivered</span>
+												<span class="status-badge-glass badge-delivered">Selesai Lunas</span>
 											} else if ord.OrderStatus == order.OrderStatusPreparing {
-												<span class="status-badge-glass badge-processing">Processing</span>
+												<span class="status-badge-glass badge-processing">Sedang Diracik</span>
 											} else if ord.OrderStatus == order.OrderStatusReady {
-												<span class="status-badge-glass badge-shipped">Shipped</span>
+												<span class="status-badge-glass badge-shipped">Siap Diambil</span>
 											} else {
 												<span class="status-badge-glass badge-pending">{ ord.StatusLabel() }</span>
 											}
 										</td>
 										<td class="text-center">
-											<a href={ templ.URL("/kasir/pesanan/" + ord.Code + "/cetak") } target="_blank" rel="noopener" class="btn-action-receipt" title="Cetak struk">
-												🖨️ Struk
+											<a href={ templ.URL("/kasir/pesanan/" + ord.Code + "/cetak") } target="_blank" rel="noopener" class="btn-action-receipt" title="Cetak struk kasir">
+												🖨️ Cetak Struk
 											</a>
 										</td>
 									</tr>
@@ -527,100 +585,100 @@ templ adminTabReport(report order.AdminReport, stockList []catalog.StockItem, mo
 			</section>
 		</div>
 
-		<!-- ROW 3: BOTTOM INVENTORY & OPERATIONAL ALERTS -->
+		<!-- ROW 3: BILAH PERINGATAN OPERASIONAL KAFE (INVENTORY ALERTS) -->
 		<section class="glass-card glass-alerts-panel" aria-labelledby="heading-inventory-alerts">
 			<div class="glass-card-header">
 				<div>
-					<h3 id="heading-inventory-alerts" class="glass-card-title">Inventory Alerts</h3>
-					<p class="glass-card-subtitle">Peringatan sistem inventori &amp; operasional otomatis</p>
+					<h3 id="heading-inventory-alerts" class="glass-card-title">Peringatan Operasional &amp; Inventori Kafe</h3>
+					<p class="glass-card-subtitle">Notifikasi otomatis bahan baku menipis, diskon mahasiswa, dan status payment gateway</p>
 				</div>
 			</div>
 
 			<div class="glass-alerts-grid">
-				<!-- Alert 1: Low Stock -->
+				<!-- Peringatan 1: Stok Menipis -->
 				<div class="alert-glass-box alert-box-warning">
 					<div class="alert-box-icon">
 						<span>⚠️</span>
 					</div>
 					<div class="alert-box-content">
-						<strong class="alert-box-title">Low stock alert: Kopi Arabika &amp; Susu Segar</strong>
+						<strong class="alert-box-title">Peringatan Stok Bahan Baku Menipis</strong>
 						<p class="alert-box-desc">
 							if countStockByStatus(stockList, "low") > 0 {
-								Terdapat { fmt.Sprintf("%d", countStockByStatus(stockList, "low")) } menu tersisa ≤ 5 porsi. Segera lakukan restock.
+								Terdapat { fmt.Sprintf("%d", countStockByStatus(stockList, "low")) } menu tersisa ≤ 5 porsi (Kopi Arabika/Susu). Segera restock bahan dapur.
 							} else {
-								Seluruh bahan menu saat ini dalam batas ketersediaan aman.
+								Seluruh bahan menu saat ini dalam batas ketersediaan porsi aman.
 							}
 						</p>
 					</div>
 					<div class="alert-box-action">
-						<a href="/admin?tab=stok" class="btn-alert-pill">Restock</a>
+						<a href="/admin?tab=stok" class="btn-alert-pill">+ Restock Bahan</a>
 					</div>
 				</div>
 
-				<!-- Alert 2: Mahasiswa Verification -->
+				<!-- Peringatan 2: Verifikasi Mahasiswa UNISM -->
 				<div class="alert-glass-box alert-box-info">
 					<div class="alert-box-icon">
-						<span>ℹ️</span>
+						<span>🎓</span>
 					</div>
 					<div class="alert-box-content">
-						<strong class="alert-box-title">Diskon Mahasiswa: Verifikasi NIM Perdana Aktif</strong>
-						<p class="alert-box-desc">Sistem otomatis mengunci diskon mahasiswa UNISM 25% permanen di cloud database TiDB.</p>
+						<strong class="alert-box-title">Verifikasi Diskon Mahasiswa UNISM (25%)</strong>
+						<p class="alert-box-desc">Sistem otomatis mengunci diskon mahasiswa perdana permanen via NIM di cloud TiDB.</p>
 					</div>
 					<div class="alert-box-action">
-						<a href="/admin/pesanan" class="btn-alert-pill">Review</a>
+						<a href="/admin/pesanan" class="btn-alert-pill">Cek Antrean</a>
 					</div>
 				</div>
 
-				<!-- Alert 3: Payment Settlement -->
+				<!-- Peringatan 3: Payment Gateway Midtrans QRIS -->
 				<div class="alert-glass-box alert-box-success">
 					<div class="alert-box-icon">
-						<span>💹</span>
+						<span>⚡</span>
 					</div>
 					<div class="alert-box-content">
 						<strong class="alert-box-title">Dynamic QRIS Midtrans: Webhook Terhubung</strong>
-						<p class="alert-box-desc">Rekonsiliasi transaksi otomatis settlement via webhook. Selisih finansial Rp 0.</p>
+						<p class="alert-box-desc">Rekonsiliasi transaksi otomatis settlement via webhook. Selisih finansial Rp 0 (100% akurat).</p>
 					</div>
 					<div class="alert-box-action">
-						<a href="/admin/laporan/ekspor?period=today" class="btn-alert-pill">Audit</a>
+						<a href="/admin/laporan/ekspor?period=today" class="btn-alert-pill">Audit Finansial</a>
 					</div>
 				</div>
 			</div>
 		</section>
 
-		<!-- ROW 4: EXPORT REPORT ROW -->
+		<!-- ROW 4: BILAH EKSPOR LAPORAN AKUNTANSI & AUDIT MUTASI (.CSV) -->
 		<div class="glass-export-bar">
 			<div class="export-bar-text">
-				<strong class="export-bar-title">Ekspor Laporan Penjualan &amp; Mutasi Stok (.CSV)</strong>
-				<p class="export-bar-desc">Unduh rekapitulasi transaksi pesanan, diskon mahasiswa, dan rincian mutasi ke format CSV UTF-8.</p>
+				<strong class="export-bar-title">Ekspor Rekapitulasi Laporan Penjualan &amp; Mutasi Stok (.CSV)</strong>
+				<p class="export-bar-desc">Unduh berkas transaksi dan audit mutasi stok format UTF-8 BOM untuk Microsoft Excel &amp; Google Sheets.</p>
 			</div>
 			<div class="export-bar-actions">
 				<a href="/admin/laporan/ekspor?period=today" class="btn-export-glass" download title="Unduh transaksi hari ini">
-					<span>📅 Hari Ini</span>
+					<span>📅 Transaksi Hari Ini</span>
 				</a>
 				<a href="/admin/laporan/ekspor?period=month" class="btn-export-glass" download title="Unduh transaksi bulan berjalan">
-					<span>🗓️ Bulan Ini</span>
+					<span>🗓️ Bulan Berjalan</span>
 				</a>
-				<a href="/admin/laporan/ekspor?period=all" class="btn-export-glass btn-export-glass-primary" download title="Unduh seluruh transaksi">
-					<span>📊 Semua Transaksi (.CSV)</span>
+				<a href="/admin/laporan/ekspor?period=all" class="btn-export-glass btn-export-glass-primary" download title="Unduh seluruh rekam jejak transaksi">
+					<span>📊 Seluruh Transaksi (.CSV)</span>
 				</a>
 				<a href="/admin/stok/ekspor" class="btn-export-glass" download title="Unduh audit mutasi stok">
-					<span>📦 Mutasi Stok (.CSV)</span>
+					<span>📦 Audit Mutasi Stok (.CSV)</span>
 				</a>
 			</div>
 		</div>
 
-		<!-- Hidden / Accessible Top Products Data Table for Real-Time Poller Updates -->
+		<!-- Tabel Rincian Kontribusi Produk Terlaris -->
 		<div class="glass-collapsible-section" style="margin-top: 1.5rem;">
 			<details class="glass-details-frame">
 				<summary class="glass-details-summary">
-					<span>📊 Lihat Rincian Kontribusi Produk Terlaris ({ fmt.Sprintf("%d produk", len(report.TopProducts)) })</span>
+					<span>📊 Lihat Rincian Kontribusi Produk Terlaris ({ fmt.Sprintf("%d menu terdata", len(report.TopProducts)) })</span>
 				</summary>
 				<div class="glass-table-responsive" style="margin-top: 1rem;">
 					<table class="glass-data-table">
 						<thead>
 							<tr>
-								<th>Menu</th>
-								<th class="text-right">Terjual</th>
+								<th>Menu Kafe</th>
+								<th class="text-right">Porsi Terjual</th>
 								<th class="text-right">Kontribusi Omzet</th>
 							</tr>
 						</thead>

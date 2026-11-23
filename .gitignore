@@ -26,3 +26,7 @@ kerangka_penelitian_dan_pengembangan_sistem.md
 # Local test & audit outputs
 *.csv
 hasil_make_test_*.txt
+hasil_uji.txt
+laporan_pengujian_transaksi_dan_stok.md
+uji_transaksi_stok.csv
+.env.example

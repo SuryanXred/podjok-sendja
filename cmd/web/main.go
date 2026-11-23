@@ -21,20 +21,29 @@ func main() {
 		port = "8080"
 	}
 
-	// 1. Inisialisasi basis data MySQL jika server aktif
-	if _, err := database.Init(); err != nil {
-		log.Printf("[main] MySQL tidak aktif (%v). Server tetap berjalan dengan penyimpanan lokal.", err)
-	}
-
-	// 2. Inisialisasi penyimpanan lokal (backup / fallback)
+	// 1. Inisialisasi penyimpanan lokal (backup / fallback) terlebih dahulu
 	dataDir := os.Getenv("DATA_DIR")
 	if dataDir == "" {
 		dataDir = "./data"
 	}
 	persistence.Init(dataDir)
 
+	// 2. Inisialisasi basis data MySQL / TiDB secara asinkron di latar belakang
+	// Ini memastikan HTTP server langsung bind ke 0.0.0.0:$PORT dalam hitungan milidetik,
+	// mencegah terjadinya "Port scan timeout" pada platform cloud hosting seperti Render.com.
+	go func() {
+		if _, err := database.Init(); err != nil {
+			log.Printf("[main] MySQL/TiDB tidak aktif atau belum siap (%v). Server tetap melayani permintaan dengan penyimpanan lokal.", err)
+		} else {
+			log.Println("[main] MySQL/TiDB berhasil terhubung dan tersinkronisasi.")
+		}
+	}()
+
+	// 3. Wajib bind secara eksplisit ke 0.0.0.0:<PORT> agar terdeteksi oleh port scanner & load balancer Render
+	bindAddr := "0.0.0.0:" + port
+
 	server := &http.Server{
-		Addr:              ":" + port,
+		Addr:              bindAddr,
 		Handler:           httpapi.NewRouter(),
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       15 * time.Second,
@@ -43,7 +52,7 @@ func main() {
 	}
 
 	go func() {
-		log.Printf("server listening on http://localhost:%s", port)
+		log.Printf("server aktif dan mendengarkan pada http://%s (bind 0.0.0.0:%s)", bindAddr, port)
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatalf("server error: %v", err)
 		}

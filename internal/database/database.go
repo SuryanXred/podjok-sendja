@@ -324,6 +324,13 @@ func cleanDSN(raw string) string {
 				dsn += "?parseTime=true"
 			}
 		}
+		if !strings.Contains(dsn, "timeout=") {
+			if strings.Contains(dsn, "?") {
+				dsn += "&timeout=5s"
+			} else {
+				dsn += "?timeout=5s"
+			}
+		}
 		return dsn
 	}
 
@@ -348,7 +355,15 @@ func resolveDSN() (string, string) {
 	if cfg.Host != "127.0.0.1" && cfg.Host != "localhost" {
 		sourceDesc = fmt.Sprintf("HOST=%s, DB=%s (TiDB/Remote)", cfg.Host, cfg.DBName)
 	}
-	return cfg.DSN(), sourceDesc
+	dsn := cfg.DSN()
+	if !strings.Contains(dsn, "timeout=") {
+		if strings.Contains(dsn, "?") {
+			dsn += "&timeout=5s"
+		} else {
+			dsn += "?timeout=5s"
+		}
+	}
+	return dsn, sourceDesc
 }
 
 func tryCreateDatabaseIfMissing(cfg Config, dsn string, pingErr error) (*sql.DB, error) {

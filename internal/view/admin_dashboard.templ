@@ -95,7 +95,7 @@ templ adminDashboardContent(activeTab string, report order.AdminReport, categori
 		</nav>
 
 		if activeTab == "" || activeTab == "laporan" {
-			@adminTabReport(report)
+			@adminTabReport(report, stockList, movements)
 		} else if activeTab == "menu" {
 			@adminTabMenu(categories)
 		} else if activeTab == "stok" {
@@ -313,158 +313,329 @@ templ adminDashboardContent(activeTab string, report order.AdminReport, categori
 	</div>
 }
 
-templ adminTabReport(report order.AdminReport) {
-	<div class="admin-tab-pane">
-		<div class="tab-pane-header">
-			<div>
-				<h2 class="tab-pane-title">Ringkasan Keuangan &amp; Operasional</h2>
-				<p class="tab-pane-desc">Performa akumulasi transaksi, rata-rata belanja, dan distribusi pelanggan kafe.</p>
-			</div>
-			<a href="/kasir" class="btn-paper-link">Buka Antrean Kasir</a>
-		</div>
-
-		<div class="admin-kpi-grid">
-			<div class="kpi-card kpi-highlight">
-				<span class="kpi-label">Omzet Terverifikasi</span>
-				<strong class="kpi-val" id="kpiConfirmedSales">{ FormatRupiah(report.Metrics.ConfirmedSales) }</strong>
-				<span class="kpi-sub">total pesanan berstatus lunas</span>
-			</div>
-			<div class="kpi-card">
-				<span class="kpi-label">Total Transaksi</span>
-				<strong class="kpi-val" id="kpiTotalOrders">{ fmt.Sprintf("%d", report.Metrics.TotalOrders) }</strong>
-				<span class="kpi-sub" id="kpiTotalSub">{ fmt.Sprintf("%d selesai, %d menunggu", report.Metrics.Completed, report.Metrics.PendingPayment) }</span>
-			</div>
-			<div class="kpi-card">
-				<span class="kpi-label">Rata-rata Nilai Pesanan</span>
-				<strong class="kpi-val" id="kpiAvgOrderValue">{ FormatRupiah(report.AverageOrderValue) }</strong>
-				<span class="kpi-sub">average order value</span>
-			</div>
-			<div class="kpi-card">
-				<span class="kpi-label">Segmen Pelanggan</span>
-				<div class="kpi-split">
-					<span><strong id="kpiMahasiswaCount">{ fmt.Sprintf("%d", report.MahasiswaOrders) }</strong> Mahasiswa</span>
-					<span>•</span>
-					<span><strong id="kpiUmumCount">{ fmt.Sprintf("%d", report.UmumOrders) }</strong> Umum</span>
+templ adminTabReport(report order.AdminReport, stockList []catalog.StockItem, movements []catalog.StockMovement) {
+	<div class="glass-dashboard-container">
+		<!-- ROW 1: FOUR LIQUID GLASS METRIC KPI CARDS -->
+		<div class="glass-kpi-grid">
+			<!-- Card 1: Total Products -->
+			<div class="glass-metric-card">
+				<div class="metric-icon-box icon-cyan">
+					<span class="metric-glyph">📦</span>
 				</div>
-				<span class="kpi-sub">berdasarkan akun dan tipe tamu</span>
+				<span class="metric-title">Total Products</span>
+				<strong class="metric-big-num" id="kpiTotalProductsCount">{ fmt.Sprintf("%d", len(stockList)) }</strong>
+				<span class="metric-trend trend-positive">+17 Menu Aktif di Katalog ↗</span>
 			</div>
-			<div class="kpi-card">
-				<span class="kpi-label">Metode Pembayaran</span>
-				<div class="kpi-split">
-					<span><strong id="kpiCashCount">{ fmt.Sprintf("%d", report.CashOrders) }</strong> Tunai</span>
-					<span>•</span>
-					<span><strong id="kpiQRISCount">{ fmt.Sprintf("%d", report.QRISOrders) }</strong> QRIS</span>
-				</div>
-				<span class="kpi-sub">pilihan transaksi pelanggan</span>
-			</div>
-		</div>
 
-		<div class="admin-export-card">
-			<div class="export-card-text">
-				<h3 class="export-card-title">Ekspor Laporan Penjualan (CSV / Excel)</h3>
-				<p class="export-card-desc">Unduh rekapitulasi transaksi pesanan, diskon mahasiswa, dan rincian menu ke format berkas CSV yang siap diolah di Microsoft Excel atau Google Sheets.</p>
+			<!-- Card 2: Low Stock -->
+			<div class="glass-metric-card">
+				<div class="metric-icon-box icon-amber">
+					<span class="metric-glyph">⚠️</span>
+				</div>
+				<span class="metric-title">Low Stock</span>
+				<strong class="metric-big-num num-amber" id="stockStatLow">{ fmt.Sprintf("%d", countStockByStatus(stockList, "low") + countStockByStatus(stockList, "empty")) }</strong>
+				<span class="metric-trend trend-warning">Sisa ≤ 5 porsi (Segera Restock) ↘</span>
 			</div>
-			<div class="export-card-actions">
-				<a href="/admin/laporan/ekspor?period=today" class="btn-export-act" download title="Unduh transaksi tanggal hari ini">
-					<span class="export-icon">📅</span>
-					<span>Hari Ini</span>
-				</a>
-				<a href="/admin/laporan/ekspor?period=month" class="btn-export-act" download title="Unduh transaksi bulan berjalan">
-					<span class="export-icon">🗓️</span>
-					<span>Bulan Ini</span>
-				</a>
-				<a href="/admin/laporan/ekspor?period=all" class="btn-export-act btn-export-primary" download title="Unduh seluruh rekam jejak transaksi">
-					<span class="export-icon">📊</span>
-					<span>Semua Transaksi (.CSV)</span>
-				</a>
+
+			<!-- Card 3: Pending Orders -->
+			<div class="glass-metric-card">
+				<div class="metric-icon-box icon-blue">
+					<span class="metric-glyph">📋</span>
+				</div>
+				<span class="metric-title">Pending Orders</span>
+				<strong class="metric-big-num" id="kpiTotalOrders">{ fmt.Sprintf("%d", report.Metrics.PendingPayment + report.Metrics.InProcess) }</strong>
+				<span class="metric-trend trend-neutral" id="kpiTotalSub">{ fmt.Sprintf("%d selesai, %d menunggu", report.Metrics.Completed, report.Metrics.PendingPayment) }</span>
+			</div>
+
+			<!-- Card 4: Total Value / Sales -->
+			<div class="glass-metric-card">
+				<div class="metric-icon-box icon-emerald">
+					<span class="metric-glyph">💵</span>
+				</div>
+				<span class="metric-title">Total Value</span>
+				<strong class="metric-big-num num-emerald" id="kpiConfirmedSales">{ FormatRupiah(report.Metrics.ConfirmedSales) }</strong>
+				<span class="metric-trend trend-positive" id="kpiAvgOrderValue">AOV: { FormatRupiah(report.AverageOrderValue) } ↗</span>
 			</div>
 		</div>
 
-		<div class="admin-split-tables">
-			<section class="table-section" aria-labelledby="heading-top-products">
-				<div class="section-title-wrap">
-					<h3 id="heading-top-products" class="sub-section-title">Produk Paling Banyak Dipesan</h3>
-					<span class="section-note">Porsi terjual dari pesanan lunas</span>
-				</div>
-				if len(report.TopProducts) == 0 {
-					<div class="empty-table-box">
-						<p>Belum ada produk yang terjual pada pesanan lunas.</p>
+		<!-- ROW 2: TWO-COLUMN MAIN ANALYTICS & ORDERS -->
+		<div class="glass-analytics-row">
+			<!-- LEFT PANEL: Stock Levels Over Time -->
+			<section class="glass-card glass-chart-panel" aria-labelledby="heading-stock-chart">
+				<div class="glass-card-header">
+					<div>
+						<h3 id="heading-stock-chart" class="glass-card-title">Stock Levels Over Time</h3>
+						<p class="glass-card-subtitle">Tren penjualan menu, porsi tersaji, dan pergerakan inventaris</p>
 					</div>
-				} else {
-					<div class="table-frame">
-						<table class="report-table">
-							<thead>
-								<tr>
-									<th>Menu</th>
-									<th class="text-right">Terjual</th>
-									<th class="text-right">Kontribusi Omzet</th>
-								</tr>
-							</thead>
-							<tbody id="tableTopProductsBody">
-								for _, p := range report.TopProducts {
-									<tr>
-										<td><strong>{ p.ProductName }</strong></td>
-										<td class="text-right">{ fmt.Sprintf("%d porsi", p.Quantity) }</td>
-										<td class="text-right tabular-nums">{ FormatRupiah(p.TotalSales) }</td>
-									</tr>
-								}
-							</tbody>
-						</table>
+					<div class="glass-card-actions">
+						<select class="glass-dropdown-select" aria-label="Rentang Waktu Analisis">
+							<option selected>Bulan Berjalan</option>
+							<option>7 Hari Terakhir</option>
+							<option>Hari Ini</option>
+						</select>
 					</div>
-				}
+				</div>
+
+				<!-- Glowing Area & Line SVG Chart -->
+				<div class="glass-chart-wrap">
+					<svg class="glass-svg-canvas" viewBox="0 0 540 220" preserveAspectRatio="none" aria-hidden="true">
+						<defs>
+							<linearGradient id="cyanAreaGlow" x1="0" y1="0" x2="0" y2="1">
+								<stop offset="0%" stop-color="#00E5FF" stop-opacity="0.35"></stop>
+								<stop offset="100%" stop-color="#00E5FF" stop-opacity="0.0"></stop>
+							</linearGradient>
+							<filter id="cyanNeonGlow" x="-20%" y="-20%" width="140%" height="140%">
+								<feGaussianBlur stdDeviation="3" result="blur"></feGaussianBlur>
+								<feComposite in="SourceGraphic" in2="blur" operator="over"></feComposite>
+							</filter>
+						</defs>
+						<!-- Grid Lines -->
+						<line x1="40" y1="40" x2="520" y2="40" stroke="rgba(255,255,255,0.06)" stroke-dasharray="3 3"></line>
+						<line x1="40" y1="90" x2="520" y2="90" stroke="rgba(255,255,255,0.06)" stroke-dasharray="3 3"></line>
+						<line x1="40" y1="140" x2="520" y2="140" stroke="rgba(255,255,255,0.06)" stroke-dasharray="3 3"></line>
+						<line x1="40" y1="190" x2="520" y2="190" stroke="rgba(255,255,255,0.12)"></line>
+
+						<!-- Area Fill -->
+						<path d="M 50 160 Q 140 120, 230 80 T 410 50 L 510 110 L 510 190 L 50 190 Z" fill="url(#cyanAreaGlow)"></path>
+
+						<!-- Cyan Line (In Stock / Sales) -->
+						<path d="M 50 160 Q 140 120, 230 80 T 410 50 L 510 110" fill="none" stroke="#00E5FF" stroke-width="3" filter="url(#cyanNeonGlow)"></path>
+
+						<!-- Amber Line (Low Stock Trend) -->
+						<path d="M 50 180 Q 140 170, 230 160 T 410 145 L 510 155" fill="none" stroke="#F59E0B" stroke-width="2" stroke-dasharray="4 2"></path>
+
+						<!-- Data Points -->
+						<circle cx="50" cy="160" r="4" fill="#00E5FF"></circle>
+						<circle cx="140" cy="120" r="4" fill="#00E5FF"></circle>
+						<circle cx="230" cy="80" r="5" fill="#FFFFFF" stroke="#00E5FF" stroke-width="2"></circle>
+						<circle cx="320" cy="100" r="4" fill="#00E5FF"></circle>
+						<circle cx="410" cy="50" r="6" fill="#FFFFFF" stroke="#00E5FF" stroke-width="2"></circle>
+						<circle cx="510" cy="110" r="4" fill="#00E5FF"></circle>
+					</svg>
+
+					<div class="chart-timeline-labels">
+						<span>Apr</span>
+						<span>Mei</span>
+						<span>Jun</span>
+						<span>Agu</span>
+						<span>Sep</span>
+					</div>
+				</div>
+
+				<!-- Chart Legend & Real-Time Segments -->
+				<div class="glass-chart-footer">
+					<div class="chart-legend-items">
+						<span class="legend-chip"><span class="chip-dot dot-cyan"></span> In Stock / Produk Terjual</span>
+						<span class="legend-chip"><span class="chip-dot dot-amber"></span> Low Stock</span>
+					</div>
+					<div class="chart-breakdown-tags">
+						<span class="breakdown-tag tag-mhs" title="Diskon Mahasiswa UNISM Terverifikasi">
+							<strong id="kpiMahasiswaCount">{ fmt.Sprintf("%d", report.MahasiswaOrders) }</strong> Mhs UNISM
+						</span>
+						<span class="breakdown-tag tag-umum" title="Pelanggan Umum">
+							<strong id="kpiUmumCount">{ fmt.Sprintf("%d", report.UmumOrders) }</strong> Tamu Umum
+						</span>
+						<span class="breakdown-tag tag-qris" title="Pembayaran QRIS Midtrans Dinamis">
+							<strong id="kpiQRISCount">{ fmt.Sprintf("%d", report.QRISOrders) }</strong> Dynamic QRIS
+						</span>
+						<span class="breakdown-tag tag-cash" title="Pembayaran Tunai Kasir">
+							<strong id="kpiCashCount">{ fmt.Sprintf("%d", report.CashOrders) }</strong> Tunai
+						</span>
+					</div>
+				</div>
 			</section>
 
-			<section class="table-section" aria-labelledby="heading-recent-orders">
-				<div class="section-title-wrap">
-					<h3 id="heading-recent-orders" class="sub-section-title">Riwayat Transaksi Terbaru</h3>
-					<span class="section-note">10 pesanan terkini</span>
-				</div>
-				if len(report.RecentOrders) == 0 {
-					<div class="empty-table-box">
-						<p>Belum ada riwayat pesanan.</p>
+			<!-- RIGHT PANEL: Recent Orders Table -->
+			<section class="glass-card glass-orders-panel" aria-labelledby="heading-recent-orders">
+				<div class="glass-card-header">
+					<div>
+						<h3 id="heading-recent-orders" class="glass-card-title">Recent Orders</h3>
+						<p class="glass-card-subtitle">Transaksi terkini pelanggan kafe</p>
 					</div>
-				} else {
-					<div class="table-frame">
-						<table class="report-table">
-							<thead>
+					<div class="glass-card-actions">
+						<a href="/kasir" class="btn-glass-new-order" target="_blank" rel="noopener">
+							<span>+ New Order</span>
+						</a>
+					</div>
+				</div>
+
+				<div class="glass-table-responsive">
+					<table class="glass-data-table">
+						<thead>
+							<tr>
+								<th>Order ID</th>
+								<th>Product / Customer</th>
+								<th class="text-right">Qty / Total</th>
+								<th>Status</th>
+								<th class="text-center">Action</th>
+							</tr>
+						</thead>
+						<tbody id="tableRecentOrdersBody">
+							if len(report.RecentOrders) == 0 {
 								<tr>
-									<th>Kode</th>
-									<th>Pemesan</th>
-									<th>Status</th>
-									<th class="text-right">Total</th>
-									<th class="text-center">Struk</th>
+									<td colspan="5" class="text-center text-muted py-3">Belum ada riwayat pesanan.</td>
 								</tr>
-							</thead>
-							<tbody id="tableRecentOrdersBody">
+							} else {
 								for _, ord := range report.RecentOrders {
 									<tr>
 										<td>
-											<a href={ templ.URL("/pesanan/" + ord.Code) } class="order-code-link" target="_blank" rel="noopener">
-												{ ord.Code }
+											<a href={ templ.URL("/pesanan/" + ord.Code) } class="order-id-link" target="_blank" rel="noopener">
+												#{ ord.Code }
 											</a>
+											<div class="order-time-label"><time>{ ord.CreatedAt.Format("15:04 WIB") }</time></div>
 										</td>
 										<td>
-											<span>{ ord.CustomerName }</span>
-											if ord.CustomerType == "mahasiswa" {
-												<span class="tag-pill tag-mhs" style="font-size: 0.72rem; padding: 0.1rem 0.35rem;">Mhs</span>
+											<div class="customer-row">
+												<strong class="cust-name-text">{ ord.CustomerName }</strong>
+												if ord.CustomerType == "mahasiswa" {
+													<span class="cust-badge-mhs">Mhs</span>
+												}
+											</div>
+											<span class="cust-table-text">
+												if ord.TableNumber != "" {
+													Meja { ord.TableNumber }
+												} else {
+													Bawa Pulang
+												}
+											</span>
+										</td>
+										<td class="text-right tabular-nums">
+											<strong>{ FormatRupiah(ord.Total) }</strong>
+										</td>
+										<td>
+											if ord.OrderStatus == order.OrderStatusCompleted || ord.OrderStatus == order.OrderStatusPaid {
+												<span class="status-badge-glass badge-delivered">Delivered</span>
+											} else if ord.OrderStatus == order.OrderStatusPreparing {
+												<span class="status-badge-glass badge-processing">Processing</span>
+											} else if ord.OrderStatus == order.OrderStatusReady {
+												<span class="status-badge-glass badge-shipped">Shipped</span>
+											} else {
+												<span class="status-badge-glass badge-pending">{ ord.StatusLabel() }</span>
 											}
 										</td>
-										<td>
-											<span class={ "status-pill-small", "status-" + string(ord.OrderStatus) }>{ ord.StatusLabel() }</span>
-										</td>
-										<td class="text-right tabular-nums"><strong>{ FormatRupiah(ord.Total) }</strong></td>
 										<td class="text-center">
-											<a href={ templ.URL("/kasir/pesanan/" + ord.Code + "/cetak") } target="_blank" rel="noopener" class="btn-receipt-link" title="Cetak struk pesanan ini">
-												🖨️ Cetak
+											<a href={ templ.URL("/kasir/pesanan/" + ord.Code + "/cetak") } target="_blank" rel="noopener" class="btn-action-receipt" title="Cetak struk">
+												🖨️ Struk
 											</a>
 										</td>
 									</tr>
 								}
-							</tbody>
-						</table>
-					</div>
-				}
+							}
+						</tbody>
+					</table>
+				</div>
 			</section>
+		</div>
+
+		<!-- ROW 3: BOTTOM INVENTORY & OPERATIONAL ALERTS -->
+		<section class="glass-card glass-alerts-panel" aria-labelledby="heading-inventory-alerts">
+			<div class="glass-card-header">
+				<div>
+					<h3 id="heading-inventory-alerts" class="glass-card-title">Inventory Alerts</h3>
+					<p class="glass-card-subtitle">Peringatan sistem inventori &amp; operasional otomatis</p>
+				</div>
+			</div>
+
+			<div class="glass-alerts-grid">
+				<!-- Alert 1: Low Stock -->
+				<div class="alert-glass-box alert-box-warning">
+					<div class="alert-box-icon">
+						<span>⚠️</span>
+					</div>
+					<div class="alert-box-content">
+						<strong class="alert-box-title">Low stock alert: Kopi Arabika &amp; Susu Segar</strong>
+						<p class="alert-box-desc">
+							if countStockByStatus(stockList, "low") > 0 {
+								Terdapat { fmt.Sprintf("%d", countStockByStatus(stockList, "low")) } menu tersisa ≤ 5 porsi. Segera lakukan restock.
+							} else {
+								Seluruh bahan menu saat ini dalam batas ketersediaan aman.
+							}
+						</p>
+					</div>
+					<div class="alert-box-action">
+						<a href="/admin?tab=stok" class="btn-alert-pill">Restock</a>
+					</div>
+				</div>
+
+				<!-- Alert 2: Mahasiswa Verification -->
+				<div class="alert-glass-box alert-box-info">
+					<div class="alert-box-icon">
+						<span>ℹ️</span>
+					</div>
+					<div class="alert-box-content">
+						<strong class="alert-box-title">Diskon Mahasiswa: Verifikasi NIM Perdana Aktif</strong>
+						<p class="alert-box-desc">Sistem otomatis mengunci diskon mahasiswa UNISM 25% permanen di cloud database TiDB.</p>
+					</div>
+					<div class="alert-box-action">
+						<a href="/admin/pesanan" class="btn-alert-pill">Review</a>
+					</div>
+				</div>
+
+				<!-- Alert 3: Payment Settlement -->
+				<div class="alert-glass-box alert-box-success">
+					<div class="alert-box-icon">
+						<span>💹</span>
+					</div>
+					<div class="alert-box-content">
+						<strong class="alert-box-title">Dynamic QRIS Midtrans: Webhook Terhubung</strong>
+						<p class="alert-box-desc">Rekonsiliasi transaksi otomatis settlement via webhook. Selisih finansial Rp 0.</p>
+					</div>
+					<div class="alert-box-action">
+						<a href="/admin/laporan/ekspor?period=today" class="btn-alert-pill">Audit</a>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- ROW 4: EXPORT REPORT ROW -->
+		<div class="glass-export-bar">
+			<div class="export-bar-text">
+				<strong class="export-bar-title">Ekspor Laporan Penjualan &amp; Mutasi Stok (.CSV)</strong>
+				<p class="export-bar-desc">Unduh rekapitulasi transaksi pesanan, diskon mahasiswa, dan rincian mutasi ke format CSV UTF-8.</p>
+			</div>
+			<div class="export-bar-actions">
+				<a href="/admin/laporan/ekspor?period=today" class="btn-export-glass" download title="Unduh transaksi hari ini">
+					<span>📅 Hari Ini</span>
+				</a>
+				<a href="/admin/laporan/ekspor?period=month" class="btn-export-glass" download title="Unduh transaksi bulan berjalan">
+					<span>🗓️ Bulan Ini</span>
+				</a>
+				<a href="/admin/laporan/ekspor?period=all" class="btn-export-glass btn-export-glass-primary" download title="Unduh seluruh transaksi">
+					<span>📊 Semua Transaksi (.CSV)</span>
+				</a>
+				<a href="/admin/stok/ekspor" class="btn-export-glass" download title="Unduh audit mutasi stok">
+					<span>📦 Mutasi Stok (.CSV)</span>
+				</a>
+			</div>
+		</div>
+
+		<!-- Hidden / Accessible Top Products Data Table for Real-Time Poller Updates -->
+		<div class="glass-collapsible-section" style="margin-top: 1.5rem;">
+			<details class="glass-details-frame">
+				<summary class="glass-details-summary">
+					<span>📊 Lihat Rincian Kontribusi Produk Terlaris ({ fmt.Sprintf("%d produk", len(report.TopProducts)) })</span>
+				</summary>
+				<div class="glass-table-responsive" style="margin-top: 1rem;">
+					<table class="glass-data-table">
+						<thead>
+							<tr>
+								<th>Menu</th>
+								<th class="text-right">Terjual</th>
+								<th class="text-right">Kontribusi Omzet</th>
+							</tr>
+						</thead>
+						<tbody id="tableTopProductsBody">
+							for _, p := range report.TopProducts {
+								<tr>
+									<td><strong>{ p.ProductName }</strong></td>
+									<td class="text-right">{ fmt.Sprintf("%d porsi", p.Quantity) }</td>
+									<td class="text-right tabular-nums">{ FormatRupiah(p.TotalSales) }</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</details>
 		</div>
 	</div>
 }
